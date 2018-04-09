@@ -1,0 +1,12 @@
+__pycache__
+config.py
+
+.*
+!.gitignore
+!.flake8
+!.coveragerc
+!.travis.yml
+
+docs/build
+docs/source/_static
+docs/source/_templates

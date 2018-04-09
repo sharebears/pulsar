@@ -1,0 +1,21 @@
+# General Flask settings
+DEBUG = False
+PRESERVE_CONTEXT_ON_EXCEPTION = False
+SECRET_KEY = b"generate a secure secret key with lots of entropy"
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost/pulsar'
+REDIS_URL = 'redis:///0'
+
+# Determines whether or not unauthenticated users can view pages
+# with the @required_auth decorator. If True, unauthenticated users
+# will receive a 404 Exception. If False, they will be able to view
+# every page not decorated with @require_permission.
+SITE_PRIVATE = True
+
+# If True, potential users will need an invite code from a member to join.
+# If False, anyone can register.
+REQUIRE_INVITE_CODE = False
+
+# The time in seconds it takes for an invite to expire.
+INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days
