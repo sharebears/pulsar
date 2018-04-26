@@ -8,12 +8,13 @@ class Invite(db.Model):
     __tablename__ = 'invites'
 
     code = db.Column(db.String(24), primary_key=True)
-    inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    invitee_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    inviter_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    invitee_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     email = db.Column(db.String(255), nullable=False)
     time_sent = db.Column(db.DateTime(timezone=True), server_default=func.now())
     from_ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
-    active = db.Column(db.Boolean, nullable=False, server_default='t')
+    active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
     inviter = relationship(
         'User', back_populates='invites_sent', uselist=False, foreign_keys=[inviter_id])

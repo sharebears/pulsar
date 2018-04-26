@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, and_
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.declarative import declared_attr
 from pulsar import db
 
 
@@ -13,7 +14,7 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True, nullable=False)
     passhash = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(255), nullable=False)
-    inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
     sessions = relationship('Session', back_populates='user')
@@ -25,6 +26,11 @@ class User(db.Model):
     invitees = relationship('User', back_populates='inviter')
     invites_sent = relationship(
         'Invite', back_populates='inviter', foreign_keys='Invite.inviter_id')
+
+    @declared_attr
+    def __table_args__(cls):
+        return (db.Index('idx_users_username', func.lower(cls.username), unique=True),
+                db.Index('idx_users_email', func.lower(cls.email)))
 
     def __init__(self, username, password, email):
         self.username = username

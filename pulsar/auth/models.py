@@ -9,14 +9,14 @@ from pulsar import db
 class Session(db.Model):
     __tablename__ = 'sessions'
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     hash = db.Column(db.String(10), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
     user_agent_id = db.Column(db.Integer, db.ForeignKey('user_agents.id'))
     csrf_token = db.Column(db.String(24), nullable=False)
-    active = db.Column(db.Boolean, nullable=False, server_default='t')
+    active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
     user = relationship('User', back_populates='sessions', uselist=False, lazy=False)
     user_agent = relationship('UserAgent', back_populates='sessions', uselist=False)
@@ -53,14 +53,14 @@ class APIKey(db.Model):
     __tablename__ = 'api_keys'
 
     hash = db.Column(db.String(10), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     keyhashsalt = db.Column(db.String(128))
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
     user_agent_id = db.Column(db.Integer, db.ForeignKey('user_agents.id'))
     csrf_token = db.Column(db.String(24), nullable=False)
-    active = db.Column(db.Boolean, nullable=False, server_default='t')
+    active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
     user = relationship('User', back_populates='api_keys', uselist=False, lazy=False)
     user_agent = relationship('UserAgent', back_populates='api_keys', uselist=False)
@@ -109,7 +109,7 @@ class UserAgent(db.Model):
     __tablename__ = 'user_agents'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_agent = db.Column(db.Text, nullable=False, unique=True)
+    user_agent = db.Column(db.Text, nullable=False, unique=True, index=True)
 
     sessions = relationship('Session', back_populates='user_agent')
     api_keys = relationship('APIKey', back_populates='user_agent')
