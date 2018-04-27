@@ -4,9 +4,10 @@
 - [x] add API key specific permissions
 - [x] Fix 404 exceptions not raising 404 errors.
 - [x] Add more nuanced tests
-- [ ] Sentry
+- [ ] Add more tests for hooks
 - [ ] Documentation outline via Sphinx
 - [ ] Document existing endpoints
+- [ ] Forums
 
 # TODO
 
@@ -25,20 +26,11 @@
 - [x] Form validation with voluptuous
 - [ ] Pagination abstraction
 
-## Index
-- [ ] Basic user info, API version
-- [ ] SiteStatus endpoint, yada yada
-- [ ] Escaping?
-
 ## Users
 - [ ] Administration Functions
 - [ ] Schema Completion
 - [x] Registration
 - [x] Invites
-
-## User Stats & History
-- [ ] Community Stats
-- [ ] Data Visualization
 
 ## Permissions
 - [ ] User Classes (Pri & Sec)
@@ -60,6 +52,12 @@
 - [ ] Rule Addition/Edit/Deletion
 - [ ] Individual Rule
 - [ ] Rule Versioning
+
+## Index
+- [ ] Basic user info, API version
+- [ ] SiteStatus endpoint, yada yada
+- [ ] Escaping?
+- [ ] News Posts
 
 ## Wiki
 - [ ] Wiki Pages
@@ -131,3 +129,16 @@
 
 ## Donations
 - [ ] Later
+
+
+# Post-MVP
+
+## General
+- [ ] Sentry
+
+## User Stats & History
+- [ ] Community Stats
+- [ ] Data Visualization
+
+
+
