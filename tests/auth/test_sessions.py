@@ -1,4 +1,3 @@
-import json
 import pytest
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response, add_permissions
 from pulsar import db
@@ -114,15 +113,13 @@ def test_view_empty_sessions(app, authed_client):
     ])
 def test_revoke_session(app, authed_client, identifier, message):
     add_permissions(app, 'revoke_sessions', 'revoke_sessions_others')
-    response = authed_client.delete('/sessions', data=json.dumps(dict(
-        identifier=identifier)))
+    response = authed_client.delete('/sessions', json={'identifier': identifier})
     check_json_response(response, message)
 
 
 def test_revoke_session_not_mine(app, authed_client):
     add_permissions(app, 'revoke_sessions')
-    response = authed_client.delete('/sessions', data=json.dumps(dict(
-        identifier='1234567890')))
+    response = authed_client.delete('/sessions', json={'identifier': '1234567890'})
     check_json_response(response, 'Session 1234567890 does not exist.')
 
 

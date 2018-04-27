@@ -6,8 +6,8 @@ from pulsar.auth.views.login import login_schema
 
 
 def test_login_success(client):
-    response = client.post('/login', data=json.dumps(dict(
-        username='lights', password='12345')))
+    response = client.post('/login', json={
+        'username': 'lights', 'password': '12345'})
 
     assert json.loads(response.get_data())['response']['username'] == 'lights'
     with client.session_transaction() as sess:
@@ -15,8 +15,8 @@ def test_login_success(client):
 
 
 def test_login_failure(client):
-    response = client.post('/login', data=json.dumps(dict(
-        username='not_lights', password='54321')))
+    response = client.post('/login', json={
+        'username': 'not_lights', 'password': '54321'})
 
     check_json_response(response, 'Invalid credentials.')
     assert response.status_code == 401

@@ -26,8 +26,7 @@ HASHED_CODE_3 = ('pbkdf2:sha256:50000$DgIO3cu1$cdc9e2d1060c5f339e1cc7cf247d'
 
 def check_json_response(response, expected, list_=False, strict=False):
     "Helper function to assert the JSON response matches the expected response."
-    response_full = json.loads(response.get_data())
-    print(response_full)
+    response_full = response.get_json()
     assert 'response' in response_full
     response = response_full['response']
     if strict:

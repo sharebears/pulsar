@@ -1,4 +1,3 @@
-import json
 import pytest
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response
 from pulsar import db
@@ -26,8 +25,10 @@ def populate_db(client):
 def test_register_with_code(app, client, code, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = True
     endpoint = f'/register/{code}' if code else '/register'
-    response = client.post(endpoint, data=json.dumps(dict(
-        username='bright', password='abcdEF123123%', email='bright@puls.ar')))
+    response = client.post(endpoint, json={
+        'username': 'bright',
+        'password': 'abcdEF123123%',
+        'email': 'bright@puls.ar'})
     check_json_response(response, expected)
     assert response.status_code == status_code
 
@@ -39,7 +40,9 @@ def test_register_with_code(app, client, code, status_code, expected):
     ])
 def test_registration(app, client, username, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = False
-    response = client.post('/register', data=json.dumps(dict(
-        username=username, password='abcdEF123123%', email='bright@puls.ar')))
+    response = client.post('/register', json={
+        'username': username,
+        'password': 'abcdEF123123%',
+        'email': 'bright@puls.ar'})
     check_json_response(response, expected)
     assert response.status_code == status_code

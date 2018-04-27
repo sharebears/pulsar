@@ -3,8 +3,7 @@ import pytz
 import flask
 from datetime import datetime
 from pulsar import db, _403Exception, APIException
-from pulsar.users.models import User
-from pulsar.auth.models import Session, APIKey, UserAgent
+from pulsar.auth.models import Session, APIKey
 
 bp = flask.Blueprint('hooks', __name__)
 
@@ -30,7 +29,8 @@ def before_hook():
     # The only unauthorized POST method allowed is registration,
     # which does not have a user global and therefore doesn't require
     # CSRF protection.
-    if flask.g.user and flask.request.method in ['POST', 'PUT', 'DELETE']:
+    if (flask.g.user and flask.g.user_session
+            and flask.request.method in ['POST', 'PUT', 'DELETE']):
         check_csrf()
 
 
@@ -41,11 +41,15 @@ def after_hook(response):
     except ValueError:  # pragma: no cover
         data = 'Could not encode data.'
 
-    response.set_data(json.dumps({
+    response_data = {
         'status': 'success' if response.status_code // 100 == 2 else 'failed',
-        'csrf_token': getattr(flask.g, 'csrf_token', None),
         'response': data,
-        }))
+        }
+
+    if getattr(flask.g, 'csrf_token', None):
+        response_data['csrf_token'] = flask.g.csrf_token
+
+    response.set_data(json.dumps(response_data))
 
     return response
 
@@ -80,7 +84,6 @@ def check_api_key():
         if api_key and api_key.check_key(raw_key[10:]):
             flask.g.user = api_key.user
             flask.g.api_key = api_key
-            flask.g.csrf_token = api_key.csrf_token
             update_session_or_key(api_key)
 
 
@@ -90,9 +93,8 @@ def update_session_or_key(session_key):
     user agent, and IP fields.
     """
     session_key.last_used = datetime.utcnow().replace(tzinfo=pytz.utc)
-    user_agent = UserAgent.get_or_create(flask.request.headers.get('User-Agent'))
-    if user_agent:  # User agent is NULL if left blank.
-        session_key.user_agent_id = user_agent.id
+    if session_key.user_agent != flask.request.headers.get('User-Agent'):
+        session_key.user_agent = flask.request.headers.get('User-Agent')
 
     if not flask.g.user.has_permission('no_ip_history'):
         session_key.ip = flask.request.remote_addr

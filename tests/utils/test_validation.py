@@ -1,4 +1,3 @@
-import json
 import pytest
 from voluptuous import Schema, Invalid
 from conftest import check_json_response, add_permissions
@@ -12,8 +11,7 @@ def test_invalid_schema(app, authed_client):
     def test_schema(required_arg):
         return 'never hit this'
 
-    response = authed_client.post('/test_schema', data=json.dumps(dict(
-        required_arg='not-an-int')))
+    response = authed_client.post('/test_schema', json={'required_arg': 'not-an-int'})
     check_json_response(response, 'Invalid data: expected int (key "required_arg")')
 
 

@@ -70,8 +70,9 @@ def test_nonexistent_user(app, authed_client):
 def test_invite_user_with_code(app, authed_client):
     app.config['REQUIRE_INVITE_CODE'] = True
     add_permissions(app, 'send_invites')
-    response = authed_client.post('/invites', data=json.dumps({
-        'email': 'bright@puls.ar'}))
+    response = authed_client.post(
+        '/invites', data=json.dumps({'email': 'bright@puls.ar'}),
+        content_type='application/json')
     user = User.from_id(1)
     check_json_response(response, {
         'active': True,
@@ -87,8 +88,9 @@ def test_does_not_have_invite(app, authed_client):
     add_permissions(app, 'send_invites')
     db.engine.execute('UPDATE users SET invites = 0')
     db.session.commit()
-    response = authed_client.post('/invites', data=json.dumps({
-        'email': 'bright@puls.ar'}))
+    response = authed_client.post(
+        '/invites', data=json.dumps({'email': 'bright@puls.ar'}),
+        content_type='application/json')
     check_json_response(response, 'You do not have an invite to send.')
     assert response.status_code == 400
 
@@ -96,8 +98,7 @@ def test_does_not_have_invite(app, authed_client):
 def test_invite_without_code(app, authed_client):
     app.config['REQUIRE_INVITE_CODE'] = False
     add_permissions(app, 'send_invites')
-    response = authed_client.post('/invites', data=json.dumps(
-        dict(email='bright@puls.ar')))
+    response = authed_client.post('/invites', json={'email': 'bright@puls.ar'})
     check_json_response(response, 'An invite code is not required to register, '
                         'so invites have been disabled.')
 

@@ -69,6 +69,7 @@ def test_permissions_list_error(app, authed_client, permissions):
             permissions_list(data['permissions'])
         return flask.jsonify('completed')
 
-    response = authed_client.post('/test_permissions_error', data=json.dumps(dict(
-        permissions=permissions)))
+    response = authed_client.post(
+        '/test_permissions_error', data=json.dumps({'permissions': permissions}),
+        content_type='application/json')
     check_json_response(response, 'completed')

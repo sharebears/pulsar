@@ -35,10 +35,10 @@ cursor.execute(
     (1, 'bright@quas.ar', '{CODE_3}', '2018-03-25 01:09:35.260808+00', 't')
     """)
 cursor.execute(
-    f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, csrf_token, active) VALUES
-    (1, 'abcdefghij', '{HASHED_CODE_1}', '{CODE_1}', 't'),
-    (1, '0987654321', '{HASHED_CODE_3}', '{CODE_3}', 't'),
-    (2, '1234567890', '{HASHED_CODE_2}', '{CODE_2}', 'f')
+    f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active) VALUES
+    (1, 'abcdefghij', '{HASHED_CODE_1}', 't'),
+    (1, '0987654321', '{HASHED_CODE_3}','t'),
+    (2, '1234567890', '{HASHED_CODE_2}', 'f')
     """)
 cursor.execute(
     """INSERT INTO permissions (user_id, permission) VALUES

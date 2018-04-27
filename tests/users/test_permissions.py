@@ -40,11 +40,11 @@ def test_choose_user_permission(app, authed_client):
 
 def test_change_permissions_success(app, authed_client):
     add_permissions(app, 'manipulate_permissions', 'send_invites')
-    response = authed_client.put('/permissions/user/1', data=json.dumps({
+    response = authed_client.put('/permissions/user/1', json={
         'permissions': {
             'send_invites': False,
             'view_invites': True,
-        }}))
+        }})
     response = json.loads(response.get_data())
     assert 'response' in response and 'permissions' in response['response']
     assert response['response']['permissions'] == [
@@ -60,8 +60,8 @@ def test_change_permissions_success(app, authed_client):
     ])
 def test_change_permissions_failure(app, authed_client, permissions, expected):
     add_permissions(app, 'manipulate_permissions', 'send_invites', 'view_invites')
-    response = authed_client.put('/permissions/user/1', data=json.dumps({
-        'permissions': permissions}))
+    response = authed_client.put('/permissions/user/1', json={
+        'permissions': permissions})
     check_json_response(response, expected)
 
 

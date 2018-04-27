@@ -15,9 +15,9 @@ def hex_generator(_):
 @pytest.fixture(autouse=True)
 def populate_db(client):
     db.engine.execute(
-        f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, csrf_token, active) VALUES
-        (1, 'abcdefghij', '{HASHED_CODE_1}', '{CODE_1}', 't'),
-        (2, '1234567890', '{HASHED_CODE_2}', '{CODE_2}', 'f')
+        f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active) VALUES
+        (1, 'abcdefghij', '{HASHED_CODE_1}', 't'),
+        (2, '1234567890', '{HASHED_CODE_2}', 'f')
         """)
     db.engine.execute(
         """INSERT INTO api_permissions (api_key_hash, permission) VALUES
@@ -47,13 +47,12 @@ def test_new_key(app):
 def test_api_key_collision(app, monkeypatch):
     # First four are the the hash and csrf_token, last one is the 16char key.
     global HEXES
-    HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16], CODE_1])
+    HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16]])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     with app.app_context():
         raw_key, api_key = APIKey.generate_key(2, '127.0.0.2')
         assert len(raw_key) == 26
         assert api_key.hash != CODE_2[:10]
-        assert api_key.csrf_token != CODE_2
         with pytest.raises(StopIteration):
             hex_generator(None)
 
@@ -62,7 +61,6 @@ def test_from_hash_and_check(app):
     with app.app_context():
         api_key = APIKey.from_hash('abcdefghij')
         assert api_key.user.id == 1
-        assert api_key.csrf_token == CODE_1
         assert api_key.check_key(CODE_1)
         assert not api_key.check_key(CODE_2)
 
@@ -70,7 +68,8 @@ def test_from_hash_and_check(app):
 def test_from_hash_when_dead(app):
     with app.app_context():
         api_key = APIKey.from_hash('1234567890', include_dead=True)
-        assert api_key.csrf_token == CODE_2
+        assert api_key.user_id == 2
+        assert api_key.check_key(CODE_2)
 
 
 def test_api_key_revoke_all(app):
@@ -132,7 +131,7 @@ def test_view_empty_api_keys(app, authed_client):
 
 def test_create_api_key(app, authed_client, monkeypatch):
     global HEXES
-    HEXES = iter(['a' * 8, 'a' * 16, 'a' * 24])
+    HEXES = iter(['a' * 8, 'a' * 16])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     add_permissions(app, 'create_api_keys')
     response = authed_client.post('/api_keys')
@@ -143,11 +142,12 @@ def test_create_api_key(app, authed_client, monkeypatch):
 
 def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     global HEXES
-    HEXES = iter(['a' * 8, 'a' * 16, 'a' * 24])
+    HEXES = iter(['a' * 8, 'a' * 16])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     add_permissions(app, 'create_api_keys')
-    authed_client.post('/api_keys', data=json.dumps(dict(
-        permissions=['sample_perm_one', 'sample_perm_two'])))
+    authed_client.post('/api_keys', data=json.dumps({
+        'permissions': ['sample_perm_one', 'sample_perm_two']}),
+        content_type='application/json')
     key = APIKey.from_hash('a' * 8)
     assert key.has_permission('sample_perm_one')
     assert key.has_permission('sample_perm_two')
@@ -162,15 +162,13 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     ])
 def test_revoke_api_key(app, authed_client, identifier, message):
     add_permissions(app, 'revoke_api_keys', 'revoke_api_keys_others')
-    response = authed_client.delete('/api_keys', data=json.dumps(dict(
-        identifier=identifier)))
+    response = authed_client.delete('/api_keys', json={'identifier': identifier})
     check_json_response(response, message)
 
 
 def test_revoke_api_key_not_mine(app, authed_client):
     add_permissions(app, 'revoke_api_keys')
-    response = authed_client.delete('/api_keys', data=json.dumps(dict(
-        identifier='1234567890')))
+    response = authed_client.delete('/api_keys', json={'identifier': '1234567890'})
     check_json_response(response, 'API Key 1234567890 does not exist.')
 
 

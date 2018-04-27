@@ -1,6 +1,7 @@
-import json
 import flask
 import pytest
+from voluptuous import Schema, Optional
+from pulsar.utils import validate_data
 from conftest import CODE_1, HASHED_CODE_1, add_permissions, check_json_response
 from pulsar import db
 from pulsar.auth.models import Session
@@ -13,8 +14,8 @@ def populate_db(client):
         ('abcdefghij', 1, '{CODE_1}')
         """)
     db.engine.execute(
-        f"""INSERT INTO api_keys (hash, user_id, keyhashsalt, csrf_token) VALUES
-        ('abcdefghij', 1, '{HASHED_CODE_1}', '{CODE_1}')
+        f"""INSERT INTO api_keys (hash, user_id, keyhashsalt) VALUES
+        ('abcdefghij', 1, '{HASHED_CODE_1}')
         """)
     yield
     db.engine.execute("DELETE FROM api_keys")
@@ -24,7 +25,7 @@ def test_user_session_auth(app, client):
     @app.route('/test_sess')
     def test_session():
         assert flask.g.user_session.hash == 'abcdefghij'
-        assert flask.g.user_session.user_agent.user_agent == 'pulsar-test-client'
+        assert flask.g.user_session.user_agent == 'pulsar-test-client'
         assert flask.g.user_session.ip == '127.0.0.1'
         assert flask.g.user.id == 1
         assert not flask.g.api_key
@@ -39,7 +40,7 @@ def test_user_session_auth(app, client):
         })
     check_json_response(response, 'completed')
     session = Session.from_hash('abcdefghij')
-    assert session.user_agent.user_agent == 'pulsar-test-client'
+    assert session.user_agent == 'pulsar-test-client'
 
 
 @pytest.mark.parametrize(
@@ -61,7 +62,7 @@ def test_api_key_auth_and_ip_override(app, client):
     @app.route('/test_api_key')
     def test_api_key():
         assert flask.g.api_key.hash == 'abcdefghij'
-        assert flask.g.api_key.user_agent is None
+        assert flask.g.api_key.user_agent == ''
         assert flask.g.api_key.ip == '0.0.0.0'
         assert flask.g.user.id == 1
         assert not flask.g.user_session
@@ -90,9 +91,6 @@ def test_user_bad_api_key(app, client, authorization_header):
 
 
 def test_csrf_validation(app, client):
-    from voluptuous import Schema, Optional
-    from pulsar.utils import validate_data
-
     @app.route('/test_csrf', methods=['POST'])
     @validate_data(Schema({
         Optional('csrf_token', default='NonExistent'): str,
@@ -101,11 +99,21 @@ def test_csrf_validation(app, client):
         assert csrf_token == 'NonExistent'
         return flask.jsonify('completed')
 
-    response = client.post(
-        '/test_csrf',
-        data=json.dumps(dict(csrf_token=CODE_1)),
-        headers={'Authorization': f'Token abcdefghij{CODE_1}'},
-        )
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['session_hash'] = 'abcdefghij'
+
+    response = client.post('/test_csrf', json=dict(csrf_token=CODE_1))
+    check_json_response(response, 'completed')
+
+
+def test_unneeded_csrf_validation(app, client):
+    @app.route('/test_csrf', methods=['POST'])
+    def test_csrf():
+        return flask.jsonify('completed')
+
+    response = client.post('/test_csrf', headers={
+        'Authorization': f'Token abcdefghij{CODE_1}'})
     check_json_response(response, 'completed')
 
 
@@ -117,7 +125,7 @@ def test_csrf_validation(app, client):
 def test_false_csrf_validation_authkey(app, client, endpoint):
     response = client.post(endpoint, headers={
         'Authorization': f'Token abcdefghij{CODE_1}'})
-    check_json_response(response, 'Invalid authorization key.')
+    check_json_response(response, 'Resource does not exist.')
 
 
 @pytest.mark.parametrize(

@@ -30,9 +30,9 @@ def get_request_data():
     """
     Turn the incoming json data into a dictionary and remove the CSRF key if present.
     """
-    raw_data = flask.request.get_data()
-    print(raw_data)
-    data = json.loads(raw_data) if raw_data else {}
+    # data = json.loads(flask.request.get_data() or b'{}')
+    data = flask.request.get_json() or {}
+    print(data)
     if 'csrf_token' in data:
         del data['csrf_token']
     return data

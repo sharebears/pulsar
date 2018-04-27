@@ -2,6 +2,7 @@ import secrets
 import pulsar.users.models  # noqa
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, and_
+from sqlalchemy.dialects import postgresql
 from werkzeug.security import generate_password_hash, check_password_hash
 from pulsar import db
 
@@ -13,13 +14,12 @@ class Session(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
-    user_agent_id = db.Column(db.Integer, db.ForeignKey('user_agents.id'))
+    ip = db.Column(postgresql.INET, nullable=False, server_default='0.0.0.0')
+    user_agent = db.Column(db.Text)
     csrf_token = db.Column(db.String(24), nullable=False)
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
     user = relationship('User', back_populates='sessions', uselist=False, lazy=False)
-    user_agent = relationship('UserAgent', back_populates='sessions', uselist=False)
 
     @classmethod
     def generate_session(cls, user_id, ip):
@@ -57,13 +57,11 @@ class APIKey(db.Model):
     keyhashsalt = db.Column(db.String(128))
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
-    user_agent_id = db.Column(db.Integer, db.ForeignKey('user_agents.id'))
-    csrf_token = db.Column(db.String(24), nullable=False)
+    ip = db.Column(postgresql.INET, nullable=False, server_default='0.0.0.0')
+    user_agent = db.Column(db.Text)
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
     user = relationship('User', back_populates='api_keys', uselist=False, lazy=False)
-    user_agent = relationship('UserAgent', back_populates='api_keys', uselist=False)
     permissions = relationship('APIPermission')
 
     @classmethod
@@ -73,12 +71,10 @@ class APIKey(db.Model):
             if not cls.from_hash(hash, include_dead=True):
                 break
         key = secrets.token_hex(8)
-        csrf_token = secrets.token_hex(12)
         return (hash + key, cls(
             user_id=user_id,
             hash=hash,
             keyhashsalt=generate_password_hash(key),
-            csrf_token=csrf_token,
             ip=ip,
             ))
 
@@ -103,25 +99,6 @@ class APIKey(db.Model):
         db.session.query(APIKey).filter(
             APIKey.user_id == user_id
             ).update({'active': False})
-
-
-class UserAgent(db.Model):
-    __tablename__ = 'user_agents'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_agent = db.Column(db.Text, nullable=False, unique=True, index=True)
-
-    sessions = relationship('Session', back_populates='user_agent')
-    api_keys = relationship('APIKey', back_populates='user_agent')
-
-    @classmethod
-    def get_or_create(cls, agentstr):
-        agent = cls.query.filter(cls.user_agent == agentstr).one_or_none()
-        if not agent and agentstr:
-            agent = cls(user_agent=agentstr)
-            db.session.add(agent)
-            db.session.commit()
-        return agent
 
 
 class APIPermission(db.Model):

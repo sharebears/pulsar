@@ -29,7 +29,6 @@ def test_status_string(app, authed_client, status_code, status):
     response = authed_client.get('/test_endpoint')
     assert json.loads(response.get_data()) == {
         'response': 'test',
-        'csrf_token': None,
         'status': status,
     }
 
@@ -62,6 +61,5 @@ def test_unauthorized_csrf_token(app, client):
     response = client.get('/test_endpoint')
     assert json.loads(response.get_data()) == {
         'status': 'success',
-        'csrf_token': None,
         'response': 'test',
         }

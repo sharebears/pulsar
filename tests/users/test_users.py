@@ -1,4 +1,3 @@
-import json
 import pytest
 from conftest import check_json_response, add_permissions
 from pulsar import db
@@ -62,10 +61,10 @@ def test_user_does_not_exist(authed_client):
     ])
 def test_change_password(app, authed_client, existing_password, new_password, message):
     add_permissions(app, 'change_password')
-    response = authed_client.post('/users/change_password', data=json.dumps(dict(
-        existing_password=existing_password,
-        new_password=new_password,
-        )))
+    response = authed_client.post('/users/change_password', json={
+        'existing_password': existing_password,
+        'new_password': new_password,
+        })
     check_json_response(response, message, strict=True)
 
 
