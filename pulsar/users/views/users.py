@@ -1,5 +1,5 @@
 import flask
-from . import bp
+from .. import bp
 from ..models import User
 from ..schemas import user_schema
 from pulsar import _404Exception

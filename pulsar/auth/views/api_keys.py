@@ -1,6 +1,6 @@
 import flask
 from voluptuous import Schema, Optional
-from . import bp
+from .. import bp
 from ..models import APIKey, APIPermission
 from ..schemas import api_key_schema, multiple_api_key_schema
 from pulsar import db, APIException, _404Exception
@@ -38,6 +38,9 @@ def view_api_key(hash):
 @require_permission('view_api_keys')
 @validate_data(view_all_api_keys_schema)
 def view_all_api_keys(include_dead, user_id=None):
+    """
+    Get all API keys of a user.
+    """
     user = choose_user(user_id, 'view_api_keys_others')
     api_keys = user.api_keys
     if not include_dead:

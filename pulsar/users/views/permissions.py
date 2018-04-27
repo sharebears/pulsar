@@ -1,5 +1,5 @@
 import flask
-from . import bp
+from .. import bp
 from ..models import User, UserPermission
 from voluptuous import Schema, Optional
 from pulsar import db, APIException

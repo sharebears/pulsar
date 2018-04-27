@@ -2,10 +2,10 @@ import pytz
 import flask
 from datetime import datetime
 from sqlalchemy.sql import func
-from voluptuous import Schema
+from voluptuous import Schema, Optional, Any
 from voluptuous.validators import Email, Match
 
-from . import bp
+from .. import bp
 from pulsar.invites.models import Invite
 from pulsar import db, APIException
 from pulsar.utils import USERNAME_REGEX, PASSWORD_REGEX, validate_data
@@ -22,13 +22,13 @@ registration_schema = Schema({
         'Password must be 12 or more characters and contain at least 1 letter, '
         '1 number, and 1 special character.')),
     'email': Email(),
+    Optional('code', default=None): Any(str, None),
 }, required=True)
 
 
-@bp.route('/register/<code>', methods=['POST'])
 @bp.route('/register', methods=['POST'])
 @validate_data(registration_schema)
-def register(username, password, email, code=None):
+def register(username, password, email, code):
     if app.config['REQUIRE_INVITE_CODE']:
         validate_invite_code(code)
     validate_username(username)

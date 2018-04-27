@@ -1,3 +1,7 @@
+import flask
+
+bp = flask.Blueprint('invites', __name__)
+
 PERMISSIONS = [
     'send_invites',
     'view_invites',

@@ -1,3 +1,7 @@
+import flask
+
+bp = flask.Blueprint('auth', __name__)
+
 PERMISSIONS = [
     'manipulate_permissions',
     'list_permissions',

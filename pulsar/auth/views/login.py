@@ -1,6 +1,6 @@
 import flask
 from voluptuous import Schema, Optional
-from . import bp
+from .. import bp
 from ..models import Session
 from pulsar import db, _401Exception
 from pulsar.utils import validate_data

@@ -1,6 +1,6 @@
 import flask
 from voluptuous import Schema, Optional
-from . import bp
+from .. import bp
 from ..models import Session
 from ..schemas import session_schema, multiple_session_schema
 from pulsar import db, APIException, _404Exception

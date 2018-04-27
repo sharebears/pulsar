@@ -5,18 +5,7 @@ indexer API in flask.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-   pulsar
-   pulsar.auth
-   pulsar.invites
-   pulsar.users
-   pulsar.utils
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   users
+   authentication
+   invites

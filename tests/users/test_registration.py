@@ -24,11 +24,13 @@ def populate_db(client):
     ])
 def test_register_with_code(app, client, code, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = True
-    endpoint = f'/register/{code}' if code else '/register'
+    endpoint = f'/register' if code else '/register'
     response = client.post(endpoint, json={
         'username': 'bright',
         'password': 'abcdEF123123%',
-        'email': 'bright@puls.ar'})
+        'email': 'bright@puls.ar',
+        'code': code,
+        })
     check_json_response(response, expected)
     assert response.status_code == status_code
 
