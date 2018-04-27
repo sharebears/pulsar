@@ -104,6 +104,8 @@ def test_csrf_validation(app, client):
         sess['session_hash'] = 'abcdefghij'
 
     response = client.post('/test_csrf', json=dict(csrf_token=CODE_1))
+    resp_data = response.get_json()
+    assert 'csrf_token' in resp_data and resp_data['csrf_token'] == CODE_1
     check_json_response(response, 'completed')
 
 
@@ -114,6 +116,8 @@ def test_unneeded_csrf_validation(app, client):
 
     response = client.post('/test_csrf', headers={
         'Authorization': f'Token abcdefghij{CODE_1}'})
+    resp_data = response.get_json()
+    assert 'csrf_token' not in resp_data
     check_json_response(response, 'completed')
 
 

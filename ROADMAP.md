@@ -4,7 +4,7 @@
 - [x] add API key specific permissions
 - [x] Fix 404 exceptions not raising 404 errors.
 - [x] Add more nuanced tests
-- [ ] Add more tests for hooks
+- [x] Add more tests for hooks
 - [ ] Documentation outline via Sphinx
 - [ ] Document existing endpoints
 - [ ] Forums

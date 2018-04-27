@@ -19,7 +19,7 @@ class User(db.Model):
 
     sessions = relationship('Session', back_populates='user')
     api_keys = relationship('APIKey', back_populates='user')
-    permissions = relationship('Permission')
+    permissions = relationship('UserPermission')
 
     inviter = relationship(
         'User', remote_side=id, back_populates='invitees', uselist=False)
@@ -57,14 +57,14 @@ class User(db.Model):
         return check_password_hash(self.passhash, password)
 
     def has_permission(self, permission):
-        return db.session.query(Permission).filter(and_(
-            (Permission.user_id == self.id),
-            (Permission.permission == permission),
+        return db.session.query(UserPermission).filter(and_(
+            (UserPermission.user_id == self.id),
+            (UserPermission.permission == permission),
             )).one_or_none()
 
 
-class Permission(db.Model):
-    __tablename__ = 'permissions'
+class UserPermission(db.Model):
+    __tablename__ = 'users_permissions'
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     permission = db.Column(db.String(32), primary_key=True)

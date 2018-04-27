@@ -46,7 +46,7 @@ def check_json_response(response, expected, list_=False, strict=False):
 def add_permissions(app_, *permissions):
     "Insert permissions into database for user_id 1 (authed user)."
     db.engine.execute(
-        """INSERT INTO permissions (user_id, permission) VALUES
+        """INSERT INTO users_permissions (user_id, permission) VALUES
         (1, '""" + "'), (1, '".join(permissions) + "')")
 
 
@@ -109,7 +109,7 @@ def populate_db():
 
 def unpopulate_db():
     "Unpopulate the database with test user information."
-    db.engine.execute("DELETE FROM permissions")
+    db.engine.execute("DELETE FROM users_permissions")
     db.engine.execute("DELETE FROM sessions")
     db.engine.execute("DELETE FROM users")
     db.engine.execute("ALTER SEQUENCE users_id_seq RESTART WITH 1")

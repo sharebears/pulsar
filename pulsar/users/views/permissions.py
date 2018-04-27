@@ -1,6 +1,6 @@
 import flask
 from . import bp
-from ..models import User, Permission
+from ..models import User, UserPermission
 from voluptuous import Schema, Optional
 from pulsar import db, APIException
 from pulsar.utils import (choose_user, assert_permission, require_permission,
@@ -42,7 +42,7 @@ def change_permissions(user_id, permissions):
     for permission in to_delete:
         db.session.delete(permission)
     for perm_name in to_add:
-        db.session.add(Permission(
+        db.session.add(UserPermission(
             user_id=user.id,
             permission=perm_name))
     db.session.commit()

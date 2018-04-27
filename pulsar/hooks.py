@@ -77,7 +77,7 @@ def check_api_key():
     """
     raw_key = parse_key(flask.request.headers)
     if raw_key and len(raw_key) > 10:
-        # The API Key stores the identification hash as the first 8 values,
+        # The API Key stores the identification hash as the first 10 values,
         # and the secret after it, so the key can be looked up and then
         # compared with the hash function.
         api_key = APIKey.from_hash(raw_key[:10])  # Implied active_only
@@ -93,8 +93,7 @@ def update_session_or_key(session_key):
     user agent, and IP fields.
     """
     session_key.last_used = datetime.utcnow().replace(tzinfo=pytz.utc)
-    if session_key.user_agent != flask.request.headers.get('User-Agent'):
-        session_key.user_agent = flask.request.headers.get('User-Agent')
+    session_key.user_agent = flask.request.headers.get('User-Agent')
 
     if not flask.g.user.has_permission('no_ip_history'):
         session_key.ip = flask.request.remote_addr
