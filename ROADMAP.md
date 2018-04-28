@@ -1,13 +1,22 @@
 # CURRENT ROADMAP
 
-- [x] Write tests for helper functions
-- [x] add API key specific permissions
-- [x] Fix 404 exceptions not raising 404 errors.
-- [x] Add more nuanced tests
-- [x] Add more tests for hooks
-- [ ] Documentation outline via Sphinx
-- [ ] Document existing endpoints
+- [x] Documentation outline via Sphinx
+- [ ] See Documentation Roadmap
 - [ ] Forums
+
+## Documentation Roadmap
+### Users
+- [ ] Users
+- [ ] Registration
+- [ ] Settings
+- [ ] Permissions
+### Authentication
+- [ ] Login
+- [ ] Sessions
+- [ ] API Keys
+### Invites
+- [ ] Invites
+- [ ] Invitees
 
 # TODO
 

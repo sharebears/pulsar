@@ -1,10 +1,10 @@
-Invites Endpoint
-================
+Invites
+=======
 
 .. qrefflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :blueprints: invites
+   :groupby: view
    :order: path
 
 Invites
@@ -12,8 +12,8 @@ Invites
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :modules: pulsar.invites.views.invites
+   :groupby: view
    :order: path
 
 Invitees
@@ -21,6 +21,6 @@ Invitees
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :modules: pulsar.invites.views.invitees
+   :groupby: view
    :order: path

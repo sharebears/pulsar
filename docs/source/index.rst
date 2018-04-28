@@ -1,7 +1,6 @@
-Welcome to pulsar's documentation!
-==================================
-This is a silly dragon's playtime attempt at creating a BitTorrent
-indexer API in flask.
+pulsar documentation
+====================
+A BitTorrent Indexer API written in python using the Flask micro-framework.
 
 .. toctree::
    :maxdepth: 2

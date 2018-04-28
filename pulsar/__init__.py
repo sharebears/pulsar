@@ -4,7 +4,7 @@ from flask_marshmallow import Marshmallow
 from werkzeug import find_modules, import_string
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
-    _403Exception, _401Exception, _312Exception)
+    _403Exception, _401Exception)
 
 db = SQLAlchemy()
 ma = Marshmallow()

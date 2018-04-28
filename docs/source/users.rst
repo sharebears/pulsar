@@ -1,9 +1,8 @@
-Users Endpoint
-==============
+Users
+=====
 
 .. qrefflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :blueprints: users
    :order: path
 
@@ -12,8 +11,8 @@ Users
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :modules: pulsar.users.views.users
+   :groupby: view
    :order: path
 
 Settings
@@ -21,8 +20,8 @@ Settings
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :modules: pulsar.users.views.settings
+   :groupby: view
    :order: path
 
 Permissions
@@ -30,6 +29,16 @@ Permissions
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
+   :groupby: view
    :modules: pulsar.users.views.permissions
+   :order: path
+
+Registration
+------------
+
+.. autoflask:: pulsar:create_app('config.py')
+   :undoc-static:
+   :include-empty-docstring:
+   :groupby: view
+   :modules: pulsar.users.views.register
    :order: path

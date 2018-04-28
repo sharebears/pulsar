@@ -11,6 +11,41 @@ app = flask.current_app
 @bp.route('/users/<int:user_id>', methods=['GET'])
 @require_auth
 def get_user(user_id):
+    """
+    Return general information about a user with the given user ID.
+    If the user is getting information about themselves,
+    the API will also return their number of invites.
+
+    .. :quickref: User; Get user information.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       GET /users/1 HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": {
+           "id": 1,
+           "username": "lights",
+           "invites": 2
+         }
+       }
+
+    :statuscode 200: user exists
+    :statuscode 404: user does not exist
+    """
     user = User.from_id(user_id)
     if not user:
         raise _404Exception('User')
