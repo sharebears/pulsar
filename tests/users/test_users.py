@@ -61,16 +61,26 @@ def test_user_does_not_exist(authed_client):
     ])
 def test_change_password(app, authed_client, existing_password, new_password, message):
     add_permissions(app, 'change_password')
-    response = authed_client.post('/users/change_password', json={
+    response = authed_client.put('/users/change_password', json={
         'existing_password': existing_password,
         'new_password': new_password,
         })
     check_json_response(response, message, strict=True)
 
 
+def test_change_password_others(app, authed_client):
+    add_permissions(app, 'change_password', 'change_password_others')
+    response = authed_client.put('/users/2/change_password', json={
+        'new_password': 'aB1%ckeofa12342',
+        })
+    check_json_response(response, 'Password changed.', strict=True)
+    user = User.from_id(2)
+    assert user.check_password('aB1%ckeofa12342')
+
+
 @pytest.mark.parametrize(
     'endpoint, method', [
-        ('/users/change_password', 'POST'),
+        ('/users/change_password', 'PUT'),
     ])
 def test_route_permissions(app, authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)

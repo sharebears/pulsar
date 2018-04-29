@@ -62,9 +62,7 @@ def register(username, password, email, code):
        {
          "status": "success",
          "response": {
-           "id": 1,
-           "username": "lights",
-           "invites": 0
+           "username": "lights"
          }
        }
 
@@ -77,6 +75,8 @@ def register(username, password, email, code):
         as well as account or security related emails in the future.
     :json code: (Optional) An invite code from another member. Required
         for registration if the site is invite only, otherwise ignored.
+
+    :>jsonarr string username: username the user signed up with
 
     :statuscode 200: registration successful
     :statuscode 400: registration unsuccessful
@@ -91,15 +91,15 @@ def register(username, password, email, code):
         email=email)
     db.session.add(user)
     db.session.commit()
-    return user_schema.jsonify(user)
+    return flask.jsonify({'username': user.username})
 
 
 def validate_username(username):
     """
-    Ensures that a username is not taken and that it matches the required length
-    and doesn't contain any invalid characters.
+    Ensures that a username is not taken.
     """
-    if (User.query.filter(func.lower(User.username) == username.lower()).one_or_none()):
+    username = username.lower()
+    if (User.query.filter(func.lower(User.username) == username).one_or_none()):
         raise APIException(f'Another user already has the username `{username}`.')
 
 

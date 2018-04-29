@@ -17,7 +17,7 @@ def populate_db(client):
 
 @pytest.mark.parametrize(
     'code, status_code, expected', [
-        (CODE_1, 200, {'id': 4, 'username': 'bright'}),
+        (CODE_1, 200, {'username': 'bright'}),
         (None, 400, 'An invite code is required for registration.'),
         (CODE_2, 400, f'{CODE_2} is not a valid invite code.'),
         (CODE_3, 400, f'{CODE_3} is not a valid invite code.'),
@@ -31,13 +31,13 @@ def test_register_with_code(app, client, code, status_code, expected):
         'email': 'bright@puls.ar',
         'code': code,
         })
-    check_json_response(response, expected)
+    check_json_response(response, expected, strict=True)
     assert response.status_code == status_code
 
 
 @pytest.mark.parametrize(
     'username, status_code, expected', [
-        ('bright', 200, {'id': 4, 'username': 'bright'}),
+        ('bright', 200, {'username': 'bright'}),
         ('lights', 400, 'Another user already has the username `lights`.'),
     ])
 def test_registration(app, client, username, status_code, expected):
@@ -46,5 +46,5 @@ def test_registration(app, client, username, status_code, expected):
         'username': username,
         'password': 'abcdEF123123%',
         'email': 'bright@puls.ar'})
-    check_json_response(response, expected)
+    check_json_response(response, expected, strict=True)
     assert response.status_code == status_code

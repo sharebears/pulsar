@@ -127,7 +127,7 @@ def test_unneeded_csrf_validation(app, client):
         '/not/a/real/route',
     ])
 def test_false_csrf_validation_authkey(app, client, endpoint):
-    response = client.post(endpoint, headers={
+    response = client.put(endpoint, headers={
         'Authorization': f'Token abcdefghij{CODE_1}'})
     check_json_response(response, 'Resource does not exist.')
 
@@ -142,7 +142,7 @@ def test_false_csrf_validation_session(app, client, endpoint):
         sess['user_id'] = 1
         sess['session_hash'] = 'abcdefghij'
 
-    response = client.post(endpoint)
+    response = client.put(endpoint)
     check_json_response(response, 'Invalid authorization key.')
 
 
@@ -152,7 +152,7 @@ def test_false_csrf_validation_session(app, client, endpoint):
         '/not/a/real/route',
     ])
 def test_no_authorization_post(app, client, endpoint):
-    response = client.post(endpoint)
+    response = client.put(endpoint)
     check_json_response(response, 'Resource does not exist.')
 
 

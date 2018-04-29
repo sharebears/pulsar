@@ -43,6 +43,10 @@ def get_user(user_id):
          }
        }
 
+    :>jsonarr int id: User ID of user
+    :>jsonarr string username: Username of user
+    :>jsonarr int invites: (Restricted to self view) Invites available to user
+
     :statuscode 200: user exists
     :statuscode 404: user does not exist
     """
