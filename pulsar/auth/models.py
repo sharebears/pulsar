@@ -12,6 +12,7 @@ class Session(db.Model):
 
     hash = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    persistent = db.Column(db.Boolean, nullable=False, server_default='f')
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     ip = db.Column(postgresql.INET, nullable=False, server_default='0.0.0.0')
@@ -22,7 +23,7 @@ class Session(db.Model):
     user = relationship('User', back_populates='sessions', uselist=False, lazy=False)
 
     @classmethod
-    def generate_session(cls, user_id, ip):
+    def generate_session(cls, user_id, ip, user_agent, persistent=False):
         while True:
             hash = secrets.token_hex(5)
             if not cls.from_hash(hash, include_dead=True):
@@ -33,6 +34,8 @@ class Session(db.Model):
             hash=hash,
             csrf_token=csrf_token,
             ip=ip,
+            user_agent=user_agent,
+            persistent=persistent,
             )
 
     @classmethod

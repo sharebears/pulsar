@@ -7,7 +7,7 @@ from conftest import (CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2,
 conn = psycopg2.connect('postgresql:///pulsar')
 cursor = conn.cursor()
 
-cursor.execute("DELETE FROM permissions")
+cursor.execute("DELETE FROM users_permissions")
 cursor.execute("DELETE FROM invites")
 cursor.execute("DELETE FROM api_permissions")
 cursor.execute("DELETE FROM api_keys")
@@ -22,13 +22,6 @@ cursor.execute(
     """)
 cursor.execute("ALTER SEQUENCE users_id_seq RESTART WITH 3")
 cursor.execute(
-    """INSERT INTO permissions (user_id, permission) VALUES
-    (1, 'sample_perm_one'),
-    (1, 'sample_perm_two'),
-    (1, 'sample_perm_three'),
-    (1, 'sample_permission')
-    """)
-cursor.execute(
     f"""INSERT INTO invites (inviter_id, email, code, time_sent, active) VALUES
     (1, 'bright@puls.ar', '{CODE_1}', NOW(), 't'),
     (1, 'bitsu@puls.ar', '{CODE_2}', NOW(), 'f'),
@@ -41,12 +34,16 @@ cursor.execute(
     (2, '1234567890', '{HASHED_CODE_2}', 'f')
     """)
 cursor.execute(
-    """INSERT INTO permissions (user_id, permission) VALUES
+    """INSERT INTO users_permissions (user_id, permission) VALUES
     (1, 'view_api_keys'),
     (1, 'revoke_api_keys'),
     (1, 'manipulate_permissions'),
     (1, 'list_permissions'),
-    (1, 'change_password')
+    (1, 'change_password'),
+    (1, 'sample_perm_one'),
+    (1, 'sample_perm_two'),
+    (1, 'sample_perm_three'),
+    (1, 'sample_permission')
     """)
 cursor.execute(
     """INSERT INTO api_permissions (api_key_hash, permission) VALUES

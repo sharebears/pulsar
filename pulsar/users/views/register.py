@@ -10,7 +10,6 @@ from pulsar.invites.models import Invite
 from pulsar import db, APIException
 from pulsar.utils import USERNAME_REGEX, PASSWORD_REGEX, validate_data
 from pulsar.users.models import User
-from pulsar.users.schemas import user_schema
 
 app = flask.current_app
 

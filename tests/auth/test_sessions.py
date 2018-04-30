@@ -19,7 +19,7 @@ def populate_db(client):
 
 def test_new_session(app):
     with app.app_context():
-        session = Session.generate_session(2, '127.0.0.2')
+        session = Session.generate_session(2, '127.0.0.2', 'ua-example')
         assert session.ip == '127.0.0.2'
         assert session.user_id == 2
 
@@ -29,7 +29,7 @@ def test_session_collision(app, monkeypatch):
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_3])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     with app.app_context():
-        session = Session.generate_session(2, '127.0.0.2')
+        session = Session.generate_session(2, '127.0.0.2', 'ua-example')
         assert session.hash != CODE_2[:10]
         assert session.csrf_token != CODE_2
         with pytest.raises(StopIteration):

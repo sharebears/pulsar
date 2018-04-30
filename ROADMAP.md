@@ -3,6 +3,7 @@
 - [x] Documentation outline via Sphinx
 - [ ] See Documentation Roadmap
 - [ ] Rate Limiting
+- [ ] Make Volup validators out of registration validators
 - [ ] User manipulation (enable/disable/lock)
 - [ ] User Classes, advanced permissioning
 - [ ] Forums
@@ -135,6 +136,9 @@
 ## Scheduler
 - [ ] Schedule tasks with Celery
 - [ ] schedule.py per-module
+- [ ] Session expiry
+- [ ] Invite expiry
+- [ ] Inactivity disables
 
 ## RSS Feeds
 - [ ] Later

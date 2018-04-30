@@ -11,7 +11,8 @@ class APIPermissionSchema(ma.ModelSchema):
 class SessionSchema(ma.ModelSchema):
     class Meta:
         model = Session
-        fields = ('hash', 'last_used', 'ip', 'user_agent', 'csrf_token', 'active')
+        fields = ('hash', 'last_used', 'ip', 'user_agent',
+                  'csrf_token', 'persistent', 'active')
 
 
 class APIKeySchema(ma.ModelSchema):
