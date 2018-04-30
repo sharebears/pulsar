@@ -16,7 +16,7 @@ class _500Exception(APIException):
 
 
 class _405Exception(APIException):
-    def __init__(self, resource='Resource'):
+    def __init__(self):
         super().__init__(
             message='Method not allowed for this resource.',
             status_code=404)
@@ -41,9 +41,9 @@ class _403Exception(APIException):
 
 
 class _401Exception(APIException):
-    def __init__(self, message='Invalid authorization.'):
+    def __init__(self, message=None):
         super().__init__(
-            message=message,
+            message=(message or 'Invalid authorization.'),
             status_code=401)
 
 
