@@ -1,11 +1,11 @@
 import flask
 from .. import bp
 from ..models import User, UserPermission
+from ..validators import permissions_dict
 from voluptuous import Schema, Optional
 from pulsar import db, APIException
 from pulsar.utils import (choose_user, assert_permission, require_permission,
-                          get_all_permissions, validate_data, bool_get,
-                          permissions_dict)
+                          get_all_permissions, validate_data, bool_get)
 
 app = flask.current_app
 

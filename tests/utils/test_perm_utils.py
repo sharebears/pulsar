@@ -4,7 +4,8 @@ import pytest
 from voluptuous import Invalid
 from conftest import add_permissions, check_json_response
 from pulsar import db
-from pulsar.utils import assert_user, assert_permission, permissions_list
+from pulsar.utils import assert_user, assert_permission
+from pulsar.auth.validators import permissions_list
 
 
 @pytest.fixture(autouse=True)

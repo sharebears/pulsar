@@ -2,21 +2,24 @@
 
 - [x] Documentation outline via Sphinx
 - [ ] See Documentation Roadmap
+- [ ] Rate Limiting
+- [ ] User manipulation (enable/disable/lock)
+- [ ] User Classes, advanced permissioning
 - [ ] Forums
 
 ## Documentation Roadmap
 ### Users
-- [ ] Users
-- [ ] Registration
-- [ ] Settings
-- [ ] Permissions
+- [x] Users
+- [x] Registration
+- [x] Settings
+- [x] Permissions
+### Invites
+- [x] Invites
 ### Authentication
 - [ ] Login
 - [ ] Sessions
 - [ ] API Keys
-### Invites
-- [ ] Invites
-- [ ] Invitees
+
 
 # TODO
 

@@ -3,9 +3,9 @@ from voluptuous import Schema, Optional
 from .. import bp
 from ..models import APIKey, APIPermission
 from ..schemas import api_key_schema, multiple_api_key_schema
+from ..validators import permissions_list
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import (require_permission, validate_data, choose_user,
-                          bool_get, permissions_list)
+from pulsar.utils import require_permission, validate_data, choose_user, bool_get
 
 app = flask.current_app
 

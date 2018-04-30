@@ -2,7 +2,6 @@ import flask
 from functools import wraps
 from voluptuous import Invalid
 from pulsar import APIException
-from pulsar.utils import get_all_permissions
 
 
 def validate_data(schema):
@@ -47,31 +46,3 @@ def bool_get(val):
         elif val == '0' or val.lower() == 'false':
             return False
     raise Invalid('boolean must be "1", "true", "0", or "false" (case insensitive)')
-
-
-def permissions_list(val):
-    """
-    Takes a list of items and asserts that all of them are in the permissions list of
-    a user.
-    """
-    if isinstance(val, list):
-        user_permissions = [perm.permission for perm in flask.g.user.permissions]
-        for perm in val:
-            if perm not in user_permissions:
-                break
-        else:
-            return val
-    raise Invalid('permissions must be in the user\'s permissions list')
-
-
-def permissions_dict(val):
-    permissions = get_all_permissions()
-    if isinstance(val, dict):
-        for perm_name, action in val.items():
-            if perm_name not in permissions:
-                raise Invalid(f'{perm_name} is not a valid permission')
-            elif not isinstance(action, bool):
-                raise Invalid('permission actions must be booleans')
-    else:
-        raise Invalid('input value must be a dictionary')
-    return val
