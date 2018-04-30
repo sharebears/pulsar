@@ -2,7 +2,6 @@ import pulsar.invites.models  # noqa
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, and_
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 from pulsar import db
 
@@ -21,9 +20,7 @@ class User(db.Model):
     api_keys = relationship('APIKey', back_populates='user')
     permissions = relationship('UserPermission')
 
-    inviter = relationship(
-        'User', remote_side=id, back_populates='invitees', uselist=False)
-    invitees = relationship('User', back_populates='inviter')
+    inviter = relationship('User', uselist=False)
     invites_sent = relationship(
         'Invite', back_populates='inviter', foreign_keys='Invite.inviter_id')
 
@@ -45,10 +42,6 @@ class User(db.Model):
     def from_username(cls, username):
         username = username.lower()
         return cls.query.filter(func.lower(cls.username) == username).one_or_none()
-
-    @hybrid_property
-    def active_invites(self):
-        return [invite for invite in self.invites_sent if invite.active]
 
     def set_password(self, password):
         self.passhash = generate_password_hash(password)

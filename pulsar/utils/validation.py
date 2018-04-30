@@ -1,4 +1,3 @@
-import json
 import flask
 from functools import wraps
 from voluptuous import Invalid
@@ -27,12 +26,8 @@ def validate_data(schema):
 
 
 def get_request_data():
-    """
-    Turn the incoming json data into a dictionary and remove the CSRF key if present.
-    """
-    # data = json.loads(flask.request.get_data() or b'{}')
+    "Turn the incoming json data into a dictionary and remove the CSRF key if present."
     data = flask.request.get_json() or {}
-    print(data)
     if 'csrf_token' in data:
         del data['csrf_token']
     return data
@@ -40,10 +35,9 @@ def get_request_data():
 
 def bool_get(val):
     """
-    Takes a string value and returns a boolean based on the input,
-    since GET requests always come as strings.
-    '1' and 'true' return True, while '0' and 'false' return False.
-    Any other input raises an Invalid exception.
+    Takes a string value and returns a boolean based on the input, since GET requests
+    always come as strings. '1' and 'true' return True, while '0' and 'false'
+    return False. Any other input raises an Invalid exception.
     """
     if isinstance(val, bool):
         return val

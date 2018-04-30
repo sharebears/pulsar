@@ -125,7 +125,7 @@ def test_view_all_keys(app, authed_client):
 def test_view_empty_api_keys(app, authed_client):
     add_permissions(app, 'view_api_keys', 'view_api_keys_others')
     response = authed_client.get(
-        '/api_keys/user/2', query_string=dict(include_dead=False))
+        '/api_keys/user/2', query_string={'include_dead': False})
     check_json_response(response, [], list_=True, strict=True)
 
 

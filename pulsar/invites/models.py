@@ -39,3 +39,10 @@ class Invite(db.Model):
         if not include_dead:
             query = query.filter(cls.active == 't')
         return query.one_or_none()
+
+    @classmethod
+    def from_inviter(cls, user_id, include_dead=False):
+        query = cls.query.filter(cls.inviter_id == user_id)
+        if not include_dead:
+            query = query.filter(cls.active == 't')
+        return query.all()

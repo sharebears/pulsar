@@ -55,7 +55,7 @@ def view_permissions(user_id=None, all=False):
 
     :query boolean all: whether or not to return all available permissions
 
-    :>jsonarr list response: a list of permission name strings
+    :>json list response: a list of permission name strings
 
     :statuscode 200: view successful
     :statuscode 403: user lacks sufficient permissions to view permissions
@@ -120,7 +120,7 @@ def change_permissions(user_id, permissions):
         the permission name as the key and a boolean (True = add, False = remove)
         as the value.
 
-    :>jsonarr list response: a list of permission name strings
+    :>json list response: a list of permission name strings
 
     :statuscode 200: permissions successfully changed
     :statuscode 400: attempted removal of a nonexistent permission or addition of

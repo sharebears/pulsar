@@ -101,7 +101,7 @@ def test_view_all_keys(app, authed_client):
 def test_view_empty_sessions(app, authed_client):
     add_permissions(app, 'view_sessions', 'view_sessions_others')
     response = authed_client.get(
-        '/sessions/user/2', query_string=dict(include_dead=False))
+        '/sessions/user/2', query_string={'include_dead': False})
     check_json_response(response, [], list_=True, strict=True)
 
 

@@ -60,7 +60,7 @@ def change_password(existing_password, new_password, user_id=None):
     :json string new_password: User's new password. Must be 12+ characters and contain
         at least one letter, one number, and one special character.
 
-    :>jsonarr string response: success message
+    :>json string response: success message
 
     :statuscode 200: password successfully changed
     :statuscode 400: password unsuccessfully changed

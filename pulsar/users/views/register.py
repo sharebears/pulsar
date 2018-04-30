@@ -40,7 +40,7 @@ def register(username, password, email, code):
     .. sourcecode:: http
 
        POST /register HTTP/1.1
-       Host: puls.ar
+       Host: pul.sar
        Accept: application/json
        Content-Type: application/json
 

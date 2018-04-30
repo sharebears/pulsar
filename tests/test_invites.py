@@ -13,10 +13,10 @@ def hex_generator(_):
 @pytest.fixture(autouse=True)
 def populate_db(client):
     db.engine.execute(
-        f"""INSERT INTO invites (inviter_id, email, code, active) VALUES
-        (1, 'bright@puls.ar', '{CODE_1}', 't'),
-        (1, 'bright@quas.ar', '{CODE_2}', 'f'),
-        (2, 'bright@puls.ar', '{CODE_3}', 't')
+        f"""INSERT INTO invites (inviter_id, invitee_id, email, code, active) VALUES
+        (1, NULL, 'bright@puls.ar', '{CODE_1}', 't'),
+        (1, 2, 'bright@quas.ar', '{CODE_2}', 'f'),
+        (2, NULL, 'bright@puls.ar', '{CODE_3}', 't')
          """)
     yield
     db.engine.execute("DELETE FROM invites")
@@ -41,12 +41,27 @@ def test_invite_collision(app, monkeypatch):
             'email': 'bright@puls.ar',
             'invitee': None,
             }),
+        (CODE_2, {
+            'active': False,
+            'code': CODE_2,
+            'email': 'bright@quas.ar',
+            }),
         ('abcdef', 'Invite abcdef does not exist.')
     ])
 def test_view_invite(app, authed_client, code, expected):
     add_permissions(app, 'view_invites')
     response = authed_client.get(f'/invites/{code}')
     check_json_response(response, expected)
+
+
+def test_view_invite_embedded_invitee(app, authed_client):
+    add_permissions(app, 'view_invites')
+    response = authed_client.get(f'/invites/{CODE_2}')
+    response = response.get_json()
+    assert 'response' in response and 'invitee' in response['response']
+    invitee = response['response']['invitee']
+    assert 'id' in invitee and invitee['id'] == 2
+    assert 'username' in invitee and invitee['username'] == 'paffu'
 
 
 def test_view_invites(app, authed_client):
@@ -58,6 +73,26 @@ def test_view_invites(app, authed_client):
         'email': 'bright@puls.ar',
         'invitee': None,
         }, list_=True)
+    assert len(response.get_json()['response']) == 1
+    assert response.status_code == 200
+
+
+def test_view_invites_include_dead(app, authed_client):
+    add_permissions(app, 'view_invites')
+    response = authed_client.get('/invites', query_string={'include_dead': True})
+    assert len(response.get_json()['response']) == 2
+    assert response.status_code == 200
+
+
+def test_view_invites_used(app, authed_client):
+    add_permissions(app, 'view_invites')
+    response = authed_client.get('/invites', query_string={'used': True})
+    check_json_response(response, {
+        'active': False,
+        'code': CODE_2,
+        'email': 'bright@quas.ar',
+        }, list_=True)
+    assert len(response.get_json()['response']) == 1
     assert response.status_code == 200
 
 
@@ -74,6 +109,7 @@ def test_invite_user_with_code(app, authed_client):
         '/invites', data=json.dumps({'email': 'bright@puls.ar'}),
         content_type='application/json')
     user = User.from_id(1)
+    print(response.get_json())
     check_json_response(response, {
         'active': True,
         'email': 'bright@puls.ar',
@@ -115,22 +151,6 @@ def test_revoke_invite(app, authed_client, code, expected, invites):
     user = User.from_id(1)
     check_json_response(response, expected)
     assert user.invites == invites
-
-
-def test_view_invitees(app, authed_client):
-    add_permissions(app, 'view_invites')
-    response = authed_client.get('/invitees')
-    check_json_response(response, {
-        'id': 2, 'username': 'paffu'
-        }, list_=True)
-    assert response.status_code == 200
-
-
-def test_view_invitees_blank(app, authed_client):
-    add_permissions(app, 'view_invites', 'view_invites_others')
-    response = authed_client.get('/invitees/user/2')
-    check_json_response(response, [], list_=True, strict=True)
-    assert response.status_code == 200
 
 
 @pytest.mark.parametrize(
