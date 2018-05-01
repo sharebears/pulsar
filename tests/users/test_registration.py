@@ -38,7 +38,7 @@ def test_register_with_code(app, client, code, status_code, expected):
 @pytest.mark.parametrize(
     'username, status_code, expected', [
         ('bright', 200, {'username': 'bright'}),
-        ('lights', 400, 'Another user already has the username `lights`.'),
+        ('lights', 400, 'Another user already has the username lights.'),
     ])
 def test_registration(app, client, username, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = False

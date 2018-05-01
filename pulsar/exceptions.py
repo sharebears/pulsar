@@ -1,4 +1,5 @@
 class APIException(Exception):
+    "General exception thrown by an API view, contains a message for the JSON response."
     def __init__(self, message, status_code=400):
         super().__init__(self)
         self.message = message
@@ -30,6 +31,11 @@ class _404Exception(APIException):
 
 
 class _403Exception(APIException):
+    """
+    Occurrences of this exception are (to be) logged. This exception is also
+    capable of throwing a 404 to masquerade hidden endpoints. To do so, set
+    the masquerade param to True.
+    """
     def __init__(self, masquerade=False, message=None):
         super().__init__(
             message=(message or 'You do not have permission to access this resource.'),

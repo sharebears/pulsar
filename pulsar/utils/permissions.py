@@ -9,9 +9,10 @@ app = flask.current_app
 
 def require_auth(func):
     """
-    If the site is private, this decorator requires that flask.g.user exist.
+    If the site is private, this decorator requires that ``flask.g.user`` exist.
     If the site is public, nothing happens.
-    Note: flask.g.user can be None with this decorator, unlike in require_permission.
+
+    Note: ``flask.g.user`` can be None with this decorator, unlike in require_permission.
     """
     @wraps(func)
     def new_function(*args, **kwargs):
@@ -23,10 +24,14 @@ def require_auth(func):
 
 def require_permission(permission):
     """
-    Require a user to have a specified permission to view the resource,
-    otherwise a 404 Exception is raised.
-    If the user does not exist (no authentication), a 403 Exception
-    is raised (runs 403 notifications), but it masquerades as a 404 Exception to the user.
+    Requires a user to have the specified permission to access the view function.
+
+    :param str permission: The permission required to access the API endpoint.
+
+    :raises _403Exception: If the user does not exist or does not have enough
+        permission to view the resource. This 403 is masqueraded as a 404.
+    :raises _403Exception: If an API Key is used and does not have enough permissions to
+        access the resource.
     """
     def wrapper(func):
         @wraps(func)
@@ -56,17 +61,21 @@ def get_all_permissions():
     return permissions
 
 
-def choose_user(user_id, permission=None):
+def choose_user(user_id, permission):
     """
-    Takes a user_id and an optional permission. If the user_id is specified,
-    the user with that user id is fetched and then returned if the requesting user
-    has the given permission. Otherwise, the requester's user is returned.
-    This function needs to be behind a @require_permission view.
-    Raises a 403 Exception if the requesting user does not have the specified permission.
-    Raises a 404 Exception if the requested user does not exist.
+    Takes a user_id and a permission. If the user_id is specified, the user with that
+    user id is fetched and then returned if the requesting user has the given permission.
+    Otherwise, the requester's user is returned. This function needs to be behind a
+    ``@require_permission`` decorated view.
+
+    :param int user_id: The user_id of the requested user.
+    :param str permission: The permission needed to get the other user's user object.
+
+    :raises _403Exception: The requesting user does not have the specified permission.
+    :raises _404Exception: The requested user does not exist.
     """
     if user_id and flask.g.user.id != user_id:
-        if permission and flask.g.user.has_permission(permission):
+        if flask.g.user.has_permission(permission):
             user = User.from_id(user_id)
             if user:
                 return user

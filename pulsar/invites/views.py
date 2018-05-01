@@ -14,8 +14,8 @@ app = flask.current_app
 @require_permission('view_invites')
 def view_invite(code):
     """
-    View the details of an invite. Requires the `view_invites` permission.
-    Requires the `view_invites_others` permission to view another user's invites.
+    View the details of an invite. Requires the ``view_invites`` permission.
+    Requires the ``view_invites_others`` permission to view another user's invites.
 
     .. :quickref: Invite; View an active invite.
 
@@ -75,7 +75,7 @@ def view_invites(used, include_dead, user_id=None):
     """
     View sent invites. If a user_id is specified, only invites sent by that user
     will be returned, otherwise only your invites are returned. If requester has
-    the `view_invites_others` permission, they can view sent invites of another user.
+    the ``view_invites_others`` permission, they can view sent invites of another user.
 
     .. :quickref: Invite; View multiple invites.
 
@@ -151,7 +151,7 @@ user_invite_schema = Schema({
 @validate_data(user_invite_schema)
 def invite_user(email):
     """
-    Sends an invite to the provided email address. Requires the `send_invites`
+    Sends an invite to the provided email address. Requires the ``send_invites``
     permission. If the site is open registration, this endpoint will raise a
     400 Exception.
 
@@ -220,8 +220,8 @@ def revoke_invite(code):
     """
     Revokes an active invite code, preventing it from being used. The
     invite is returned to the user's account. Requires the
-    `revoke_invites` permission to revoke one's own sent invite, and the
-    `revoke_invites_others` permission to revoke another user's invites.
+    ``revoke_invites`` permission to revoke one's own sent invite, and the
+    ``revoke_invites_others`` permission to revoke another user's invites.
 
     .. :quickref: Invite; Revoke an active invite.
 

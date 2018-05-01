@@ -20,6 +20,7 @@ def populate_db(client):
         (203, 'success'),
         (400, 'failed'),
         (404, 'failed'),
+        (500, 'failed'),
     ])
 def test_status_string(app, authed_client, status_code, status):
     @app.route('/test_endpoint')

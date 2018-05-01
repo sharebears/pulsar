@@ -23,9 +23,9 @@ password_change_schema = Schema({
 @validate_data(password_change_schema)
 def change_password(existing_password, new_password, user_id=None):
     """
-    Change a user's password. Requires the `change_password` permission.
-    Requires the `change_password_others` permission to change another user's
-    password, which can be done by specifying a `user_id`.
+    Change a user's password. Requires the ``change_password`` permission.
+    Requires the ``change_password_others`` permission to change another user's
+    password, which can be done by specifying a ``user_id``.
 
     .. :quickref: Password; Change password.
 
@@ -56,7 +56,7 @@ def change_password(existing_password, new_password, user_id=None):
        }
 
     :json string existing_password: User's existing password, not needed
-        if setting another user's password with `change_password_others` permission.
+        if setting another user's password with ``change_password_others`` permission.
     :json string new_password: User's new password. Must be 12+ characters and contain
         at least one letter, one number, and one special character.
 

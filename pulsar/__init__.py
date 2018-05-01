@@ -27,7 +27,7 @@ def create_app(config):
 def register_blueprints(app):
     # Every sub-view needs to be imported to populate the blueprint.
     # If this is not done, we will have empty blueprints.
-    # If we register every module with the `bp` attribute normally,
+    # If we register every module with the ``bp`` attribute normally,
     # we would have a lot of duplicate routes, which Werkzeug doesn't filter.
     for name in find_modules('pulsar', recursive=True):
         if 'view' in name:

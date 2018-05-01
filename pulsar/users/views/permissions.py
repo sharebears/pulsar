@@ -21,10 +21,10 @@ view_permissions_schema = Schema({
 def view_permissions(user_id=None, all=False):
     """
     View the permissions given to a user. Defaults to self if no user_id
-    is provided. Requires the `list_permissions` permission to view
-    one's own permissions list, and the `manipulate_permissions` permission
+    is provided. Requires the ``list_permissions`` permission to view
+    one's own permissions list, and the ``manipulate_permissions`` permission
     to view another's permissions list. One can also view all available
-    permissions, if they have the `manipulate_permissions` permission.
+    permissions, if they have the ``manipulate_permissions`` permission.
 
     .. :quickref: Permission; View available permissions.
 
@@ -80,7 +80,7 @@ change_permissions_schema = Schema({
 def change_permissions(user_id, permissions):
     """
     Manually change the permissions assignments of a user.
-    Requires the `manipulate_permissions` permission.
+    Requires the ``manipulate_permissions`` permission.
 
     .. :quickref: Permission; Change assigned permissions.
 

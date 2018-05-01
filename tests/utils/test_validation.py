@@ -1,3 +1,4 @@
+import flask
 import pytest
 from voluptuous import Schema, Invalid
 from conftest import check_json_response
@@ -29,3 +30,13 @@ def test_bool_get_invalid():
     for input_ in [1, 0, 'Yes', 'No', '11']:
         with pytest.raises(Invalid):
             bool_get(input_)
+
+
+def test_invalid_json(app, authed_client):
+    @app.route('/test_endpoint', methods=['POST'])
+    @validate_data(Schema({'test': int}))
+    def test_endpoint():
+        return flask.jsonify('completed')
+    response = authed_client.post('/test_endpoint', data=b'not-a-json')
+    check_json_response(
+        response, 'Unable to decode data. Please make sure you are sending valid JSON.')

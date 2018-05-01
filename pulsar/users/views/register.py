@@ -99,7 +99,7 @@ def validate_username(username):
     """
     username = username.lower()
     if (User.query.filter(func.lower(User.username) == username).one_or_none()):
-        raise APIException(f'Another user already has the username `{username}`.')
+        raise APIException(f'Another user already has the username {username}.')
 
 
 def validate_invite_code(code):
