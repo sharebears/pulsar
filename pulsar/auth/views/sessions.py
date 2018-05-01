@@ -8,14 +8,6 @@ from pulsar.utils import require_permission, validate_data, choose_user, bool_ge
 
 app = flask.current_app
 
-view_all_sessions_schema = Schema({
-    Optional('include_dead', default=True): bool_get,
-    })
-
-revoke_sessions_schema = Schema({
-    'identifier': str,
-    }, required=True)
-
 
 @bp.route('/sessions/<hash>', methods=['GET'])
 @require_permission('view_sessions')
@@ -28,6 +20,11 @@ def view_session(hash):
     raise _404Exception(f'Session {hash}')
 
 
+view_all_sessions_schema = Schema({
+    Optional('include_dead', default=True): bool_get,
+    })
+
+
 @bp.route('/sessions', methods=['GET'])
 @bp.route('/sessions/user/<int:user_id>', methods=['GET'])
 @require_permission('view_sessions')
@@ -38,6 +35,11 @@ def view_all_sessions(include_dead, user_id=None):
     if not include_dead:
         sessions = [sess for sess in sessions if sess.active]
     return multiple_session_schema.jsonify(sessions)
+
+
+revoke_sessions_schema = Schema({
+    'identifier': str,
+    }, required=True)
 
 
 @bp.route('/sessions', methods=['DELETE'])
