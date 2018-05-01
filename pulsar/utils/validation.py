@@ -31,6 +31,8 @@ def get_request_data():
     """
     Turn the incoming json data into a dictionary and remove the CSRF key if present.
 
+    :return: The unserialized ``dict`` sent by the requester.
+
     :raises APIException: If the sent data cannot be decoded from JSON.
     """
     try:

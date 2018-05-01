@@ -52,6 +52,7 @@ def view_session(hash):
     :>jsonarr string csrf_token: The csrf token of the session.
     :>jsonarr string hash: The identification hash of the session.
     :>jsonarr string ip: The last IP to access the session.
+    :>jsonarr string last_used: The timestamp at which the session was last accessed.
     :>jsonarr boolean persistent: The persistence of the session.
     :>jsonarr string user-agent: The last User Agent to access the session.
 
@@ -131,6 +132,7 @@ def view_all_sessions(include_dead, user_id=None):
     :>jsonarr string csrf_token: The csrf token of the session.
     :>jsonarr string hash: The identification hash of the session.
     :>jsonarr string ip: The last IP to access the session.
+    :>jsonarr string last_used: The timestamp at which the session was last accessed.
     :>jsonarr boolean persistent: The persistence of the session.
     :>jsonarr string user-agent: The last User Agent to access the session.
 

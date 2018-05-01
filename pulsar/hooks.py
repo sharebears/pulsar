@@ -133,11 +133,12 @@ def parse_key(headers):
 
 def check_csrf():
     """
-    Checks the authorization key in a HTTP request, and compares it to the
-    authorization key of the session/api key used in the request. This function
-    will run and potentially raise an exception on every POST/PUT/DELETE request,
-    even if the endpoint does not exist. That is intentional, so hidden endpoints
-    are masqueraded from curious users.
+    Checks the CSRF token in a HTTP request, and compares it to the authorization key
+    of the session/api key used in the request. This function will run and potentially
+    raise an exception on every POST/PUT/DELETE request, even if the endpoint does not
+    exist. That is intentional, so hidden endpoints are masqueraded from curious users.
+
+    **This function is extremely important, please do not fuck with it.**
 
     :raises APIException: If input is not JSON serializable.
     :raises _403Exception: If user has incorrect csrf_token.

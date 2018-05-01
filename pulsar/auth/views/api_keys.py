@@ -9,28 +9,69 @@ from pulsar.utils import require_permission, validate_data, choose_user, bool_ge
 
 app = flask.current_app
 
-view_all_api_keys_schema = Schema({
-    Optional('include_dead', default=True): bool_get,
-    })
-
-create_api_key_schema = Schema({
-    Optional('permissions', default=[]): permissions_list,
-    })
-
-revoke_api_key_schema = Schema({
-    'identifier': str,
-    }, required=True)
-
 
 @bp.route('/api_keys/<hash>', methods=['GET'])
 @require_permission('view_api_keys')
 def view_api_key(hash):
+    """
+    View info of an API key. Requires the ``view_api_keys`` permission to view
+    one's own API keys, and the ``view_api_keys_others`` permission to view
+    the API keys of another user.
+
+    .. :quickref: APIKey; View an API key.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       POST /api_keys/abcdefghij HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": {
+           "active": true,
+           "hash": "abcdefghij",
+           "ip": "127.0.0.1",
+           "last_used": "1970-01-01T00:00:00.000001+00:00",
+           "user-agent": "curl/7.59.0",
+           "permissions": [
+             "view_api_keys",
+             "send_invites"
+           ]
+         }
+       }
+
+    :>jsonarr boolean active: Whether or not the API key is usable.
+    :>jsonarr string hash: The identification hash of the API key.
+    :>jsonarr string ip: The last IP to access the API key.
+    :>jsonarr string user-agent: The last User Agent to access the API key.
+    :>jsonarr list permissions: A list of permissions allowed to the API key,
+        encoded as ``str``.
+
+    :statuscode 200: Successfully viewed API key.
+    :statuscode 404: API key does not exist.
+    """
     api_key = APIKey.from_hash(hash, include_dead=True)
     if api_key:
         is_own_key = api_key.user_id == flask.g.user.id
         if is_own_key or flask.g.user.has_permission('view_api_keys_others'):
             return api_key_schema.jsonify(api_key)
     raise _404Exception(f'API Key {hash}')
+
+
+view_all_api_keys_schema = Schema({
+    Optional('include_dead', default=True): bool_get,
+    })
 
 
 @bp.route('/api_keys', methods=['GET'])
@@ -46,6 +87,11 @@ def view_all_api_keys(include_dead, user_id=None):
     if not include_dead:
         api_keys = [key for key in api_keys if key.active]
     return multiple_api_key_schema.jsonify(api_keys)
+
+
+create_api_key_schema = Schema({
+    Optional('permissions', default=[]): permissions_list,
+    })
 
 
 @bp.route('/api_keys', methods=['POST'])
@@ -71,6 +117,11 @@ def create_api_key(permissions):
         'key': raw_key,
         'permissions': permissions,
         })
+
+
+revoke_api_key_schema = Schema({
+    'identifier': str,
+    }, required=True)
 
 
 @bp.route('/api_keys', methods=['DELETE'])
