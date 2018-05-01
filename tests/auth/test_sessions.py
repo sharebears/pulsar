@@ -55,7 +55,7 @@ def test_get_nonexistent_session(app):
         assert not session
 
 
-def test_session_revoke_all(app):
+def test_session_expire_all(app):
     with app.app_context():
         Session.expire_all_of_user(1)
         api_key = Session.from_hash('abcdefghij', include_dead=True)
@@ -107,18 +107,18 @@ def test_view_empty_sessions(app, authed_client):
 
 @pytest.mark.parametrize(
     'identifier, message', [
-        ('abcdefghij', 'Session abcdefghij has been revoked.'),
-        ('1234567890', 'Session 1234567890 is already revoked.'),
+        ('abcdefghij', 'Session abcdefghij has been expired.'),
+        ('1234567890', 'Session 1234567890 is already expired.'),
         ('nonexisten', 'Session nonexisten does not exist.'),
     ])
-def test_revoke_session(app, authed_client, identifier, message):
-    add_permissions(app, 'revoke_sessions', 'revoke_sessions_others')
+def test_expire_session(app, authed_client, identifier, message):
+    add_permissions(app, 'expire_sessions', 'expire_sessions_others')
     response = authed_client.delete('/sessions', json={'identifier': identifier})
     check_json_response(response, message)
 
 
-def test_revoke_session_not_mine(app, authed_client):
-    add_permissions(app, 'revoke_sessions')
+def test_expire_session_not_mine(app, authed_client):
+    add_permissions(app, 'expire_sessions')
     response = authed_client.delete('/sessions', json={'identifier': '1234567890'})
     check_json_response(response, 'Session 1234567890 does not exist.')
 
@@ -128,10 +128,10 @@ def test_revoke_session_not_mine(app, authed_client):
         '/sessions/all',
         '/sessions/all/user/2',
     ])
-def test_revoke_all_sessions(app, authed_client, endpoint):
-    add_permissions(app, 'revoke_sessions', 'revoke_sessions_others')
+def test_expire_all_sessions(app, authed_client, endpoint):
+    add_permissions(app, 'expire_sessions', 'expire_sessions_others')
     response = authed_client.delete(endpoint)
-    check_json_response(response, 'All sessions have been revoked.')
+    check_json_response(response, 'All sessions have been expired.')
 
 
 @pytest.mark.parametrize(

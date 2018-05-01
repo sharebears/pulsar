@@ -13,6 +13,6 @@ PERMISSIONS = [
     'view_api_keys_others',
     'view_sessions',
     'view_sessions_others',
-    'revoke_sessions',
-    'revoke_sessions_others',
+    'expire_sessions',
+    'expire_sessions_others',
 ]

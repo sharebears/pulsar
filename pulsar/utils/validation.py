@@ -34,7 +34,8 @@ def get_request_data():
     :raises APIException: If the sent data cannot be decoded from JSON.
     """
     try:
-        data = json.loads(flask.request.get_data())
+        raw_data = flask.request.get_data()
+        data = json.loads(raw_data) if raw_data else {}
     except ValueError:
         raise APIException(
             'Unable to decode data. Please make sure you are sending valid JSON.')
