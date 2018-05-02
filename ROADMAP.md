@@ -1,26 +1,12 @@
 # CURRENT ROADMAP
 
 - [x] Documentation outline via Sphinx
-- [ ] See Documentation Roadmap
-- [ ] Rate Limiting
-- [ ] Make Volup validators out of registration validators
+- [x] Document existing endpoints
+- [x] Make Volup validators out of registration validators
 - [ ] User manipulation (enable/disable/lock)
 - [ ] User Classes, advanced permissioning
+- [ ] Rate Limiting
 - [ ] Forums
-
-## Documentation Roadmap
-### Users
-- [x] Users
-- [x] Registration
-- [x] Settings
-- [x] Permissions
-### Invites
-- [x] Invites
-### Authentication
-- [ ] Login
-- [ ] Sessions
-- [ ] API Keys
-
 
 # TODO
 
