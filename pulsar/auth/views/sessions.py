@@ -170,6 +170,7 @@ def expire_session(identifier):
        DELETE /sessions HTTP/1.1
        Host: pul.sar
        Accept: application/json
+       Content-Type: application/json
 
        {
          "identifier": "abcdefghij"
