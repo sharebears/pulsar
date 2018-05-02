@@ -60,11 +60,11 @@ def change_password(existing_password, new_password, user_id=None):
     :json string new_password: User's new password. Must be 12+ characters and contain
         at least one letter, one number, and one special character.
 
-    :>json string response: success message
+    :>json string response: Success message
 
-    :statuscode 200: password successfully changed
-    :statuscode 400: password unsuccessfully changed
-    :statuscode 403: user does not have permission to change user's password
+    :statuscode 200: Password successfully changed
+    :statuscode 400: Password unsuccessfully changed
+    :statuscode 403: User does not have permission to change user's password
     """
     user = choose_user(user_id, 'change_password_others')
     if flask.g.user == user and not user.check_password(existing_password):

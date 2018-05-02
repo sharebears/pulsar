@@ -10,7 +10,7 @@ def validate_data(schema):
     Compare a request's form data to a provided Voluptuous schema.
     If the request data is invalid, an APIException is raised.
 
-    :param Schema schema: A ``voluptuous`` schema object.
+    :param Schema schema: A voluptuous ``Schema`` object.
     """
     def wrapper(func):
         @wraps(func)

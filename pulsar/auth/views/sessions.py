@@ -48,16 +48,16 @@ def view_session(hash):
          }
        }
 
-    :>jsonarr boolean active: Whether or not the session is usable.
-    :>jsonarr string csrf_token: The csrf token of the session.
-    :>jsonarr string hash: The identification hash of the session.
-    :>jsonarr string ip: The last IP to access the session.
-    :>jsonarr string last_used: The timestamp at which the session was last accessed.
-    :>jsonarr boolean persistent: The persistence of the session.
-    :>jsonarr string user-agent: The last User Agent to access the session.
+    :>jsonarr boolean active: Whether or not the session is usable
+    :>jsonarr string csrf_token: The csrf token of the session
+    :>jsonarr string hash: The identification hash of the session
+    :>jsonarr string ip: The last IP to access the session
+    :>jsonarr string last_used: The timestamp at which the session was last accessed
+    :>jsonarr boolean persistent: The persistence of the session
+    :>jsonarr string user-agent: The last User Agent to access the session
 
-    :statuscode 200: Successfully viewed session.
-    :statuscode 404: Session does not exist.
+    :statuscode 200: Successfully viewed session
+    :statuscode 404: Session does not exist
     """
     session = Session.from_hash(hash, include_dead=True)
     if session:
@@ -124,21 +124,21 @@ def view_all_sessions(include_dead, user_id=None):
          ]
        }
 
-    :query boolean include_dead: Whether or not to include dead sessions.
+    :query boolean include_dead: Whether or not to include dead sessions
 
-    :>json list response: A list of sessions.
+    :>json list response: A list of sessions
 
-    :>jsonarr boolean active: Whether or not the session is usable.
-    :>jsonarr string csrf_token: The csrf token of the session.
-    :>jsonarr string hash: The identification hash of the session.
-    :>jsonarr string ip: The last IP to access the session.
-    :>jsonarr string last_used: The timestamp at which the session was last accessed.
-    :>jsonarr boolean persistent: The persistence of the session.
-    :>jsonarr string user-agent: The last User Agent to access the session.
+    :>jsonarr boolean active: Whether or not the session is usable
+    :>jsonarr string csrf_token: The csrf token of the session
+    :>jsonarr string hash: The identification hash of the session
+    :>jsonarr string ip: The last IP to access the session
+    :>jsonarr string last_used: The timestamp at which the session was last accessed
+    :>jsonarr boolean persistent: The persistence of the session
+    :>jsonarr string user-agent: The last User Agent to access the session
 
-    :statuscode 200: Successfully viewed sessions.
-    :statuscode 403: User does not have permission to view sessions of another user.
-    :statuscode 404: User does not exist.
+    :statuscode 200: Successfully viewed sessions
+    :statuscode 403: User does not have permission to view sessions of another user
+    :statuscode 404: User does not exist
     """
     user = choose_user(user_id, 'view_sessions_others')
     sessions = user.sessions
@@ -189,13 +189,13 @@ def expire_session(identifier):
          "response": "Session abcdefghij has been expired."
        }
 
-    :<json string identifier: The identification hash of the to-be expired session.
+    :<json string identifier: The identification hash of the to-be expired session
 
-    :>json string response: Status message of the response.
+    :>json string response: Status message of the response
 
-    :statuscode 200: Successfully expired session.
-    :statuscode 400: Session is already expired.
-    :statuscode 404: Session does not exist.
+    :statuscode 200: Successfully expired session
+    :statuscode 400: Session is already expired
+    :statuscode 404: Session does not exist
     """
     session = Session.from_hash(identifier, include_dead=True)
     if session:
@@ -241,13 +241,13 @@ def expire_all_sessions(user_id=None):
          "response": "All sessions have been expired."
        }
 
-    :<json string identifier: The identification hash of the to-be expired session.
+    :<json string identifier: The identification hash of the to-be expired session
 
-    :>json string response: Status message of the response.
+    :>json string response: Status message of the response
 
-    :statuscode 200: Successfully expired all sessions.
-    :statuscode 403: User does not have permission to expire sessions of another user.
-    :statuscode 404: User does not exist.
+    :statuscode 200: Successfully expired all sessions
+    :statuscode 403: User does not have permission to expire sessions of another user
+    :statuscode 404: User does not exist
     """
     user = choose_user(user_id, 'expire_sessions_others')
     Session.expire_all_of_user(user.id)

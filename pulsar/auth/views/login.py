@@ -68,12 +68,12 @@ def login(username, password, persistent):
         at least one letter, one number, and one special character.
     :json persistent: (Optional) Whether or not to persist the session.
 
-    :>json dict response: a session, see sessions_
+    :>json dict response: A session, see sessions_
 
     .. _sessions:
 
-    :statuscode 200: login successful
-    :statuscode 401: login unsuccessful
+    :statuscode 200: Login successful
+    :statuscode 401: Login unsuccessful
     """
     user = User.from_username(username)
     if not user or not user.check_password(password):

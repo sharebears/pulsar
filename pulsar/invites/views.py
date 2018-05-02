@@ -46,14 +46,14 @@ def view_invite(code):
          }
        }
 
-    :>jsonarr boolean active: whether or not the invite is active/usable
-    :>jsonarr string code: the invite code
-    :>jsonarr string time-sent: time the invite was sent
-    :>jsonarr string email: the email that the invite was sent to
-    :>jsonarr dict invitee: the user invited by the invite
+    :>jsonarr boolean active: Whether or not the invite is active/usable
+    :>jsonarr string code: The invite code
+    :>jsonarr string time-sent: When the invite was sent
+    :>jsonarr string email: The email that the invite was sent to
+    :>jsonarr dict invitee: The user invited by the invite
 
-    :statuscode 200: view successful
-    :statuscode 404: invite does not exist or user cannot view invite
+    :statuscode 200: View successful
+    :statuscode 404: Invite does not exist or user cannot view invite
     """
     invite = Invite.from_code(code, include_dead=True)
     if not invite or not assert_user(invite.inviter_id, 'view_invites_others'):
@@ -119,20 +119,20 @@ def view_invites(used, include_dead, user_id=None):
          ]
        }
 
-    :query boolean used: (optional) whether or not to only show used invites
-        (overrides include_dead)
-    :query boolean include_dead: (optional) whether or not to include inactive invites
+    :query boolean used: (Optional) Whether or not to only show used invites
+        (overrides ``include_dead``)
+    :query boolean include_dead: (Optional) Whether or not to include inactive invites
 
-    :>json list response: a list of invite data
+    :>json list response: A list of invite data
 
-    :>jsonarr boolean active: whether or not the invite is active/usable
-    :>jsonarr string code: the invite code
-    :>jsonarr string time-sent: time the invite was sent
-    :>jsonarr string email: the email that the invite was sent to
-    :>jsonarr dict invitee: the user invited by the invite
+    :>jsonarr boolean active: Whether or not the invite is active/usable
+    :>jsonarr string code: The invite code
+    :>jsonarr string time-sent: When the invite was sent
+    :>jsonarr string email: The email that the invite was sent to
+    :>jsonarr dict invitee: The user invited by the invite
 
-    :statuscode 200: view successful
-    :statuscode 403: user does not have permission to view invites
+    :statuscode 200: View successful
+    :statuscode 403: User does not have permission to view user's invites
     """
     user = choose_user(user_id, 'view_invites_others')
     invites = Invite.from_inviter(user.id, include_dead=(include_dead or used))
@@ -189,17 +189,17 @@ def invite_user(email):
          }
        }
 
-    :<json string email: email to send the invite to
+    :<json string email: E-mail to send the invite to
 
-    :>jsonarr boolean active: whether or not the invite is active/usable (always true)
-    :>jsonarr string code: the invite code
-    :>jsonarr string time-sent: time the invite was sent
-    :>jsonarr string email: the email that the invite was sent to
-    :>jsonarr dict invitee: the user invited by the invite
+    :>jsonarr boolean active: Whether or not the invite is active/usable (always true)
+    :>jsonarr string code: The invite code
+    :>jsonarr string time-sent: When the invite was sent
+    :>jsonarr string email: The email that the invite was sent to
+    :>jsonarr dict invitee: The user invited by the invite
 
-    :statuscode 200: successfully sent invite
-    :statuscode 400: unable to send invites or incorrect email
-    :statuscode 403: unauthorized to send invites
+    :statuscode 200: Successfully sent invite
+    :statuscode 400: Unable to send invites or incorrect email
+    :statuscode 403: Unauthorized to send invites
     """
     if not app.config['REQUIRE_INVITE_CODE']:
         raise APIException(
@@ -252,15 +252,15 @@ def revoke_invite(code):
          }
        }
 
-    :>jsonarr boolean active: whether or not the invite is active/usable
-    :>jsonarr string code: the invite code
-    :>jsonarr string time-sent: time the invite was sent
-    :>jsonarr string email: the email that the invite was sent to
-    :>jsonarr dict invitee: the user invited by the invite
+    :>jsonarr boolean active: Whether or not the invite is active/usable
+    :>jsonarr string code: The invite code
+    :>jsonarr string time-sent: When the invite was sent
+    :>jsonarr string email: The email that the invite was sent to
+    :>jsonarr dict invitee: The user invited by the invite
 
-    :statuscode 200: revocation successful
-    :statuscode 403: unauthorized to revoke invites
-    :statuscode 404: invite does not exist or user cannot view invite
+    :statuscode 200: Revocation successful
+    :statuscode 403: Unauthorized to revoke invites
+    :statuscode 404: Invite does not exist or user cannot view invite
     """
     invite = Invite.from_code(code)
     if not invite or not assert_user(invite.inviter_id, 'revoke_invites_others'):

@@ -51,12 +51,12 @@ def view_api_key(hash):
          }
        }
 
-    :>jsonarr boolean active: Whether or not the API key is usable.
-    :>jsonarr string hash: The identification hash of the API key.
-    :>jsonarr string ip: The last IP to access the API key.
-    :>jsonarr string user-agent: The last User Agent to access the API key.
+    :>jsonarr boolean active: Whether or not the API key is usable
+    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string ip: The last IP to access the API key
+    :>jsonarr string user-agent: The last User Agent to access the API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``.
+        encoded as ``str``
 
     :statuscode 200: Successfully viewed API key.
     :statuscode 404: API key does not exist.
@@ -119,20 +119,20 @@ def view_all_api_keys(include_dead, user_id=None):
          ]
        }
 
-    :query boolean include_dead: Include dead (previously used) API keys.
+    :query boolean include_dead: Include dead (previously used) API keys
 
-    :>json list response: A list of API keys.
+    :>json list response: A list of API keys
 
-    :>jsonarr boolean active: Whether or not the API key is usable.
-    :>jsonarr string hash: The identification hash of the API key.
-    :>jsonarr string ip: The last IP to access the API key.
-    :>jsonarr string user-agent: The last User Agent to access the API key.
+    :>jsonarr boolean active: Whether or not the API key is usable
+    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string ip: The last IP to access the API key
+    :>jsonarr string user-agent: The last User Agent to access the API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``.
+        encoded as ``str``
 
-    :statuscode 200: Successfully viewed API keys.
-    :statuscode 403: User does not have permission to view user's API keys.
-    :statuscode 404: User does not exist.
+    :statuscode 200: Successfully viewed API keys
+    :statuscode 403: User does not have permission to view user's API keys
+    :statuscode 404: User does not exist
     """
     user = choose_user(user_id, 'view_api_keys_others')
     api_keys = user.api_keys
@@ -185,12 +185,12 @@ def create_api_key(permissions):
          }
        }
 
-    :>jsonarr string hash: The identification hash of the API key.
-    :>jsonarr string key: The full API key.
+    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``.
+        encoded as ``str``
 
-    :statuscode 200: Successfully viewed API keys.
+    :statuscode 200: Successfully viewed API keys
     """
     raw_key, api_key = APIKey.generate_key(
         flask.g.user.id, flask.request.remote_addr)
@@ -252,14 +252,14 @@ def revoke_api_key(identifier):
          "response": "API Key abcdefghij has been revoked."
        }
 
-    :>jsonarr string hash: The identification hash of the API key.
-    :>jsonarr string key: The full API key.
+    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``.
+        encoded as ``str``
 
-    :statuscode 200: Successfully revoked API keys.
+    :statuscode 200: Successfully revoked API keys
     :statuscode 404: API key does not exist or user does not have permission
-        to revoke the API key.
+        to revoke the API key
     """
     api_key = APIKey.from_hash(identifier, include_dead=True)
     if api_key:
@@ -305,13 +305,13 @@ def revoke_all_api_keys(user_id=None):
          "response": "All api keys have been revoked."
        }
 
-    :>jsonarr string hash: The identification hash of the API key.
-    :>jsonarr string key: The full API key.
+    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``.
+        encoded as ``str``
 
-    :statuscode 200: Successfully revoked API keys.
-    :statuscode 403: User does not have permission to revoke API keys.
+    :statuscode 200: Successfully revoked API keys
+    :statuscode 403: User does not have permission to revoke API keys
     """
     user = choose_user(user_id, 'revoke_api_keys_others')
     APIKey.revoke_all_of_user(user.id)

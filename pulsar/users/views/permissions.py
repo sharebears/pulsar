@@ -53,12 +53,12 @@ def view_permissions(user_id=None, all=False):
          ]
        }
 
-    :query boolean all: whether or not to return all available permissions
+    :query boolean all: Whether or not to return all available permissions
 
-    :>json list response: a list of permission name strings
+    :>json list response: A list of permission name strings
 
-    :statuscode 200: view successful
-    :statuscode 403: user lacks sufficient permissions to view permissions
+    :statuscode 200: View successful
+    :statuscode 403: User lacks sufficient permissions to view permissions
     """
     if all:
         assert_permission('manipulate_permissions')
@@ -120,12 +120,12 @@ def change_permissions(user_id, permissions):
         the permission name as the key and a boolean (True = add, False = remove)
         as the value.
 
-    :>json list response: a list of permission name strings
+    :>json list response: A list of permission name strings
 
-    :statuscode 200: permissions successfully changed
-    :statuscode 400: attempted removal of a nonexistent permission or addition of
+    :statuscode 200: Permissions successfully changed
+    :statuscode 400: Attempted removal of a nonexistent permission or addition of
         an existing permission
-    :statuscode 404: user lacks sufficient permissions to make a request
+    :statuscode 404: User lacks sufficient permissions to make a request
     """
     user = User.from_id(user_id)
     to_add, to_delete = check_permissions(user, permissions)
