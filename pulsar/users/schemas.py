@@ -6,14 +6,14 @@ from pulsar.auth.schemas import APIKeySchema
 class UserSchema(ma.ModelSchema):
     class Meta:
         model = User
-        fields = ('id', 'username', 'invites')
+        fields = ('id', 'username', 'invites', 'user_class')
 
 
 class DetailedUserSchema(ma.ModelSchema):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'api_keys', 'invites')
+        fields = ('id', 'username', 'api_keys', 'user_class', 'invites')
 
     api_keys = ma.Nested(APIKeySchema)
 

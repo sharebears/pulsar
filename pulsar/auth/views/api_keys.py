@@ -193,7 +193,7 @@ def create_api_key(permissions):
     :statuscode 200: Successfully viewed API keys
     """
     raw_key, api_key = APIKey.generate_key(
-        flask.g.user.id, flask.request.remote_addr)
+        flask.g.user.id, flask.request.remote_addr, flask.request.user_agent.string)
     db.session.add(api_key)
     for perm in permissions:
         permission = APIPermission(

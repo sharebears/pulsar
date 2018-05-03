@@ -3,10 +3,13 @@
 - [x] Documentation outline via Sphinx
 - [x] Document existing endpoints
 - [x] Make Volup validators out of registration validators
+- [-] User Classes, advanced permissioning
 - [ ] User manipulation (enable/disable/lock)
-- [ ] User Classes, advanced permissioning
 - [ ] Rate Limiting
 - [ ] Forums
+
+## User Classes
+- [ ] Staff `/tools` for manipulation
 
 # TODO
 

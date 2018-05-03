@@ -3,6 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, and_
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.postgresql import ARRAY
 from pulsar import db
 
 
@@ -13,12 +15,14 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True, nullable=False)
     passhash = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(255), nullable=False)
+    enabled = db.Column(db.Boolean, nullable=False, server_default='t')
+    user_class = db.Column(db.String, db.ForeignKey('user_classes.user_class'),
+                           nullable=False, server_default='user')
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
     sessions = relationship('Session', back_populates='user')
     api_keys = relationship('APIKey', back_populates='user')
-    permissions = relationship('UserPermission')
 
     inviter = relationship('User', uselist=False)
     invites_sent = relationship(
@@ -33,6 +37,19 @@ class User(db.Model):
         self.username = username
         self.passhash = generate_password_hash(password)
         self.email = email.lower().strip()
+
+    @hybrid_property
+    def permissions(self):
+        user_permissions = [p[0] for p in (
+                db.session.query(UserPermission.permission)
+                .filter(UserPermission.user_id == self.id)).all()]
+        user_class_permissions = (
+                db.session.query(UserClass.permissions)
+                .filter(UserClass.user_class == self.user_class).all())[0][0]
+
+        print(user_class_permissions)
+
+        return user_permissions + (user_class_permissions or [])
 
     @classmethod
     def from_id(cls, id):
@@ -50,10 +67,7 @@ class User(db.Model):
         return check_password_hash(self.passhash, password)
 
     def has_permission(self, permission):
-        return db.session.query(UserPermission).filter(and_(
-            (UserPermission.user_id == self.id),
-            (UserPermission.permission == permission),
-            )).one_or_none()
+        return permission in self.permissions
 
 
 class UserPermission(db.Model):
@@ -61,3 +75,17 @@ class UserPermission(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     permission = db.Column(db.String(32), primary_key=True)
+
+    @classmethod
+    def from_attrs(cls, user_id, permission):
+        return cls.query.filter(and_(
+            (cls.user_id == user_id),
+            (cls.permission == permission),
+            )).one_or_none()
+
+
+class UserClass(db.Model):
+    __tablename__ = 'user_classes'
+
+    user_class = db.Column(db.String(24), primary_key=True)
+    permissions = db.Column(ARRAY(db.String(32)))

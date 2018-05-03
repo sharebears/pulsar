@@ -38,7 +38,10 @@ def test_user_has_permission(app):
 def test_get_user(authed_client):
     response = authed_client.get('/users/1')
     check_json_response(response, {
-        'id': 1, 'username': 'lights'})
+        'id': 1,
+        'username': 'lights',
+        'user_class': 'user',
+        })
     assert response.status_code == 200
 
 

@@ -1,4 +1,3 @@
-import json
 import flask
 import pytest
 from contextlib import contextmanager
@@ -96,9 +95,12 @@ def set_user(app_, user):
     with flask.appcontext_pushed.connected_to(handler, app_):
         yield
 
+# '{"sample_perm_one", "sample_perm_two"}'
+
 
 def populate_db():
     "Populate the database with test user information."
+    db.engine.execute("""INSERT INTO user_classes VALUES ('user')""")
     db.engine.execute(
         f"""INSERT INTO users (username, passhash, email, invites, inviter_id) VALUES
         ('lights', '{HASHED_PASSWORD_1}', 'lights@puls.ar', 1, NULL),
@@ -112,4 +114,5 @@ def unpopulate_db():
     db.engine.execute("DELETE FROM users_permissions")
     db.engine.execute("DELETE FROM sessions")
     db.engine.execute("DELETE FROM users")
+    db.engine.execute("DELETE FROM user_classes")
     db.engine.execute("ALTER SEQUENCE users_id_seq RESTART WITH 1")

@@ -24,6 +24,17 @@ class Session(db.Model):
 
     @classmethod
     def generate_session(cls, user_id, ip, user_agent, persistent=False):
+        """
+        Create a new session with randomly generated secret keys and the
+        user details passed in as params.
+
+        :param int user_id: Session will belong to this user
+        :param str ip: IP the session was created with
+        :param str user_agent: User Agent the session was created with
+        :param bool persistent: Whether or not to persist the session
+
+        :return: A ``Session`` object
+        """
         while True:
             hash = secrets.token_hex(5)
             if not cls.from_hash(hash, include_dead=True):
@@ -40,6 +51,15 @@ class Session(db.Model):
 
     @classmethod
     def from_hash(cls, hash, include_dead=False):
+        """
+        Get a session from it's hash.
+
+        :param str hash: The hash of the session
+        :param bool include_dead: (Default ``False``) Whether or not to include dead
+            sessions in the search
+
+        :return: A ``session`` object or ``None``
+        """
         query = cls.query.filter(cls.hash == hash)
         if not include_dead:
             query = query.filter(cls.active == 't')
@@ -68,7 +88,7 @@ class APIKey(db.Model):
     permissions = relationship('APIPermission')
 
     @classmethod
-    def generate_key(cls, user_id, ip):
+    def generate_key(cls, user_id, ip, user_agent):
         while True:
             hash = secrets.token_hex(5)
             if not cls.from_hash(hash, include_dead=True):
@@ -79,6 +99,7 @@ class APIKey(db.Model):
             hash=hash,
             keyhashsalt=generate_password_hash(key),
             ip=ip,
+            user_agent=user_agent,
             ))
 
     @classmethod

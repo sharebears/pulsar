@@ -65,7 +65,7 @@ def view_permissions(user_id=None, all=False):
         permissions = get_all_permissions()
     else:
         user = choose_user(user_id, 'manipulate_permissions')
-        permissions = [perm.permission for perm in user.permissions]
+        permissions = user.permissions
     return flask.jsonify({'permissions': permissions})
 
 
@@ -138,7 +138,7 @@ def change_permissions(user_id, permissions):
             permission=perm_name))
     db.session.commit()
 
-    return flask.jsonify({'permissions': [perm.permission for perm in user.permissions]})
+    return flask.jsonify({'permissions': user.permissions})
 
 
 def check_permissions(user, permissions):
@@ -157,13 +157,14 @@ def check_permissions(user, permissions):
     """
     to_add, to_delete = [], []
     for perm_name, action in permissions.items():
-        permission = user.has_permission(perm_name)
-        if permission and not action:
+        permission = UserPermission.from_attrs(user.id, perm_name)
+        has_permission = user.has_permission(perm_name)
+        if has_permission and not action:
             to_delete.append(permission)
-        elif not permission and action:
+        elif not has_permission and action:
             to_add.append(perm_name)
         else:
-            if permission:
+            if has_permission:
                 raise APIException(
                     f'{user.username} already has the permission {perm_name}.')
             raise APIException(

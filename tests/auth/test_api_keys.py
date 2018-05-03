@@ -38,7 +38,7 @@ def populate_db(client):
 
 def test_new_key(app):
     with app.app_context():
-        raw_key, api_key = APIKey.generate_key(2, '127.0.0.2')
+        raw_key, api_key = APIKey.generate_key(2, '127.0.0.2', 'UA')
         assert len(raw_key) == 26
         assert api_key.ip == '127.0.0.2'
         assert api_key.user_id == 2
@@ -50,7 +50,7 @@ def test_api_key_collision(app, monkeypatch):
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16]])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     with app.app_context():
-        raw_key, api_key = APIKey.generate_key(2, '127.0.0.2')
+        raw_key, api_key = APIKey.generate_key(2, '127.0.0.2', 'UA')
         assert len(raw_key) == 26
         assert api_key.hash != CODE_2[:10]
         with pytest.raises(StopIteration):

@@ -8,9 +8,8 @@ def permissions_list(val):
     a user.
     """
     if isinstance(val, list):
-        user_permissions = [perm.permission for perm in flask.g.user.permissions]
         for perm in val:
-            if perm not in user_permissions:
+            if perm not in flask.g.user.permissions:
                 break
         else:
             return val

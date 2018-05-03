@@ -47,8 +47,8 @@ def test_change_permissions_success(app, authed_client):
         }})
     response = json.loads(response.get_data())
     assert 'response' in response and 'permissions' in response['response']
-    assert response['response']['permissions'] == [
-        'manipulate_permissions', 'view_invites']
+    assert all(perm in response['response']['permissions']
+               for perm in ['manipulate_permissions', 'view_invites'])
 
 
 @pytest.mark.parametrize(
