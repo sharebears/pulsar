@@ -2,6 +2,7 @@ import json
 import pytest
 from conftest import add_permissions, check_json_response
 from pulsar import db
+from pulsar.users.models import User
 
 
 def test_get_all_permissions(app, authed_client):
@@ -89,3 +90,20 @@ def test_user_class_permissions(app, authed_client):
         'list_permissions',
         'view_invites',
         ])
+
+
+def test_user_class_permission_override(app, authed_client):
+    db.engine.execute(
+        """UPDATE user_classes SET permissions = '{"sample_a", "sample_b"}'""")
+    db.engine.execute(
+        """INSERT INTO users_permissions (user_id, permission, granted) VALUES
+        (1, 'sample_c', 't'),
+        (1, 'sample_d', 't'),
+        (1, 'sample_b', 'f')
+        """)
+
+    user = User.from_id(1)
+    assert all(len(
+        [p for p in user.permissions if p == perm]) == 1
+        for perm in user.permissions)
+    assert set(user.permissions) == {'sample_a', 'sample_c', 'sample_d'}

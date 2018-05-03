@@ -1,7 +1,7 @@
 import flask
 from voluptuous import Schema, Optional
 from .. import bp
-from ..models import APIKey, APIPermission
+from ..models import APIKey
 from ..schemas import api_key_schema, multiple_api_key_schema
 from ..validators import permissions_list
 from pulsar import db, APIException, _404Exception
@@ -193,16 +193,12 @@ def create_api_key(permissions):
     :statuscode 200: Successfully created API key
     """
     raw_key, api_key = APIKey.generate_key(
-        flask.g.user.id, flask.request.remote_addr, flask.request.user_agent.string)
+        flask.g.user.id,
+        flask.request.remote_addr,
+        flask.request.user_agent.string,
+        permissions
+        )
     db.session.add(api_key)
-    db.session.commit()
-
-    for perm in permissions:
-        permission = APIPermission(
-            api_key_hash=api_key.hash,
-            permission=perm,
-            )
-        db.session.add(permission)
     db.session.commit()
 
     return flask.jsonify({

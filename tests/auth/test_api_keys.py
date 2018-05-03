@@ -15,16 +15,11 @@ def hex_generator(_):
 @pytest.fixture(autouse=True)
 def populate_db(client):
     db.engine.execute(
-        f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active) VALUES
-        (1, 'abcdefghij', '{HASHED_CODE_1}', 't'),
-        (1, 'bcdefghijk', '{HASHED_CODE_3}', 't'),
-        (2, '1234567890', '{HASHED_CODE_2}', 'f')
-        """)
-    db.engine.execute(
-        """INSERT INTO api_permissions (api_key_hash, permission) VALUES
-        ('abcdefghij', 'sample_permission'),
-        ('abcdefghij', 'sample_2_permission'),
-        ('abcdefghij', 'sample_3_permission')
+        f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active, permissions) VALUES
+        (1, 'abcdefghij', '{HASHED_CODE_1}', 't',
+         '{{"sample_permission", "sample_2_permission", "sample_3_permission"}}'),
+        (1, 'bcdefghijk', '{HASHED_CODE_3}', 't', '{{}}'),
+        (2, '1234567890', '{HASHED_CODE_2}', 'f', '{{}}')
         """)
     db.engine.execute(
         """INSERT INTO users_permissions (user_id, permission) VALUES
@@ -33,7 +28,6 @@ def populate_db(client):
         (1, 'sample_perm_two')
         """)
     yield
-    db.engine.execute("DELETE FROM api_permissions")
     db.engine.execute("DELETE FROM api_keys")
 
 

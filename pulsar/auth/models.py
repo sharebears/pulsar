@@ -2,8 +2,7 @@ import secrets
 import pulsar.users.models  # noqa
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.postgresql import INET, ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 from pulsar import db
 
@@ -16,7 +15,7 @@ class Session(db.Model):
     persistent = db.Column(db.Boolean, nullable=False, server_default='f')
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip = db.Column(postgresql.INET, nullable=False, server_default='0.0.0.0')
+    ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent = db.Column(db.Text)
     csrf_token = db.Column(db.String(24), nullable=False)
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
@@ -81,25 +80,15 @@ class APIKey(db.Model):
     keyhashsalt = db.Column(db.String(128))
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip = db.Column(postgresql.INET, nullable=False, server_default='0.0.0.0')
+    ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent = db.Column(db.Text)
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
+    permissions = db.Column(ARRAY(db.String(32)))
 
     user = relationship('User', back_populates='api_keys', uselist=False, lazy=False)
-    permissions = relationship('APIPermission')
-
-    @hybrid_property
-    def permissions(self):
-        permissions = (
-            db.session.query(APIPermission.permission)
-            .filter(APIPermission.api_key_hash == self.hash)
-            .all())
-        if permissions:
-            return [p[0] for p in permissions]
-        return self.user.permissions
 
     @classmethod
-    def generate_key(cls, user_id, ip, user_agent):
+    def generate_key(cls, user_id, ip, user_agent, permissions=[]):
         """
         Create a new API Key with randomly generated secret keys and the
         user details passed in as params.
@@ -121,6 +110,7 @@ class APIKey(db.Model):
             keyhashsalt=generate_password_hash(key),
             ip=ip,
             user_agent=user_agent,
+            permissions=permissions,
             ))
 
     @classmethod
@@ -157,7 +147,9 @@ class APIKey(db.Model):
         :param str permission: Permission to search for
         :return: ``True`` if permission is present, ``False`` if not
         """
-        return permission in self.permissions
+        if self.permissions:
+            return permission in self.permissions
+        return permission in self.user.permissions
 
     @staticmethod
     def revoke_all_of_user(user_id):
@@ -169,11 +161,3 @@ class APIKey(db.Model):
         db.session.query(APIKey).filter(
             APIKey.user_id == user_id
             ).update({'active': False})
-
-
-class APIPermission(db.Model):
-    __tablename__ = 'api_permissions'
-
-    api_key_hash = db.Column(
-        db.String(10), db.ForeignKey('api_keys.hash'), primary_key=True)
-    permission = db.Column(db.String(32), primary_key=True)

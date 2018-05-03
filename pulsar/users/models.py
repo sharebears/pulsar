@@ -24,10 +24,6 @@ class User(db.Model):
     sessions = relationship('Session', back_populates='user')
     api_keys = relationship('APIKey', back_populates='user')
 
-    inviter = relationship('User', uselist=False)
-    invites_sent = relationship(
-        'Invite', back_populates='inviter', foreign_keys='Invite.inviter_id')
-
     @declared_attr
     def __table_args__(cls):
         return (db.Index('idx_users_username', func.lower(cls.username), unique=True),
@@ -40,14 +36,22 @@ class User(db.Model):
 
     @hybrid_property
     def permissions(self):
-        user_permissions = [p[0] for p in (
-                db.session.query(UserPermission.permission)
-                .filter(UserPermission.user_id == self.id)).all()]
-        user_class_permissions = (
-                db.session.query(UserClass.permissions)
-                .filter(UserClass.user_class == self.user_class).all())[0][0]
+        permissions = (
+            db.session.query(UserClass.permissions)
+            .filter(UserClass.user_class == self.user_class)
+            .all()[0][0] or [])
 
-        return user_permissions + (user_class_permissions or [])
+        user_permissions = (
+            db.session.query(UserPermission.permission, UserPermission.granted)
+            .filter(UserPermission.user_id == self.id).all())
+
+        for up in user_permissions:
+            if up[1] is False and up[0] in permissions:
+                permissions.remove(up[0])
+            if up[1] is True and up[0] not in permissions:
+                permissions.append(up[0])
+
+        return permissions
 
     @classmethod
     def from_id(cls, id):
@@ -73,6 +77,7 @@ class UserPermission(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     permission = db.Column(db.String(32), primary_key=True)
+    granted = db.Column(db.Boolean, nullable=False, server_default='t')
 
     @classmethod
     def from_attrs(cls, user_id, permission):

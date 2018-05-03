@@ -16,8 +16,6 @@ class Invite(db.Model):
     from_ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
-    inviter = relationship(
-        'User', back_populates='invites_sent', uselist=False, foreign_keys=[inviter_id])
     invitee = relationship('User', uselist=False, foreign_keys=[invitee_id])
 
     @classmethod

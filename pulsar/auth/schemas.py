@@ -1,11 +1,5 @@
 from pulsar import ma
-from .models import Session, APIKey, APIPermission
-
-
-class APIPermissionSchema(ma.ModelSchema):
-    class Meta:
-        model = APIPermission
-        fields = ('permission',)
+from .models import Session, APIKey
 
 
 class SessionSchema(ma.ModelSchema):
@@ -19,8 +13,6 @@ class APIKeySchema(ma.ModelSchema):
     class Meta:
         model = APIKey
         fields = ('hash', 'last_used', 'ip', 'user_agent', 'active', 'permissions')
-
-    permissions = ma.Nested(APIPermissionSchema, only=['permission'], many=True)
 
 
 session_schema = SessionSchema()
