@@ -56,9 +56,9 @@ def test_change_permissions_success(app, authed_client):
 @pytest.mark.parametrize(
     'permissions, expected', [
         ({'send_invites': True, 'view_invites': False},
-         'lights already has the permission send_invites.'),
+         'The following permissions could not be added: send_invites.'),
         ({'change_password': False, 'send_invites': False},
-         'lights does not have the permission change_password.'),
+         'The following permissions could not be deleted: change_password.'),
     ])
 def test_change_permissions_failure(app, authed_client, permissions, expected):
     add_permissions(app, 'manipulate_permissions', 'send_invites', 'view_invites')

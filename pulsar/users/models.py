@@ -23,6 +23,7 @@ class User(db.Model):
 
     sessions = relationship('Session', back_populates='user')
     api_keys = relationship('APIKey', back_populates='user')
+    user_class_obj = relationship('UserClass')
 
     @declared_attr
     def __table_args__(cls):
@@ -85,6 +86,21 @@ class UserPermission(db.Model):
             (cls.user_id == user_id),
             (cls.permission == permission),
             )).one_or_none()
+
+    @classmethod
+    def from_user(cls, user_id):
+        """
+        Gets a dict of all custom permissions assigned to a user.
+
+        :param int user_id: User ID the permissions belong to
+        :return: A ``dict`` of permissions with a permission ``str`` as the key
+            and a granted ``boolean`` as the value.
+        """
+        permissions = cls.query.filter(cls.user_id == user_id).all()
+        response = {}
+        for perm in permissions:
+            response[perm.permission] = perm.granted
+        return response
 
 
 class UserClass(db.Model):
