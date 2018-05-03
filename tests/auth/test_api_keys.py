@@ -2,7 +2,7 @@ import json
 import flask
 import pytest
 from conftest import (CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2,
-                      add_permissions, check_json_response)
+                      HASHED_CODE_3, add_permissions, check_json_response)
 from pulsar import db
 from pulsar.auth.models import APIKey
 from pulsar.utils import require_permission
@@ -17,6 +17,7 @@ def populate_db(client):
     db.engine.execute(
         f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active) VALUES
         (1, 'abcdefghij', '{HASHED_CODE_1}', 't'),
+        (1, 'bcdefghijk', '{HASHED_CODE_3}', 't'),
         (2, '1234567890', '{HASHED_CODE_2}', 'f')
         """)
     db.engine.execute(
@@ -117,9 +118,9 @@ def test_view_api_key(app, authed_client, key, expected):
 def test_view_all_keys(app, authed_client):
     add_permissions(app, 'view_api_keys')
     response = authed_client.get('/api_keys')
-    check_json_response(response, {
-        'hash': CODE_2[:10],
-        }, list_=True)
+    data = response.get_json()['response']
+    assert any('hash' in api_key and api_key['hash'] == CODE_2[:10]
+               for api_key in data)
 
 
 def test_view_empty_api_keys(app, authed_client):
@@ -191,6 +192,17 @@ def test_view_resource_with_api_permission(app, client):
 
     response = client.get('/test_restricted_resource', headers={
         'Authorization': f'Token abcdefghij{CODE_1}'})
+    check_json_response(response, 'completed')
+
+
+def test_view_resource_with_user_permission(app, client):
+    @app.route('/test_restricted_resource')
+    @require_permission('sample_permission')
+    def test_permission():
+        return flask.jsonify('completed')
+
+    response = client.get('/test_restricted_resource', headers={
+        'Authorization': f'Token bcdefghijk{CODE_3}'})
     check_json_response(response, 'completed')
 
 

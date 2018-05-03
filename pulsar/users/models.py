@@ -47,8 +47,6 @@ class User(db.Model):
                 db.session.query(UserClass.permissions)
                 .filter(UserClass.user_class == self.user_class).all())[0][0]
 
-        print(user_class_permissions)
-
         return user_permissions + (user_class_permissions or [])
 
     @classmethod

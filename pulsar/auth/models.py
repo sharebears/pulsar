@@ -1,8 +1,9 @@
 import secrets
 import pulsar.users.models  # noqa
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func, and_
+from sqlalchemy.sql import func
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
 from pulsar import db
 
@@ -58,7 +59,7 @@ class Session(db.Model):
         :param bool include_dead: (Default ``False``) Whether or not to include dead
             sessions in the search
 
-        :return: A ``session`` object or ``None``
+        :return: A ``Session`` object or ``None``
         """
         query = cls.query.filter(cls.hash == hash)
         if not include_dead:
@@ -87,8 +88,28 @@ class APIKey(db.Model):
     user = relationship('User', back_populates='api_keys', uselist=False, lazy=False)
     permissions = relationship('APIPermission')
 
+    @hybrid_property
+    def permissions(self):
+        permissions = (
+            db.session.query(APIPermission.permission)
+            .filter(APIPermission.api_key_hash == self.hash)
+            .all())
+        if permissions:
+            return [p[0] for p in permissions]
+        return self.user.permissions
+
     @classmethod
     def generate_key(cls, user_id, ip, user_agent):
+        """
+        Create a new API Key with randomly generated secret keys and the
+        user details passed in as params.
+
+        :param int user_id: Session will belong to this user
+        :param str ip: IP the session was created with
+        :param str user_agent: User Agent the session was created with
+
+        :return: An ``APIKey`` object
+        """
         while True:
             hash = secrets.token_hex(5)
             if not cls.from_hash(hash, include_dead=True):
@@ -104,22 +125,47 @@ class APIKey(db.Model):
 
     @classmethod
     def from_hash(cls, hash, include_dead=False):
+        """
+        Get an API key from it's hash.
+
+        :param str hash: The hash of the API key
+        :param bool include_dead: (Default ``False``) Whether or not to include dead
+            API keys in the search
+
+        :return: An ``APIKey`` object or ``None``
+        """
         query = cls.query.filter(cls.hash == hash)
         if not include_dead:
             query = query.filter(cls.active == 't')
         return query.one_or_none()
 
     def check_key(self, key):
+        """
+        Validates the authenticity of an API key against its stored hash.
+
+        :param str key: The key to check against the hash
+        :return: ``True`` if it matches, ``False`` if it doesn't
+        """
         return check_password_hash(self.keyhashsalt, key)
 
     def has_permission(self, permission):
-        return db.session.query(APIPermission).filter(and_(
-            (APIPermission.api_key_hash == self.hash),
-            (APIPermission.permission == permission),
-            )).one_or_none()
+        """
+        Checks if the API key is assigned a permission. If the API key
+        is not assigned any permissions, it checks against the user's
+        permissions instead.
+
+        :param str permission: Permission to search for
+        :return: ``True`` if permission is present, ``False`` if not
+        """
+        return permission in self.permissions
 
     @staticmethod
     def revoke_all_of_user(user_id):
+        """
+        Revokes all active API keys of a user.
+
+        :param int user_id: API keys of this user will be revoked
+        """
         db.session.query(APIKey).filter(
             APIKey.user_id == user_id
             ).update({'active': False})

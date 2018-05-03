@@ -1,6 +1,7 @@
 import json
 import pytest
 from conftest import add_permissions, check_json_response
+from pulsar import db
 
 
 def test_get_all_permissions(app, authed_client):
@@ -74,3 +75,17 @@ def test_change_permissions_failure(app, authed_client, permissions, expected):
 def test_route_permissions(authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)
     assert response.status_code == 404
+
+
+def test_user_class_permissions(app, authed_client):
+    add_permissions(app, 'view_invites')
+    db.engine.execute(
+        """UPDATE user_classes SET permissions = '{"list_permissions"}'
+        WHERE user_class = 'user'
+        """)
+    response = authed_client.get('/permissions')
+    data = response.get_json()['response']
+    assert all(perm in data['permissions'] for perm in [
+        'list_permissions',
+        'view_invites',
+        ])

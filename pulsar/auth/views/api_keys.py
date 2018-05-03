@@ -190,19 +190,21 @@ def create_api_key(permissions):
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
 
-    :statuscode 200: Successfully viewed API keys
+    :statuscode 200: Successfully created API key
     """
     raw_key, api_key = APIKey.generate_key(
         flask.g.user.id, flask.request.remote_addr, flask.request.user_agent.string)
     db.session.add(api_key)
+    db.session.commit()
+
     for perm in permissions:
         permission = APIPermission(
             api_key_hash=api_key.hash,
             permission=perm,
             )
         db.session.add(permission)
-
     db.session.commit()
+
     return flask.jsonify({
         'identifier': api_key.hash,
         'key': raw_key,
