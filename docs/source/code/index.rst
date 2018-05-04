@@ -6,6 +6,8 @@ Code documentation for the pulsar project.
    :maxdepth: 2
 
    style
+   hacking 
+   installation
    hooks
    exceptions
    utils
