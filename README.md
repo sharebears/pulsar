@@ -1,6 +1,7 @@
 # pulsar
-A silly dragon's playtime attempt at creating a BitTorrent indexer API in flask  
+A BitTorrent Indexer API written in python using the Flask micro-framework.
 
-[Style Guide](docs/source/code/style.rst)  
-[Development](docs/source/code/hacking.rst)  
-[Installation](docs/source/code/installation.rst)  
+## Links of Interest
+* [Style Guide](docs/source/code/style.rst)  
+* [Development](docs/source/code/hacking.rst)  
+* [Installation](docs/source/code/installation.rst)  

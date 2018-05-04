@@ -143,7 +143,7 @@ def change_permissions(user_id, permissions):
         db.session.add(UserPermission(
             user_id=user.id,
             permission=perm_name,
-            granted='f'))
+            granted=False))
     db.session.commit()
 
     return flask.jsonify({'permissions': user.permissions})
@@ -176,6 +176,7 @@ def check_permissions(user, permissions):
         if active is True:
             if perm in user_permissions:
                 if user_permissions[perm] is False:
+                    delete.append(perm)
                     add.append(perm)
                 else:
                     errors['add'].append(perm)

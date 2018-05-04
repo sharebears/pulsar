@@ -49,6 +49,15 @@ def add_permissions(app_, *permissions):
         (1, '""" + "'), (1, '".join(permissions) + "')")
 
 
+def check_dupe_in_list(list_):
+    seen = set()
+    for v in list_:
+        if v in seen:
+            return False
+        seen.add(v)
+    return True
+
+
 @pytest.fixture(autouse=True, scope='session')
 def db_create_tables():
     app = create_app('test_config.py')
