@@ -6,8 +6,7 @@ from conftest import add_permissions, check_json_response, check_dupe_in_list
 from pulsar import db, APIException
 from pulsar.users.models import User
 from pulsar.permissions.validators import (
-    permissions_list, permissions_list_of_user, permissions_dict, check_permissions,
-    val_unique_user_class)
+    permissions_list, permissions_list_of_user, permissions_dict, check_permissions)
 
 
 def test_permissions_list(app, authed_client):
@@ -113,7 +112,7 @@ def test_check_permission(app, authed_client, permissions, expected):
     db.engine.execute("INSERT INTO users_permissions VALUES (1, 'sample_three', 'f')")
     db.engine.execute("""UPDATE user_classes
                       SET permissions = '{"sample_four", "sample_five", "shared_perm"}'
-                      WHERE user_class = 'User'""")
+                      WHERE name = 'User'""")
     add, ungrant, delete = check_permissions(User.from_id(1), permissions)
     for li in [add, ungrant, delete]:
         check_dupe_in_list(li)
@@ -135,19 +134,7 @@ def test_check_permission_error(app, authed_client, permissions, error):
     db.engine.execute("INSERT INTO users_permissions VALUES (1, 'sample_three', 'f')")
     db.engine.execute("""UPDATE user_classes
                       SET permissions = '{"sample_four", "sample_five"}'
-                      WHERE user_class = 'User'""")
+                      WHERE name = 'User'""")
     with pytest.raises(APIException) as e:
         check_permissions(User.from_id(1), permissions)
     assert e.value.message == error
-
-
-def test_unique_user_class(app, authed_client):
-    assert 'Unused Class' == val_unique_user_class('Unused Class')
-
-    with pytest.raises(Invalid) as e:
-        val_unique_user_class('UsEr')
-    assert str(e.value) == 'Invalid data: UsEr is taken by another user class,'
-
-    with pytest.raises(Invalid) as e:
-        val_unique_user_class('User')
-    assert str(e.value) == 'Invalid data: User is taken by another user class,'

@@ -1,7 +1,7 @@
 Style Guide
 ===========
 
-* PEP8, with a max line length of 90 (4 space indents)
+* PEP8, with a max line length of ~90 (hard max at 100) (4 space indents)
 * Split multiple kwargs or lists with multiple elements onto new lines, unless they
   compactly fit into one line. Closing brackets* should be indented on new lines.
   Multi-line dicts/lists/kwargs should have a comma after the last element, unless

@@ -5,7 +5,7 @@ from .models import UserClass
 class UserClassSchema(ma.ModelSchema):
     class Meta:
         model = UserClass
-        fields = ('user_class', 'permissions')
+        fields = ('name', 'permissions')
 
 
 user_class_schema = UserClassSchema()

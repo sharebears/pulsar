@@ -134,7 +134,7 @@ def test_does_not_have_invite(app, authed_client):
 def test_invite_without_code(app, authed_client):
     app.config['REQUIRE_INVITE_CODE'] = False
     add_permissions(app, 'send_invites')
-    response = authed_client.post('/invites', json={'email': 'bright@puls.ar'})
+    response = authed_client.post('/invites', data=json.dumps({'email': 'bright@puls.ar'}))
     check_json_response(response, 'An invite code is not required to register, '
                         'so invites have been disabled.')
 

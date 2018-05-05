@@ -56,16 +56,15 @@ def test_change_permissions(app, authed_client):
     add_permissions(app, 'manipulate_permissions', 'list_permissions', 'change_password')
     db.engine.execute("INSERT INTO users_permissions VALUES (1, 'send_invites', 'f')")
     db.engine.execute("""UPDATE user_classes
-                      SET permissions = '{"list_permissions", "view_invites"}'""")
+                       SET permissions = '{"list_permissions", "view_invites"}'""")
 
-    response = authed_client.put('/permissions/user/1', json={
+    response = authed_client.put('/permissions/user/1', data=json.dumps({
         'permissions': {
             'list_permissions': False,
             'change_password': False,
             'view_invites': False,
             'send_invites': True,
-        }})
-    response = json.loads(response.get_data())
+        }})).get_json()
 
     assert set(response['response']['permissions']) == {
         'manipulate_permissions', 'send_invites'}
@@ -92,9 +91,9 @@ def test_change_permissions_failure(app, authed_client, permissions, expected):
     add_permissions(app, 'manipulate_permissions', 'send_invites', 'view_invites')
     db.engine.execute(
         """UPDATE user_classes SET permissions = '{"legacy"}'
-        WHERE user_class = 'User'""")
-    response = authed_client.put('/permissions/user/1', json={
-        'permissions': permissions})
+        WHERE name = 'User'""")
+    response = authed_client.put('/permissions/user/1', data=json.dumps({
+        'permissions': permissions}))
     check_json_response(response, expected)
 
 
@@ -102,7 +101,7 @@ def test_user_class_permissions(app, authed_client):
     add_permissions(app, 'view_invites')
     db.engine.execute(
         """UPDATE user_classes SET permissions = '{"list_permissions"}'
-        WHERE user_class = 'User'
+        WHERE name = 'User'
         """)
     response = authed_client.get('/permissions')
     data = response.get_json()['response']
@@ -113,8 +112,8 @@ def test_user_class_permissions(app, authed_client):
 
 
 def test_user_class_permission_override(app, authed_client):
-    db.engine.execute(
-        """UPDATE user_classes SET permissions = '{"sample_a", "sample_b"}'""")
+    db.engine.execute("""UPDATE user_classes SET permissions = '{"sample_a", "sample_b"}'""")
+    db.engine.execute("""UPDATE secondary_classes SET permissions = '{"sample_e"}'""")
     db.engine.execute(
         """INSERT INTO users_permissions (user_id, permission, granted) VALUES
         (1, 'sample_c', 't'),
@@ -123,10 +122,7 @@ def test_user_class_permission_override(app, authed_client):
         """)
 
     user = User.from_id(1)
-    assert all(len(
-        [p for p in user.permissions if p == perm]) == 1
-        for perm in user.permissions)
-    assert set(user.permissions) == {'sample_a', 'sample_c', 'sample_d'}
+    assert set(user.permissions) == {'sample_a', 'sample_c', 'sample_d', 'sample_e'}
 
 
 @pytest.mark.parametrize(

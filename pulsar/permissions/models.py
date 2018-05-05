@@ -1,5 +1,5 @@
 from sqlalchemy import func, and_
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 from pulsar import db
 
@@ -38,19 +38,40 @@ class UserPermission(db.Model):
 class UserClass(db.Model):
     __tablename__ = 'user_classes'
 
-    user_class = db.Column(db.String(24), primary_key=True)
+    name = db.Column(db.String(24), primary_key=True)
     permissions = db.Column(ARRAY(db.String(32)))
 
-    @declared_attr
-    def __table_args__(cls):
-        return (
-            db.Index('idx_user_classes_name', func.lower(cls.user_class), unique=True),
-            )
+    @classmethod
+    def from_name(cls, name):
+        name = name.lower()
+        return cls.query.filter(func.lower(cls.name) == name).first()
 
     @classmethod
-    def from_name(cls, user_class):
-        user_class = user_class.lower()
-        return cls.query.filter(func.lower(cls.user_class) == user_class).first()
+    def get_all(cls):
+        return cls.query.all()
+
+
+secondary_class_assoc_table = db.Table(
+    'secondary_class_assoc', db.metadata,
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('secondary_user_class', db.String(24),
+              db.ForeignKey('secondary_classes.name')),
+    )
+
+
+class SecondaryUserClass(db.Model):
+    __tablename__ = 'secondary_classes'
+
+    name = db.Column(db.String(24), primary_key=True)
+    permissions = db.Column(ARRAY(db.String(32)))
+
+    users = relationship(
+        'User', secondary=secondary_class_assoc_table, back_populates='secondary_class_objs')
+
+    @classmethod
+    def from_name(cls, name):
+        name = name.lower()
+        return cls.query.filter(func.lower(cls.name) == name).first()
 
     @classmethod
     def get_all(cls):

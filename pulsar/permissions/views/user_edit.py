@@ -89,7 +89,7 @@ def change_permissions(user_id, permissions):
 
     .. sourcecode:: http
 
-       PUT /permissions HTTP/1.1
+       PUT /permissions/user/1 HTTP/1.1
        Host: pul.sar
        Accept: application/json
 

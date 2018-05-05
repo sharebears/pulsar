@@ -16,13 +16,17 @@ class User(db.Model):
     passhash = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, server_default='t')
-    user_class = db.Column(db.String, db.ForeignKey('user_classes.user_class'),
+    user_class = db.Column(db.String, db.ForeignKey('user_classes.name'),
                            nullable=False, server_default='User')
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
     sessions = relationship('Session', back_populates='user')
     api_keys = relationship('APIKey', back_populates='user')
+    secondary_class_objs = relationship(
+        'SecondaryUserClass',
+        secondary=pulsar.permissions.models.secondary_class_assoc_table,
+        back_populates='users')
     user_class_obj = relationship('UserClass')
 
     @declared_attr
@@ -35,13 +39,20 @@ class User(db.Model):
         self.passhash = generate_password_hash(password)
         self.email = email.lower().strip()
 
+    @property
+    def secondary_classes(self):
+        return [sc.name for sc in self.secondary_class_objs]
+
     @hybrid_property
     def permissions(self):
         from pulsar.permissions.models import UserClass, UserPermission
-        permissions = (
+        permissions = set(
             db.session.query(UserClass.permissions)
-            .filter(UserClass.user_class == self.user_class)
+            .filter(UserClass.name == self.user_class)
             .all()[0][0] or [])
+
+        for secondary in self.secondary_class_objs:
+            permissions = permissions.union(set(secondary.permissions or []))
 
         user_permissions = (
             db.session.query(UserPermission.permission, UserPermission.granted)
@@ -51,9 +62,9 @@ class User(db.Model):
             if up[1] is False and up[0] in permissions:
                 permissions.remove(up[0])
             if up[1] is True and up[0] not in permissions:
-                permissions.append(up[0])
+                permissions.add(up[0])
 
-        return permissions
+        return list(permissions)
 
     @classmethod
     def from_id(cls, id):

@@ -1,21 +1,26 @@
 import flask
 from copy import copy
 from sqlalchemy import func
+from voluptuous import Schema, Optional
 from .. import bp
-from ..models import UserClass
+from ..models import UserClass, SecondaryUserClass
 from ..schemas import user_class_schema, multiple_user_class_schema
-from ..validators import val_unique_user_class, permissions_list, permissions_dict
-from voluptuous import Schema
+from ..validators import permissions_list, permissions_dict
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import require_permission, validate_data
+from pulsar.utils import require_permission, validate_data, bool_get
 from pulsar.users.models import User
 
 app = flask.current_app
 
+secondary_schema = Schema({
+    Optional('secondary', default=False): bool_get,
+    })
+
 
 @bp.route('/user_classes/<user_class_name>', methods=['GET'])
 @require_permission('list_user_classes')
-def view_user_class(user_class_name):
+@validate_data(secondary_schema)
+def view_user_class(user_class_name, secondary):
     """
     View an available user class and its associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -41,7 +46,7 @@ def view_user_class(user_class_name):
        {
          "status": "success",
          "response": {
-           "user_class": "user",
+           "name": "user",
            "permissions": [
              "change_password",
              "list_permissions"
@@ -49,21 +54,24 @@ def view_user_class(user_class_name):
          }
        }
 
-    :>jsonarr string user_class: The name of a user class
+    :query boolean secondary: Whether or not to view a secondary or primary user class
+
+    :>jsonarr string name: The name of a user class
     :>jsonarr list permissions: A list of permissions, encoded as strings,
         assigned to that user class
 
     :statuscode 200: View successful
     """
-    user_class = UserClass.from_name(user_class_name)
+    user_class = (SecondaryUserClass if secondary else UserClass).from_name(user_class_name)
     if user_class:
         return user_class_schema.jsonify(user_class)
-    raise _404Exception(f'User class {user_class_name}')
+    raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_name}')
 
 
 @bp.route('/user_classes', methods=['GET'])
 @require_permission('list_user_classes')
-def view_user_classes():
+@validate_data(secondary_schema)
+def view_multiple_user_classes(secondary):
     """
     View all available user classes and their associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -90,14 +98,14 @@ def view_user_classes():
          "status": "success",
          "response": [
            {
-             "user_class": "user",
+             "name": "User",
              "permissions": [
                "change_password",
                "list_permissions"
              ]
            },
            {
-             "user_class": "power user",
+             "name": "Power User",
              "permissions": [
                "change_password",
                "list_permissions",
@@ -108,9 +116,11 @@ def view_user_classes():
          ]
        }
 
+    :query boolean secondary: Whether or not to view secondary or primary user classes
+
     :>json list response: A list of user classes
 
-    :>jsonarr string user_class: The name of a user class
+    :>jsonarr string name: The name of a user class
     :>jsonarr list permissions: A list of permissions, encoded as strings,
         assigned to that user class
 
@@ -118,23 +128,28 @@ def view_user_classes():
     :statuscode 404: User class does not exist
     """
     user_classes = UserClass.get_all()
-    return multiple_user_class_schema.jsonify(user_classes)
+    secondary_classes = SecondaryUserClass.get_all()
+    return flask.jsonify({
+        'user_classes': multiple_user_class_schema.dump(user_classes).data,
+        'secondary_classes': multiple_user_class_schema.dump(secondary_classes).data,
+        })
 
 
 create_user_class_schema = Schema({
-    'user_class': val_unique_user_class,
+    'name': str,
     'permissions': permissions_list,
+    Optional('secondary', default=False): bool_get,
     }, required=True)
 
 
 @bp.route('/user_classes', methods=['POST'])
 @require_permission('modify_user_classes')
 @validate_data(create_user_class_schema)
-def create_user_class(user_class, permissions):
+def create_user_class(name, secondary, permissions):
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
-    .. :quickref: UserClass; Create new userclass.
+    .. :quickref: UserClass; Create new user class.
 
     **Example request**:
 
@@ -145,7 +160,7 @@ def create_user_class(user_class, permissions):
        Accept: application/json
 
        {
-         "user_class": "user_v2",
+         "name": "user_v2",
          "permissions": [
            "send_invites",
            "change_password"
@@ -163,7 +178,7 @@ def create_user_class(user_class, permissions):
        {
          "status": "success",
          "response": {
-           "user_class": "user_v2",
+           "name": "user_v2",
            "permissions": [
              "send_invites",
              "change_password"
@@ -171,18 +186,24 @@ def create_user_class(user_class, permissions):
          }
        }
 
-    :json string user_class: Name of the user class
+    :json string name: Name of the user class
     :json list permissions: A list of permissions encoded as strings
+    :json boolean secondary: Whether or not to create a secondary or primary class
+        (Default False)
 
-    :>jsonarr string user_class: The name of a user class
+    :>jsonarr string name: The name of a user class
     :>jsonarr list permissions: A list of permissions, encoded as strings,
         assigned to that user class
 
     :statuscode 200: User class successfully created
     :statuscode 400: User class name taken or invalid permissions
     """
-    user_class = UserClass(
-        user_class=user_class,
+    class_ = SecondaryUserClass if secondary else UserClass
+    if class_.from_name(name):
+        raise APIException(f'Another {"secondary" if secondary else "user"} class '
+                           f'is already named {name}.')
+    user_class = class_(
+        name=name,
         permissions=permissions,
         )
     db.session.add(user_class)
@@ -196,7 +217,7 @@ def delete_user_class(user_class_name):
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
-    .. :quickref: UserClass; Create new userclass.
+    .. :quickref: UserClass; Delete user class.
 
     **Example request**:
 
@@ -207,7 +228,7 @@ def delete_user_class(user_class_name):
        Accept: application/json
 
        {
-         "user_class": "user_v2"
+         "name": "user_v2"
        }
 
     **Example response**:
@@ -223,24 +244,30 @@ def delete_user_class(user_class_name):
          "response": "User class user_v2 has been deleted."
        }
 
-    :json string user_class: Name of the user class
+    :query boolean secondary: Whether or not to delete a secondary or primary user class
+
+    :json string name: Name of the user class
 
     :>json string response: Success or failure message
 
     :statuscode 200: Userclass successfully deleted
-    :statuscode 400: Unable to delete userclass
+    :statuscode 400: Unable to delete user class
     :statuscode 404: Userclass does not exist
     """
-    user_class = UserClass.from_name(user_class_name)
+    # Determine secondary here because it's a query arg
+    request_args = flask.request.args.to_dict()
+    secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
+
+    user_class = (SecondaryUserClass if secondary else UserClass).from_name(user_class_name)
     if not user_class:
-        raise _404Exception(f'User class {user_class_name}')
+        raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_name}')
     if db.session.query(User.id).filter(
             func.lower(User.user_class) == user_class_name.lower()
             ).limit(1).first():
         raise APIException(
             'You cannot delete a user class while users are assigned to it.')
 
-    response = f'User class {user_class.user_class} has been deleted.'
+    response = f'{"Secondary" if secondary else "User"} class {user_class.name} has been deleted.'
     db.session.delete(user_class)
     db.session.commit()
     return flask.jsonify(response)
@@ -248,18 +275,19 @@ def delete_user_class(user_class_name):
 
 modify_user_class_schema = Schema({
     'permissions': permissions_dict,
+    Optional('secondary', default=False): bool_get,
     }, required=True)
 
 
 @bp.route('/user_classes/<user_class_name>', methods=['PUT'])
 @require_permission('modify_user_classes')
 @validate_data(modify_user_class_schema)
-def modify_user_class(user_class_name, permissions):
+def modify_user_class(user_class_name, permissions, secondary):
     """
     Modifies permissions for an existing user class.
     Requires the ``modify_user_classes`` permission.
 
-    .. :quickref: UserClass; Modify existing userclass.
+    .. :quickref: UserClass; Modify existing user class.
 
     **Example request**:
 
@@ -288,7 +316,7 @@ def modify_user_class(user_class_name, permissions):
        {
          "status": "success",
          "response": {
-           "user_class": "user",
+           "name": "User",
            "permissions": [
              "change_password",
              "list_permissions"
@@ -296,11 +324,12 @@ def modify_user_class(user_class_name, permissions):
          }
        }
 
-    :json dict permissions: A dictionary of permissions to add/remove, with
+    :>json dict permissions: A dictionary of permissions to add/remove, with
         the permission name as the key and a boolean (True = add, False = remove)
         as the value.
+    :>json boolean secondary: Whether or not to modify a secondary or primary user class
 
-    :>jsonarr string user_class: The name of a user class
+    :>jsonarr string name: The name of a user class
     :>jsonarr list permissions: A list of permissions, encoded as strings,
         assigned to that user class
 
@@ -308,7 +337,7 @@ def modify_user_class(user_class_name, permissions):
     :statuscode 400: Permissions cannot be applied
     :statuscode 404: Userclass does not exist
     """
-    user_class = UserClass.from_name(user_class_name)
+    user_class = (SecondaryUserClass if secondary else UserClass).from_name(user_class_name)
     if not user_class:
         raise _404Exception(f'User class {user_class_name}')
 
@@ -318,13 +347,13 @@ def modify_user_class(user_class_name, permissions):
 
     for perm in to_add:
         if perm in uc_perms:
-            raise APIException(f'User class {user_class.user_class} '
-                               f'already has the permission {perm}.')
+            raise APIException(f'{"Secondary" if secondary else "User"} class '
+                               f'{user_class.name} already has the permission {perm}.')
         uc_perms.append(perm)
     for perm in to_delete:
         if perm not in uc_perms:
-            raise APIException(f'User class {user_class.user_class} '
-                               f'does not have the permission {perm}.')
+            raise APIException(f'{"Secondary" if secondary else "User"} class '
+                               f'{user_class.name} does not have the permission {perm}.')
         uc_perms.remove(perm)
 
     # Permissions don't update if list reference doesn't change.

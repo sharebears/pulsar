@@ -1,3 +1,4 @@
+import json
 import flask
 import pytest
 from voluptuous import Schema, Optional
@@ -103,7 +104,7 @@ def test_csrf_validation(app, client):
         sess['user_id'] = 1
         sess['session_hash'] = 'abcdefghij'
 
-    response = client.post('/test_csrf', json=dict(csrf_token=CODE_1))
+    response = client.post('/test_csrf', data=json.dumps({'csrf_token': CODE_1}))
     resp_data = response.get_json()
     assert 'csrf_token' in resp_data and resp_data['csrf_token'] == CODE_1
     check_json_response(response, 'completed')

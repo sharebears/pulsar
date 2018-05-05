@@ -35,7 +35,7 @@
 - [x] Primary User Classes
 - [x] Individual Permissions
 - [x] Turn every endpoint into a permission?
-- [ ] Secondary User Classes
+- [x] Secondary User Classes
 
 ## Forums
 - [ ] Entire Forum View

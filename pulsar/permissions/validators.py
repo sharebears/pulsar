@@ -1,7 +1,7 @@
 import flask
 from collections import defaultdict
 from voluptuous import Invalid
-from .models import UserPermission, UserClass
+from .models import UserPermission
 from pulsar import APIException
 from pulsar.utils import get_all_permissions
 
@@ -68,20 +68,6 @@ def permissions_dict(val):
     else:
         raise Invalid('input value must be a dictionary')
     return val
-
-
-def val_unique_user_class(uc):
-    """
-    Validates the uniqueness of a user class.
-
-    :param str uc: Name of the user class to validate
-
-    :return: Input ``val``
-    :raises Invalid: A user class already has that name
-    """
-    if UserClass.from_name(uc):
-        raise Invalid(f'Invalid data: {uc} is taken by another user class,')
-    return uc
 
 
 def check_permissions(user, permissions):

@@ -1,12 +1,12 @@
-from pulsar import ma
 from .models import User
+from pulsar import ma
 from pulsar.auth.schemas import APIKeySchema, SessionSchema
 
 
 class UserSchema(ma.ModelSchema):
     class Meta:
         model = User
-        fields = ('id', 'username', 'invites', 'user_class')
+        fields = ('id', 'username', 'invites', 'user_class', 'secondary_classes')
 
 
 class DetailedUserSchema(ma.ModelSchema):

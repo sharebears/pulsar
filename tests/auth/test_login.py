@@ -1,3 +1,4 @@
+import json
 import pytest
 from voluptuous import Invalid
 from conftest import check_json_response
@@ -5,8 +6,8 @@ from pulsar.auth.views.login import login_schema
 
 
 def test_login_success(client):
-    response = client.post('/login', json={
-        'username': 'lights', 'password': '12345'})
+    response = client.post('/login', data=json.dumps({
+        'username': 'lights', 'password': '12345'}))
     response_data = response.get_json()
     assert response_data['response']['active'] is True
     assert 'ip' in response_data['response'] and 'csrf_token' in response_data['response']
@@ -15,19 +16,19 @@ def test_login_success(client):
 
 
 def test_login_persistent(client):
-    response = client.post('/login', json={
+    response = client.post('/login', data=json.dumps({
         'username': 'lights',
         'password': '12345',
         'persistent': True,
-        })
+        }))
     response_data = response.get_json()
 
     assert response_data['response']['persistent'] is True
 
 
 def test_login_failure(client):
-    response = client.post('/login', json={
-        'username': 'not_lights', 'password': '54321'})
+    response = client.post('/login', data=json.dumps({
+        'username': 'not_lights', 'password': '54321'}))
 
     check_json_response(response, 'Invalid credentials.')
     assert response.status_code == 401
