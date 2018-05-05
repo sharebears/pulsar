@@ -3,13 +3,10 @@
 - [x] Documentation outline via Sphinx
 - [x] Document existing endpoints
 - [x] Make Volup validators out of registration validators
-- [-] User Classes, advanced permissioning
+- [x] User Classes, advanced permissioning
 - [ ] User manipulation (enable/disable/lock)
 - [ ] Rate Limiting
 - [ ] Forums
-
-## User Classes
-- [ ] Staff `/tools` for manipulation
 
 # TODO
 
@@ -29,15 +26,16 @@
 - [ ] Pagination abstraction
 
 ## Users
-- [ ] Administration Functions
-- [ ] Schema Completion
+- [x] Administration Functions
+- [x] Schema Completion
 - [x] Registration
 - [x] Invites
 
 ## Permissions
-- [ ] User Classes (Pri & Sec)
+- [x] Primary User Classes
 - [x] Individual Permissions
 - [x] Turn every endpoint into a permission?
+- [ ] Secondary User Classes
 
 ## Forums
 - [ ] Entire Forum View
@@ -49,16 +47,12 @@
 - [ ] Posting
 
 ## Rules
-- [ ] Golden Rules
-- [ ] Rule Categories
-- [ ] Rule Addition/Edit/Deletion
-- [ ] Individual Rule
-- [ ] Rule Versioning
+- [ ] Fuck it, we're going to make these dictionaries and serve them
+- [ ] Built in git versioning
 
 ## Index
 - [ ] Basic user info, API version
 - [ ] SiteStatus endpoint, yada yada
-- [ ] Escaping?
 - [ ] News Posts
 
 ## Wiki
@@ -132,10 +126,6 @@
 ## RSS Feeds
 - [ ] Later
 
-## Donations
-- [ ] Later
-
-
 # Post-MVP
 
 ## General
@@ -145,5 +135,5 @@
 - [ ] Community Stats
 - [ ] Data Visualization
 
-
-
+## Donations
+- [ ] Unique wallet generation a la Gazelle
