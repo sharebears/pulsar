@@ -8,4 +8,9 @@ SECRET_KEY = b'a very insecure secret key'
 
 SITE_PRIVATE = True
 REQUIRE_INVITE_CODE = None
+LOCKED_ACCOUNT_PERMISSIONS = [
+    'view_staff_pm',
+    'send_staff_pm',
+    'resolve_staff_pm',
+    ]
 INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days

@@ -207,7 +207,7 @@ def test_view_resource_with_user_restriction(app, client):
         return flask.jsonify('completed')
     response = client.get('/test_restricted_resource', headers={
         'Authorization': f'Token abcdefghij{CODE_1}'})
-    check_json_response(response, 'Resource does not exist.')
+    check_json_response(response, 'You do not have permission to access this resource.')
 
 
 def test_view_resource_with_api_key_restriction(app, client):
@@ -232,5 +232,5 @@ def test_view_resource_with_api_key_restriction(app, client):
     ])
 def test_route_permissions(app, authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)
-    assert response.status_code == 404
-    check_json_response(response, 'Resource does not exist.')
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403

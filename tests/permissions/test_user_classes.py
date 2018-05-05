@@ -203,3 +203,18 @@ def test_modify_user_class_nonexistent(app, authed_client):
     response = authed_client.put('/user_classes/kukuku', data=json.dumps({
         'permissions': {'send_invites': True}})).get_json()
     assert response['response'] == 'User class kukuku does not exist.'
+
+
+@pytest.mark.parametrize(
+    'endpoint, method', [
+        ('/user_classes/user', 'GET'),
+        ('/user_classes', 'GET'),
+        ('/user_classes', 'POST'),
+        ('/user_classes/usar', 'DELETE'),
+        ('/user_classes/usir', 'PUT'),
+    ])
+def test_route_permissions(authed_client, endpoint, method):
+    db.engine.execute("DELETE FROM users_permissions")
+    response = authed_client.open(endpoint, method=method)
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403

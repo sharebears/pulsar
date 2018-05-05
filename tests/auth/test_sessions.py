@@ -144,5 +144,5 @@ def test_expire_all_sessions(app, authed_client, endpoint):
     ])
 def test_route_permissions(app, authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)
-    assert response.status_code == 404
-    check_json_response(response, 'Resource does not exist.')
+    assert response.status_code == 403
+    check_json_response(response, 'You do not have permission to access this resource.')

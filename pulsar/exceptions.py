@@ -53,12 +53,10 @@ class _401Exception(APIException):
             status_code=401)
 
 
-"""
 class _312Exception(APIException):
-    "Hopefully keep Alastor away from this codebase."
-    def __init__(self):
+    "Alastor please stay away from this codebase, thanks!."
+    def __init__(self, lock=False):
         super().__init__(
-            message='Your account has been disabled.',
+            message=f'Your account has been {"locked" if lock else "disabled"}',
             status_code=403,
             )
-"""

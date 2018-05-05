@@ -128,9 +128,15 @@ def test_user_class_permission_override(app, authed_client):
 @pytest.mark.parametrize(
     'endpoint, method', [
         ('/permissions', 'GET'),
-        ('/permissions/all', 'GET'),
         ('/permissions/user/1', 'PUT'),
     ])
 def test_route_permissions(authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)
-    assert response.status_code == 404
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403
+
+
+def test_get_all_permissions_permission(authed_client):
+    response = authed_client.get('/permissions', query_string={'all': 'true'})
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403

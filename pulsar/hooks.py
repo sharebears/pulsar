@@ -2,7 +2,7 @@ import json
 import pytz
 import flask
 from datetime import datetime
-from pulsar import db, _403Exception, APIException
+from pulsar import db, APIException, _403Exception, _312Exception
 from pulsar.auth.models import Session, APIKey
 
 bp = flask.Blueprint('hooks', __name__)
@@ -24,6 +24,9 @@ def before_hook():
         check_api_key()
 
     if flask.g.user:
+        if not flask.g.user.enabled:
+            raise _312Exception
+
         if flask.g.user.has_permission('no_ip_history'):
             flask.request.environ['REMOTE_ADDR'] = '0.0.0.0'
 

@@ -156,11 +156,11 @@ def test_revoke_invite(app, authed_client, code, expected, invites):
 @pytest.mark.parametrize(
     'endpoint, method', [
         ('/invites', 'GET'),
+        ('/invites/user/1', 'GET'),
         ('/invites', 'POST'),
         ('/invites/abc', 'DELETE'),
-        ('/invitees', 'GET'),
     ])
 def test_route_permissions(authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)
-    check_json_response(response, 'Resource does not exist.')
-    assert response.status_code == 404
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403

@@ -36,7 +36,8 @@ def test_user_has_permission(app):
         assert not user.has_permission('nonexistent_permission')
 
 
-def test_get_user(authed_client):
+def test_get_user(app, authed_client):
+    add_permissions(app, 'view_users')
     response = authed_client.get('/users/1')
     check_json_response(response, {
         'id': 1,
@@ -47,13 +48,8 @@ def test_get_user(authed_client):
     assert response.status_code == 200
 
 
-def test_get_user_unauthed(client):
-    response = client.get('/users/1')
-    assert response.status_code == 404
-    check_json_response(response, 'Resource does not exist.')
-
-
-def test_user_does_not_exist(authed_client):
+def test_user_does_not_exist(app, authed_client):
+    add_permissions(app, 'view_users')
     response = authed_client.get('/users/4')
     check_json_response(response, 'User does not exist.', strict=True)
     assert response.status_code == 404
@@ -89,5 +85,5 @@ def test_change_password_others(app, authed_client):
     ])
 def test_route_permissions(app, authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)
-    check_json_response(response, 'Resource does not exist.')
-    assert response.status_code == 404
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403

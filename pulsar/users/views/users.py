@@ -3,13 +3,13 @@ from .. import bp
 from ..models import User
 from ..schemas import user_schema
 from pulsar import _404Exception
-from pulsar.utils import require_auth
+from pulsar.utils import require_permission
 
 app = flask.current_app
 
 
 @bp.route('/users/<int:user_id>', methods=['GET'])
-@require_auth
+@require_permission('view_users')
 def get_user(user_id):
     """
     Return general information about a user with the given user ID.

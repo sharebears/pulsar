@@ -7,37 +7,31 @@ from pulsar.users.models import User
 app = flask.current_app
 
 
-def require_auth(func):
-    """
-    If the site is private, this decorator requires that ``flask.g.user`` exist.
-    If the site is public, nothing happens.
-
-    Note: ``flask.g.user`` can be None with this decorator, unlike in require_permission.
-    """
-    @wraps(func)
-    def new_function(*args, **kwargs):
-        if app.config['SITE_PRIVATE'] and not flask.g.user:
-            raise _403Exception(masquerade=True)
-        return func(*args, **kwargs)
-    return new_function
-
-
-def require_permission(permission):
+def require_permission(permission, masquerade=False):
     """
     Requires a user to have the specified permission to access the view function.
 
     :param str permission: The permission required to access the API endpoint.
+    :param bool masquerade: Whether or not to disguise the failed view attempt as
+        a 404.
 
     :raises _403Exception: If the user does not exist or does not have enough
-        permission to view the resource. This 403 is masqueraded as a 404.
+        permission to view the resource. Locked accounts are given a different message.
+        This can be masqueraded as a 404.
     :raises _403Exception: If an API Key is used and does not have enough permissions to
         access the resource.
     """
     def wrapper(func):
         @wraps(func)
         def new_function(*args, **kwargs):
-            if not flask.g.user or not flask.g.user.has_permission(permission):
+            if not flask.g.user:
                 raise _403Exception(masquerade=True)
+
+            if not flask.g.user.has_permission(permission):
+                if flask.g.user.locked and not masquerade:
+                    raise _403Exception(message='Your account has been locked.')
+                raise _403Exception(masquerade=masquerade)
+
             if flask.g.api_key and not flask.g.api_key.has_permission(permission):
                 raise _403Exception(message='This API Key does not have permission to '
                                     'access this resource.')

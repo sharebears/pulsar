@@ -3,7 +3,6 @@ import flask
 import pytest
 from conftest import CODE_1
 from pulsar import db
-from pulsar.utils import require_auth
 
 
 @pytest.fixture(autouse=True)
@@ -55,7 +54,6 @@ def test_unauthorized_csrf_token(app, client):
     app.config['SITE_PRIVATE'] = False
 
     @app.route('/test_endpoint')
-    @require_auth
     def test_endpoint():
         return flask.jsonify('test')
 

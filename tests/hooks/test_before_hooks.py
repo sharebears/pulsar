@@ -127,17 +127,6 @@ def test_unneeded_csrf_validation(app, client):
         '/users/change_password',
         '/not/a/real/route',
     ])
-def test_false_csrf_validation_authkey(app, client, endpoint):
-    response = client.put(endpoint, headers={
-        'Authorization': f'Token abcdefghij{CODE_1}'})
-    check_json_response(response, 'Resource does not exist.')
-
-
-@pytest.mark.parametrize(
-    'endpoint', [
-        '/users/change_password',
-        '/not/a/real/route',
-    ])
 def test_false_csrf_validation_session(app, client, endpoint):
     with client.session_transaction() as sess:
         sess['user_id'] = 1
