@@ -24,15 +24,6 @@ Settings
    :groupby: view
    :order: path
 
-Permissions
------------
-
-.. autoflask:: pulsar:create_app('config.py')
-   :undoc-static:
-   :groupby: view
-   :modules: pulsar.users.views.permissions
-   :order: path
-
 Registration
 ------------
 

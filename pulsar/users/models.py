@@ -1,10 +1,10 @@
 import pulsar.invites.models  # noqa
+import pulsar.permissions.models  # noqa
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func, and_
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.dialects.postgresql import ARRAY
 from pulsar import db
 
 
@@ -17,7 +17,7 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, server_default='t')
     user_class = db.Column(db.String, db.ForeignKey('user_classes.user_class'),
-                           nullable=False, server_default='user')
+                           nullable=False, server_default='User')
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
@@ -37,6 +37,7 @@ class User(db.Model):
 
     @hybrid_property
     def permissions(self):
+        from pulsar.permissions.models import UserClass, UserPermission
         permissions = (
             db.session.query(UserClass.permissions)
             .filter(UserClass.user_class == self.user_class)
@@ -71,40 +72,3 @@ class User(db.Model):
 
     def has_permission(self, permission):
         return permission in self.permissions
-
-
-class UserPermission(db.Model):
-    __tablename__ = 'users_permissions'
-
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    permission = db.Column(db.String(32), primary_key=True)
-    granted = db.Column(db.Boolean, nullable=False, server_default='t')
-
-    @classmethod
-    def from_attrs(cls, user_id, permission):
-        return cls.query.filter(and_(
-            (cls.user_id == user_id),
-            (cls.permission == permission),
-            )).one_or_none()
-
-    @classmethod
-    def from_user(cls, user_id):
-        """
-        Gets a dict of all custom permissions assigned to a user.
-
-        :param int user_id: User ID the permissions belong to
-        :return: A ``dict`` of permissions with a permission ``str`` as the key
-            and a granted ``boolean`` as the value.
-        """
-        permissions = cls.query.filter(cls.user_id == user_id).all()
-        response = {}
-        for perm in permissions:
-            response[perm.permission] = perm.granted
-        return response
-
-
-class UserClass(db.Model):
-    __tablename__ = 'user_classes'
-
-    user_class = db.Column(db.String(24), primary_key=True)
-    permissions = db.Column(ARRAY(db.String(32)))

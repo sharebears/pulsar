@@ -14,10 +14,3 @@ Schemas
 .. automodule:: pulsar.auth.schemas
     :members:
     :show-inheritance:
-
-Validators
-----------
-
-.. automodule:: pulsar.auth.validators
-    :members:
-    :show-inheritance:

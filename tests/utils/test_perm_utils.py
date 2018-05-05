@@ -1,11 +1,8 @@
-import json
 import flask
 import pytest
-from voluptuous import Invalid
 from conftest import add_permissions, check_json_response
 from pulsar import db
 from pulsar.utils import assert_user, assert_permission
-from pulsar.auth.validators import permissions_list
 
 
 @pytest.fixture(autouse=True)
@@ -55,22 +52,3 @@ def test_assert_permission(app, authed_client, permission, masquerade, expected)
 
     response = authed_client.get('/test_assert_perm')
     check_json_response(response, expected)
-
-
-@pytest.mark.parametrize(
-    'permissions', [
-        ['samp_perm_four', 'nonexistent_perm'],
-        False,
-    ])
-def test_permissions_list_error(app, authed_client, permissions):
-    @app.route('/test_permissions_error', methods=['POST'])
-    def test_permissions_error():
-        with pytest.raises(Invalid):
-            data = json.loads(flask.request.get_data())
-            permissions_list(data['permissions'])
-        return flask.jsonify('completed')
-
-    response = authed_client.post(
-        '/test_permissions_error', data=json.dumps({'permissions': permissions}),
-        content_type='application/json')
-    check_json_response(response, 'completed')

@@ -1,6 +1,6 @@
 import secrets
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from pulsar import db
 
 

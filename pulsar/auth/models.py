@@ -1,7 +1,7 @@
 import secrets
 import pulsar.users.models  # noqa
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import INET, ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 from pulsar import db

@@ -3,9 +3,9 @@ from voluptuous import Schema, Optional
 from .. import bp
 from ..models import APIKey
 from ..schemas import api_key_schema, multiple_api_key_schema
-from ..validators import permissions_list
 from pulsar import db, APIException, _404Exception
 from pulsar.utils import require_permission, validate_data, choose_user, bool_get
+from pulsar.permissions.validators import permissions_list_of_user
 
 app = flask.current_app
 
@@ -142,7 +142,7 @@ def view_all_api_keys(include_dead, user_id=None):
 
 
 create_api_key_schema = Schema({
-    Optional('permissions', default=[]): permissions_list,
+    Optional('permissions', default=[]): permissions_list_of_user,
     })
 
 

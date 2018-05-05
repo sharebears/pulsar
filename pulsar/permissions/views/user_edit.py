@@ -1,10 +1,12 @@
 import flask
 from .. import bp
+from ..models import UserPermission
+from ..validators import permissions_dict, check_permissions
 from voluptuous import Schema, Optional
 from pulsar import db, APIException
+from pulsar.users.models import User
 from pulsar.utils import (choose_user, assert_permission, require_permission,
                           get_all_permissions, validate_data, bool_get)
-from pulsar.users.validators import permissions_dict
 
 app = flask.current_app
 
@@ -126,46 +128,28 @@ def change_permissions(user_id, permissions):
         an existing permission
     :statuscode 404: User lacks sufficient permissions to make a request
     """
-    user = ''
-    to_add, to_delete = check_permissions(user, permissions)
+    user = User.from_id(user_id)
+    to_add, to_ungrant, to_delete = check_permissions(user, permissions)
+
+    # Validate that ungrant permissions all exist, since permissions_dict doesn't.
+    existing_permissions = get_all_permissions()
+    for p in to_ungrant:
+        if p not in existing_permissions:
+            raise APIException(f'{p} is not a valid permission.')
 
     for permission in to_delete:
+        permission = UserPermission.from_attrs(user.id, permission)
         db.session.delete(permission)
+    db.session.commit()
     for perm_name in to_add:
-        db.session.add("UserPermission".format(
+        db.session.add(UserPermission(
             user_id=user.id,
             permission=perm_name))
+    for perm_name in to_ungrant:
+        db.session.add(UserPermission(
+            user_id=user.id,
+            permission=perm_name,
+            granted=False))
     db.session.commit()
 
     return flask.jsonify({'permissions': user.permissions})
-
-
-def check_permissions(user, permissions):
-    """
-    Validates that the provided permissions can be applied to the user class.
-
-    :param User user: The recipient of the permission changes.
-    :param dict permissions: A dictionary of permission changes,
-        with permission name and boolean (True = Add, False = Remove)
-        key value pairs.
-    :return: A tuple of lists, one of permissions to add and another of
-        permissions to remove.
-    :type: tuple
-    :raises APIException: If the user already has a to-add permission or
-        lacks a to-delete permission.
-    """
-    to_add, to_delete = [], []
-    for perm_name, action in permissions.items():
-        permission = ''
-        has_permission = user.has_permission(perm_name)
-        if has_permission and not action:
-            to_delete.append(permission)
-        elif not has_permission and action:
-            to_add.append(perm_name)
-        else:
-            if has_permission:
-                raise APIException(
-                    f'{user.username} already has the permission {perm_name}.')
-            raise APIException(
-                f'{user.username} does not have the permission {perm_name}.')
-    return (to_add, to_delete)

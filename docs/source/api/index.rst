@@ -20,4 +20,5 @@ as case insensitive.
 
    users
    authentication
+   permissions
    invites

@@ -40,7 +40,7 @@ def test_get_user(authed_client):
     check_json_response(response, {
         'id': 1,
         'username': 'lights',
-        'user_class': 'user',
+        'user_class': 'User',
         })
     assert response.status_code == 200
 

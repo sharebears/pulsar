@@ -109,7 +109,7 @@ def set_user(app_, user):
 
 def populate_db():
     "Populate the database with test user information."
-    db.engine.execute("""INSERT INTO user_classes VALUES ('user')""")
+    db.engine.execute("""INSERT INTO user_classes VALUES ('User')""")
     db.engine.execute(
         f"""INSERT INTO users (username, passhash, email, invites, inviter_id) VALUES
         ('lights', '{HASHED_PASSWORD_1}', 'lights@puls.ar', 1, NULL),

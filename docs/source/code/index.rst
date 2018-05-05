@@ -13,4 +13,5 @@ Code documentation for the pulsar project.
    utils
    users
    authentication
+   permissions
    invites
