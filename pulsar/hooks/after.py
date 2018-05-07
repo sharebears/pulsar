@@ -5,13 +5,17 @@ from . import bp
 
 @bp.after_app_request
 def hook(response):
-    """
-    After receiving a response from the controller, wrap it in a standardized
-    response dictionary and re-serialize it as JSON. Set the `status` key per
-    the status_code, and if the request came from a session, add the csrf_token
-    to the response.
+    wrap_response(response)
+    return response
 
-    :param Response response: A response object with a JSON serialized message.
+
+def wrap_response(response):
+    """
+    Wrap response with the homogenized response dictionary, containing
+    a ``status`` key and, if the request came with session-based
+    authentication, a ``csrf_token`` key.
+
+    :param Response response: The flask response en route to user
     """
     try:
         data = json.loads(response.get_data())
@@ -27,5 +31,3 @@ def hook(response):
         response_data['csrf_token'] = flask.g.csrf_token
 
     response.set_data(json.dumps(response_data))
-
-    return response

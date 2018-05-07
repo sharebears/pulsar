@@ -11,7 +11,7 @@ REDIS_PARAMS = {
     'port': 6379,
     'password': None,
     'db': None,
-    'key_prefix': None,
+    'key_prefix': 'pulsar_test',
     }
 
 SITE_PRIVATE = True

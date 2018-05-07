@@ -68,10 +68,10 @@ def ration_bytes(bytes_):
     """
     Validate that an input is a positive integer and a valid number of bytes.
 
-    :param int bytes_: The input byte count
+    :param int bytes\\_: The input byte count
 
-    :return: The input bytes_ (``int``)
-    :raises Invalid: bytes_ is not a valid ``int`` byte count
+    :return: The input bytes\\_ (``int``)
+    :raises Invalid: bytes\\_ is not a valid ``int`` byte count
     """
     if isinstance(bytes_, int) and bytes_ >= 0 and len(str(bytes_)) <= 20:
         return bytes_

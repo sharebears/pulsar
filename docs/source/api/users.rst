@@ -38,7 +38,6 @@ Registration
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :include-empty-docstring:
    :groupby: view
    :modules: pulsar.users.views.register
    :order: path

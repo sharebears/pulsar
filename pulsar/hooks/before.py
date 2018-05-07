@@ -9,11 +9,6 @@ from pulsar.auth.models import Session, APIKey
 
 @bp.before_app_request
 def hook():
-    """
-    Before relaying the request to the proper controller, check authentication,
-    wipe requester IP if the 'no_ip_history' permission is set, and if a user is found,
-    validate any POST requests to ensure that no CSRF is occuring.
-    """
     flask.g.user = None
     flask.g.api_key = None
     flask.g.user_session = None
