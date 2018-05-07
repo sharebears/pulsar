@@ -1,11 +1,17 @@
 import json
 import flask
 import pytest
+from collections import namedtuple
 from voluptuous import Schema, Optional
 from pulsar.utils import validate_data
 from conftest import CODE_1, CODE_2, HASHED_CODE_1, add_permissions, check_json_response
-from pulsar import db
+from pulsar import db, APIException
+from pulsar.users.models import User
 from pulsar.auth.models import Session
+
+
+def cache_num_iter(*args, **kwargs):
+    return next(CACHE_NUM)
 
 
 @pytest.fixture(autouse=True)
@@ -164,3 +170,40 @@ def test_disabled_user(app, client):
 
     response = client.get('/fake_endpoint')
     check_json_response(response, 'Your account has been disabled.')
+
+
+def test_rate_limit_fail(app, client, monkeypatch):
+    monkeypatch.setattr('pulsar.hooks.before.cache.inc', lambda *a, **k: 51)
+    monkeypatch.setattr('pulsar.hooks.before.cache.ttl', lambda *a, **k: 7)
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['session_hash'] = 'abcdefghij'
+
+    response = client.get('/fake_endpoint')
+    check_json_response(response, 'Client rate limit exceeded. 7 seconds until limit expires.')
+
+
+def test_rate_limit_user_fail(app, client, monkeypatch):
+    global CACHE_NUM
+    CACHE_NUM = iter([2, 71])
+    monkeypatch.setattr('pulsar.hooks.before.cache.inc', cache_num_iter)
+    monkeypatch.setattr('pulsar.hooks.before.cache.ttl', lambda *a, **k: 7)
+    response = client.get('/fake_endpoint', headers={
+        'Authorization': f'Token abcdefghij{CODE_1}',
+        })
+    check_json_response(response, 'User rate limit exceeded. 7 seconds until limit expires.')
+
+
+def test_rate_limit_function(app, client, monkeypatch):
+    from pulsar.hooks.before import check_rate_limit
+    g = namedtuple('g', ['user', 'user_session', 'api_key'])
+    api_key = namedtuple('APIKey', ['hash'])
+    monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
+        user=User.from_id(1),
+        user_session=None,
+        api_key=api_key(hash='abcdefghij'),
+        ))
+    with pytest.raises(APIException) as e:
+        for i in range(62):
+            check_rate_limit()
+    assert 'Client rate limit exceeded.' in e.value.message

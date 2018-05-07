@@ -1,15 +1,14 @@
 import json
 import pytz
 import flask
+from . import bp
 from datetime import datetime
-from pulsar import db, APIException, _403Exception, _312Exception
+from pulsar import db, cache, APIException, _403Exception, _312Exception
 from pulsar.auth.models import Session, APIKey
-
-bp = flask.Blueprint('hooks', __name__)
 
 
 @bp.before_app_request
-def before_hook():
+def hook():
     """
     Before relaying the request to the proper controller, check authentication,
     wipe requester IP if the 'no_ip_history' permission is set, and if a user is found,
@@ -30,39 +29,13 @@ def before_hook():
         if flask.g.user.has_permission('no_ip_history'):
             flask.request.environ['REMOTE_ADDR'] = '0.0.0.0'
 
+        check_rate_limit()
+
         # The only unauthorized POST method allowed is registration,
         # which does not have a user global and therefore doesn't require
         # CSRF protection.
         if flask.g.user_session and flask.request.method in ['POST', 'PUT', 'DELETE']:
             check_csrf()
-
-
-@bp.after_app_request
-def after_hook(response):
-    """
-    After receiving a response from the controller, wrap it in a standardized
-    response dictionary and re-serialize it as JSON. Set the `status` key per
-    the status_code, and if the request came from a session, add the csrf_token
-    to the response.
-
-    :param Response response: A response object with a JSON serialized message.
-    """
-    try:
-        data = json.loads(response.get_data())
-    except ValueError:  # pragma: no cover
-        data = 'Could not encode response.'
-
-    response_data = {
-        'status': 'success' if response.status_code // 100 == 2 else 'failed',
-        'response': data,
-        }
-
-    if getattr(flask.g, 'csrf_token', None):
-        response_data['csrf_token'] = flask.g.csrf_token
-
-    response.set_data(json.dumps(response_data))
-
-    return response
 
 
 def check_user_session():
@@ -132,6 +105,33 @@ def parse_key(headers):
         if len(parts) == 2 and parts[0] == 'Token':
             return parts[1]
     return None
+
+
+def check_rate_limit():
+    """
+    Check whether or not a user has exceeded the rate limits of
+    50 requests / 80 seconds per API key or session and 70 requests / 80 seconds
+    per account. Records requests in the cache DB.
+
+    :raises APIException: If the rate limit has been exceeded
+    """
+    user_cache_key = f'rate_limit_user_{flask.g.user.id}'
+    if flask.g.user_session:
+        auth_cache_key = f'rate_limit_session_{flask.g.user_session.hash}'
+    else:  # API key
+        auth_cache_key = f'rate_limit_session_{flask.g.api_key.hash}'
+
+    auth_specific_requests = cache.inc(auth_cache_key, timeout=80)
+    if auth_specific_requests > 50:
+        time_left = cache.ttl(auth_cache_key)
+        raise APIException('Client rate limit exceeded. '
+                           f'{time_left} seconds until limit expires.')
+
+    user_specific_requests = cache.inc(user_cache_key, timeout=80)
+    if user_specific_requests > 70:
+        time_left = cache.ttl(user_cache_key)
+        raise APIException('User rate limit exceeded. '
+                           f'{time_left} seconds until limit expires.')
 
 
 def check_csrf():

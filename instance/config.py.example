@@ -1,11 +1,19 @@
 # General Flask settings
 DEBUG = False
 PRESERVE_CONTEXT_ON_EXCEPTION = False
-SECRET_KEY = b"generate a secure secret key with lots of entropy"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost/pulsar'
-REDIS_URL = 'redis:///0'
+SECRET_KEY = b"generate a secure secret key with lots of entropy"
+
+# Redis connection parameters
+REDIS_PARAMS = {
+    'host': 'localhost',
+    'port': 6379,
+    'password': None,
+    'db': None,
+    'key_prefix': None,
+    }
 
 # Determines whether or not unauthenticated users can view pages
 # with the @required_auth decorator. If True, unauthenticated users

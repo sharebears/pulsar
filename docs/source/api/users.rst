@@ -24,6 +24,15 @@ Settings
    :groupby: view
    :order: path
 
+Moderation
+----------
+
+.. autoflask:: pulsar:create_app('config.py')
+   :undoc-static:
+   :modules: pulsar.users.views.moderate
+   :groupby: view
+   :order: path
+
 Registration
 ------------
 

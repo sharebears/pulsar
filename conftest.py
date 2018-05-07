@@ -1,7 +1,7 @@
 import flask
 import pytest
 from contextlib import contextmanager
-from pulsar import create_app, db
+from pulsar import create_app, db, cache
 from pulsar.users.models import User
 
 HASHED_PASSWORD_1 = ('pbkdf2:sha256:50000$XwKgylbI$a4868823e7889553e3cb9f'
@@ -70,7 +70,10 @@ def db_create_tables():
 
 
 @pytest.fixture
-def app():
+def app(monkeypatch):
+    from werkzeug.contrib.cache import SimpleCache
+    monkeypatch.setattr('pulsar.cache', SimpleCache())
+
     app = create_app('test_config.py')
     with app.app_context():
         unpopulate_db()
@@ -122,6 +125,8 @@ def populate_db():
 
 def unpopulate_db():
     "Unpopulate the database with test user information."
+    import pulsar
+    pulsar.cache.clear()
     db.engine.execute("DELETE FROM secondary_class_assoc")
     db.engine.execute("DELETE FROM users_permissions")
     db.engine.execute("DELETE FROM sessions")

@@ -5,21 +5,20 @@
 - [x] Make Volup validators out of registration validators
 - [x] User Classes, advanced permissioning
 - [x] User manipulation (enable/disable/lock)
-- [ ] Rate Limiting
+- [x] Rate Limiting
 - [ ] Forums
 
 # TODO
 
 ## Caching - Help Wanted
+- [x] Redis
 - [ ] Maybe only cache the heavier queries? Will indices suffice?
-- [ ] Redis/Celery
 - [ ] Implement caching at the models level in `from_id` and `from_hash` methods.
       Have an override flag able to re-query those elements.
       Populate an object with `setattr()`, not sure how that works with
       object updates though
 - [ ] Cache relationships separately? Cache relationships per parent PK and
       load/save those separately?
-- [ ] Flask-Cache with memoization?
 
 ## General
 - [x] Form validation with voluptuous
