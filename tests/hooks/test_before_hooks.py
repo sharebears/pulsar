@@ -3,7 +3,7 @@ import flask
 import pytest
 from voluptuous import Schema, Optional
 from pulsar.utils import validate_data
-from conftest import CODE_1, HASHED_CODE_1, add_permissions, check_json_response
+from conftest import CODE_1, CODE_2, HASHED_CODE_1, add_permissions, check_json_response
 from pulsar import db
 from pulsar.auth.models import Session
 
@@ -12,7 +12,8 @@ from pulsar.auth.models import Session
 def populate_db(client):
     db.engine.execute(
         f"""INSERT INTO sessions (hash, user_id, csrf_token) VALUES
-        ('abcdefghij', 1, '{CODE_1}')
+        ('abcdefghij', 1, '{CODE_1}'),
+        ('bcdefghijk', 2, '{CODE_2}')
         """)
     db.engine.execute(
         f"""INSERT INTO api_keys (hash, user_id, keyhashsalt) VALUES
@@ -153,3 +154,13 @@ def test_bad_data(app, client):
 
     response = client.post('/fake_endpoint', data=b'{a malformed ",json"}')
     check_json_response(response, 'Malformed input. Is it JSON?')
+
+
+def test_disabled_user(app, client):
+    db.engine.execute("UPDATE users SET enabled = 'f' where id = 2")
+    with client.session_transaction() as sess:
+        sess['user_id'] = 2
+        sess['session_hash'] = 'bcdefghijk'
+
+    response = client.get('/fake_endpoint')
+    check_json_response(response, 'Your account has been disabled.')

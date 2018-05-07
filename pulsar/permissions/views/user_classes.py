@@ -13,14 +13,14 @@ from pulsar.users.models import User
 app = flask.current_app
 
 secondary_schema = Schema({
-    Optional('secondary', default=False): bool_get,
+    'secondary': bool_get,
     })
 
 
 @bp.route('/user_classes/<user_class_name>', methods=['GET'])
 @require_permission('list_user_classes')
 @validate_data(secondary_schema)
-def view_user_class(user_class_name, secondary):
+def view_user_class(user_class_name, secondary=False):
     """
     View an available user class and its associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -71,7 +71,7 @@ def view_user_class(user_class_name, secondary):
 @bp.route('/user_classes', methods=['GET'])
 @require_permission('list_user_classes')
 @validate_data(secondary_schema)
-def view_multiple_user_classes(secondary):
+def view_multiple_user_classes(secondary=False):
     """
     View all available user classes and their associated permission sets.
     Requires the ``list_user_classes`` permission.

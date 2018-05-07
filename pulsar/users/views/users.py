@@ -1,7 +1,7 @@
 import flask
 from .. import bp
 from ..models import User
-from ..schemas import user_schema
+from ..schemas import user_schema, detailed_user_schema
 from pulsar import _404Exception
 from pulsar.utils import require_permission
 
@@ -53,4 +53,7 @@ def get_user(user_id):
     user = User.from_id(user_id)
     if not user:
         raise _404Exception('User')
+    if flask.g.user == user or flask.g.user.has_permission('view_users_detailed'):
+        # Do not fuck this permissioning up.
+        return detailed_user_schema.jsonify(user)
     return user_schema.jsonify(user)

@@ -6,14 +6,31 @@ from pulsar.auth.schemas import APIKeySchema, SessionSchema
 class UserSchema(ma.ModelSchema):
     class Meta:
         model = User
-        fields = ('id', 'username', 'invites', 'user_class', 'secondary_classes')
+        fields = ('id',
+                  'username',
+                  'user_class',
+                  'secondary_classes',
+                  'uploaded',
+                  'downloaded',
+                  'invites',
+                  )
 
 
 class DetailedUserSchema(ma.ModelSchema):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'api_keys', 'sessions', 'user_class', 'invites')
+        fields = ('id',
+                  'username',
+                  'email',
+                  'user_class',
+                  'secondary_classes',
+                  'uploaded',
+                  'downloaded',
+                  'invites',
+                  'api_keys',
+                  'sessions',
+                  )
 
     api_keys = ma.Nested(APIKeySchema)
     sessions = ma.Nested(SessionSchema)

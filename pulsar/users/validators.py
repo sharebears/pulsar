@@ -62,3 +62,17 @@ def val_invite_code(code):
     if code:
         raise Invalid(f'{code} is not a valid invite code')
     raise Invalid(f'an invite code is required for registration')
+
+
+def ration_bytes(bytes_):
+    """
+    Validate that an input is a positive integer and a valid number of bytes.
+
+    :param int bytes_: The input byte count
+
+    :return: The input bytes_ (``int``)
+    :raises Invalid: bytes_ is not a valid ``int`` byte count
+    """
+    if isinstance(bytes_, int) and bytes_ >= 0 and len(str(bytes_)) <= 20:
+        return bytes_
+    raise Invalid('number must be a valid <20 digit bytes count')

@@ -25,6 +25,9 @@ class User(db.Model):
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
+    uploaded = db.Column(db.BigInteger, nullable=False, server_default='5368709120')  # 5 GB
+    downloaded = db.Column(db.BigInteger, nullable=False, server_default='0')
+
     sessions = relationship('Session', back_populates='user')
     api_keys = relationship('APIKey', back_populates='user')
     secondary_class_objs = relationship(
@@ -42,6 +45,9 @@ class User(db.Model):
         self.username = username
         self.passhash = generate_password_hash(password)
         self.email = email.lower().strip()
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     @property
     def secondary_classes(self):

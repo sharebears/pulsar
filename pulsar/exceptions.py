@@ -57,6 +57,6 @@ class _312Exception(APIException):
     "Alastor please stay away from this codebase, thanks!."
     def __init__(self, lock=False):
         super().__init__(
-            message=f'Your account has been {"locked" if lock else "disabled"}',
+            message=f'Your account has been {"locked" if lock else "disabled"}.',
             status_code=403,
             )

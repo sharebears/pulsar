@@ -36,7 +36,7 @@ def test_user_has_permission(app):
         assert not user.has_permission('nonexistent_permission')
 
 
-def test_get_user(app, authed_client):
+def test_get_user_self(app, authed_client):
     add_permissions(app, 'view_users')
     response = authed_client.get('/users/1')
     check_json_response(response, {
@@ -46,6 +46,36 @@ def test_get_user(app, authed_client):
         'secondary_classes': ['FLS'],
         })
     assert response.status_code == 200
+
+
+def test_get_user(app, authed_client):
+    add_permissions(app, 'view_users')
+    response = authed_client.get('/users/2')
+    check_json_response(response, {
+        'id': 2,
+        'username': 'paffu',
+        'user_class': 'User',
+        })
+    assert response.status_code == 200
+    data = response.get_json()
+    assert 'api_keys' not in data['response']
+    assert 'email' not in data['response']
+
+
+def test_get_user_detailed(app, authed_client):
+    add_permissions(app, 'view_users', 'view_users_detailed')
+    response = authed_client.get('/users/1')
+    check_json_response(response, {
+        'id': 1,
+        'username': 'lights',
+        'user_class': 'User',
+        'secondary_classes': ['FLS'],
+        'downloaded': 0,
+        'email': 'lights@puls.ar',
+        })
+    assert response.status_code == 200
+    data = response.get_json()
+    assert 'api_keys' in data['response']
 
 
 def test_user_does_not_exist(app, authed_client):

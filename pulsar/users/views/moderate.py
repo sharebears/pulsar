@@ -1,25 +1,29 @@
 import flask
-from voluptuous import Schema, Optional
+from voluptuous import Schema, Email
 from voluptuous.validators import Match
 from .. import bp
 from ..models import User
-from pulsar import db, APIException, _404Exception
+from ..schemas import detailed_user_schema
+from ..validators import ration_bytes
+from pulsar import _404Exception
 from pulsar.utils import PASSWORD_REGEX, validate_data, require_permission
 
 app = flask.current_app
 
 moderate_user_schema = Schema({
-    Optional('existing_password', default=''): str,
+    'email': Email(),
     'password': Match(PASSWORD_REGEX, msg=(
         'Password must be 12 or more characters and contain at least 1 letter, '
-        '1 number, and 1 special character.')),
-    }, required=True)
+        '1 number, and 1 special character,')),
+    'uploaded': ration_bytes,
+    'downloaded': ration_bytes,
+    })
 
 
 @bp.route('/users/<int:user_id>/moderate', methods=['PUT'])
 @require_permission('moderate_user')
 @validate_data(moderate_user_schema)
-def moderate_user(user_id, password):
+def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=None):
     """
     Moderate a user - change password for them, alter stats, modify basic permissions,
     etc.
@@ -67,4 +71,14 @@ def moderate_user(user_id, password):
     user = User.from_id(user_id)
     if not user:
         raise _404Exception(f'User {user_id}')
-    return flask.jsonify('User moderated.')
+
+    if email:
+        user.email = email
+    if password:
+        user.set_password(password)
+    if uploaded:
+        user.uploaded = uploaded
+    if downloaded:
+        user.downloaded = downloaded
+
+    return detailed_user_schema.jsonify(user)

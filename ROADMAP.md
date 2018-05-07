@@ -4,7 +4,7 @@
 - [x] Document existing endpoints
 - [x] Make Volup validators out of registration validators
 - [x] User Classes, advanced permissioning
-- [ ] User manipulation (enable/disable/lock)
+- [x] User manipulation (enable/disable/lock)
 - [ ] Rate Limiting
 - [ ] Forums
 
