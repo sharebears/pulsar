@@ -2,7 +2,7 @@ import flask
 import pytest
 from contextlib import contextmanager
 import pulsar
-from pulsar import create_app, db, cache
+from pulsar import create_app, db
 from pulsar.users.models import User
 
 HASHED_PASSWORD_1 = ('pbkdf2:sha256:50000$XwKgylbI$a4868823e7889553e3cb9f'
