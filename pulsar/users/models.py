@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.hybrid import hybrid_property
 from pulsar import db
 
 app = flask.current_app
@@ -20,8 +19,8 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, server_default='t')
     locked = db.Column(db.Boolean, nullable=False, server_default='f')
-    user_class = db.Column(db.String, db.ForeignKey('user_classes.name'),
-                           nullable=False, server_default='User')
+    user_class = db.Column(
+        db.String, db.ForeignKey('user_classes.name'), nullable=False, server_default='User')
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
@@ -53,7 +52,7 @@ class User(db.Model):
     def secondary_classes(self):
         return [sc.name for sc in self.secondary_class_objs]
 
-    @hybrid_property
+    @property
     def permissions(self):
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']

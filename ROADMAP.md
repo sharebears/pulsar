@@ -7,18 +7,12 @@
 - [x] User manipulation (enable/disable/lock)
 - [x] Rate Limiting
 - [ ] Forums
+- [ ] Caching
+- [ ] Rules
+- [ ] News Posts
+- [ ] Index
 
 # TODO
-
-## Caching - Help Wanted
-- [x] Redis
-- [ ] Maybe only cache the heavier queries? Will indices suffice?
-- [ ] Implement caching at the models level in `from_id` and `from_hash` methods.
-      Have an override flag able to re-query those elements.
-      Populate an object with `setattr()`, not sure how that works with
-      object updates though
-- [ ] Cache relationships separately? Cache relationships per parent PK and
-      load/save those separately?
 
 ## General
 - [x] Form validation with voluptuous
@@ -124,6 +118,13 @@
 
 ## RSS Feeds
 - [ ] Later
+
+# I have no idea what I'm doing
+
+## Caching
+- [x] Redis
+- [ ] Implement caching at the models level in `from_id` and `from_hash` methods.
+- [ ] dogpile from SQLAlchemy examples
 
 # Post-MVP
 
