@@ -66,7 +66,7 @@ def test_session_expire_all(app):
 @pytest.mark.parametrize(
     'input_', ['1', 'true', False])
 def test_view_all_sessions_schema(input_):
-    from pulsar.auth.views.sessions import view_all_sessions_schema
+    from pulsar.auth.sessions import view_all_sessions_schema
     assert view_all_sessions_schema({'include_dead': input_})
 
 
@@ -74,7 +74,7 @@ def test_view_all_sessions_schema(input_):
     'input_', [0, '2', '\x01'])
 def test_view_all_sessions_schema_failure(input_):
     from voluptuous import MultipleInvalid
-    from pulsar.auth.views.sessions import view_all_sessions_schema
+    from pulsar.auth.sessions import view_all_sessions_schema
     with pytest.raises(MultipleInvalid):
         assert not view_all_sessions_schema({'include_dead': input_})
 

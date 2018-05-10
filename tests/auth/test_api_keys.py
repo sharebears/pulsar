@@ -84,7 +84,7 @@ def test_api_key_permission(app):
 @pytest.mark.parametrize(
     'input_', ['1', 'true', False])
 def test_view_all_api_keys_schema(input_):
-    from pulsar.auth.views.api_keys import view_all_api_keys_schema
+    from pulsar.auth.api_keys import view_all_api_keys_schema
     assert view_all_api_keys_schema({'include_dead': input_})
 
 
@@ -92,7 +92,7 @@ def test_view_all_api_keys_schema(input_):
     'input_', [0, '2', '\x01'])
 def test_view_all_api_keys_schema_failure(input_):
     from voluptuous import MultipleInvalid
-    from pulsar.auth.views.api_keys import view_all_api_keys_schema
+    from pulsar.auth.api_keys import view_all_api_keys_schema
     with pytest.raises(MultipleInvalid):
         assert not view_all_api_keys_schema({'include_dead': input_})
 

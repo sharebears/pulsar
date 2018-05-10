@@ -62,7 +62,7 @@ def test_view_multiple_user_classes(app, authed_client):
 
 
 def test_create_user_class_schema(app, authed_client):
-    from pulsar.permissions.views.user_classes import create_user_class_schema
+    from pulsar.permissions.user_classes import create_user_class_schema
     data = {
         'name': 'user_v3',
         'permissions': ['list_permissions', 'send_invites'],
@@ -79,7 +79,7 @@ def test_create_user_class_schema(app, authed_client):
          "value @ data['permissions']"),
     ])
 def test_create_user_class_schema_failure(app, authed_client, data, error):
-    from pulsar.permissions.views.user_classes import create_user_class_schema
+    from pulsar.permissions.user_classes import create_user_class_schema
     with pytest.raises(Invalid) as e:
         create_user_class_schema(data)
     assert str(e.value) == error
@@ -149,7 +149,7 @@ def test_delete_user_class_with_user(app, authed_client):
 
 
 def test_modify_user_class_schema(app, authed_client):
-    from pulsar.permissions.views.user_classes import modify_user_class_schema
+    from pulsar.permissions.user_classes import modify_user_class_schema
     data = {
         'permissions': {
             'manipulate_permissions': False,

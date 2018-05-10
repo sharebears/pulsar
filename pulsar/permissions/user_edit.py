@@ -1,7 +1,7 @@
 import flask
-from .. import bp
-from ..models import UserPermission
-from ..validators import permissions_dict, check_permissions
+from . import bp
+from .models import UserPermission
+from .validators import permissions_dict, check_permissions
 from voluptuous import Schema, Optional
 from pulsar import db, APIException
 from pulsar.users.models import User

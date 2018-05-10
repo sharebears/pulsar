@@ -106,8 +106,6 @@ def set_user(app_, user):
     with flask.appcontext_pushed.connected_to(handler, app_):
         yield
 
-# '{"sample_perm_one", "sample_perm_two"}'
-
 
 def populate_db():
     "Populate the database with test user information."

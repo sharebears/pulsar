@@ -5,7 +5,7 @@ from conftest import CODE_2, check_json_response, add_permissions
 from pulsar import db
 from pulsar.users.models import User
 from pulsar.users.validators import ration_bytes
-from pulsar.users.views.moderate import moderate_user_schema
+from pulsar.users.moderate import moderate_user_schema
 
 
 def test_locked_acc_perms_blocked(app, client):

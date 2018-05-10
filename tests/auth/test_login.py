@@ -2,7 +2,7 @@ import json
 import pytest
 from voluptuous import Invalid
 from conftest import check_json_response
-from pulsar.auth.views.login import login_schema
+from pulsar.auth.login import login_schema
 
 
 def test_login_success(client):

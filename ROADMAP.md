@@ -3,6 +3,7 @@
 - [x] Rate Limiting
 - [~] Forums
 - [~] Caching
+- [ ] Pagination
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
@@ -33,7 +34,9 @@
 - [ ] Individual Sub-Forum View
 - [ ] Thread View (Pages)
 - [ ] Individual Posts
-- [ ] Posting
+- [ ] Posting/Creation
+- [ ] Editing
+- [ ] Moderation
 
 ## Rules
 - [ ] Fuck it, we're going to make these dictionaries and serve them
@@ -48,20 +51,16 @@
 - [ ] Wiki Pages
 - [ ] ID 1 Default Landing Page
 - [ ] Permissions System
-- [ ] Wiki Versioning
+- [ ] Wiki Versioning (save history, let frontends do diffing)
 - [ ] Wiki Log
 
 ## Site Log
 - [ ] Table for log categories
 - [ ] Site log table, insert-deletion function helpers
 
-## Reports
-- [ ] Reports Hub
-- [ ] Take implementations of base model from forums/torrents/users with reportable = True
-
 ## Staff Tools
-- [ ] Basic Tools
-- [ ] Site Specific Submodule in .gitignore
+- [ ] Basic Site-Level Administration Tools
+- [ ] Separate Repository * .gitignored
 
 ## Tors
 - [ ] Global Base Torrent
@@ -84,6 +83,10 @@
 - [ ] Implement Group
 - [ ] Implement Uploader & Validation
 - [ ] Implement Editors
+
+## Reports
+- [ ] Reports Hub
+- [ ] Take implementations of base model from forums/torrents/users with reportable = True
 
 ## Requests
 - [ ] Creation/Editing/Deletion
@@ -115,15 +118,18 @@
 ## RSS Feeds
 - [ ] Later
 
+## Donations
+- [ ] Unique wallet generation a la Gazelle
+
 
 # Post-MVP
 
 ## General
 - [ ] Sentry
 
+## Production Debugging Features
+- [ ] Hook into existing libs?
+
 ## User Stats & History
 - [ ] Community Stats
 - [ ] Data Visualization
-
-## Donations
-- [ ] Unique wallet generation a la Gazelle

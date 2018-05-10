@@ -1,7 +1,7 @@
 import flask
 from voluptuous import Schema, Optional
-from .. import bp
-from ..models import Session
+from . import bp
+from .models import Session
 from pulsar import db, APIException, _404Exception
 from pulsar.utils import (require_permission, validate_data, choose_user,
                           bool_get, many_to_dict)

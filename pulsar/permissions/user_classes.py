@@ -2,9 +2,9 @@ import flask
 from copy import copy
 from sqlalchemy import func
 from voluptuous import Schema, Optional
-from .. import bp
-from ..models import UserClass, SecondaryUserClass
-from ..validators import permissions_list, permissions_dict
+from . import bp
+from .models import UserClass, SecondaryUserClass
+from .validators import permissions_list, permissions_dict
 from pulsar import db, APIException, _404Exception
 from pulsar.utils import require_permission, validate_data, bool_get, many_to_dict
 from pulsar.users.models import User

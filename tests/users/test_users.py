@@ -57,31 +57,6 @@ def test_get_user_self_and_caches(app, authed_client):
     assert user_data['username'] == 'lights'
 
 
-def test_get_user_cache(app, authed_client, monkeypatch):
-    add_permissions(app, 'view_users')
-    monkeypatch.setattr('pulsar.users.models.User.query.get', lambda _: None)
-    cache.set('users_1', {
-        'id': 1,
-        'username': 'fakeshit',
-        'passhash': 'abcdefg',
-        'email': 'lights@puls.ar',
-        'enabled': True,
-        'locked': False,
-        'user_class': 'User',
-        'inviter_id': None,
-        'invites': 999,
-        'uploaded': 9999999,
-        'downloaded': 0,
-        })
-
-    response = authed_client.get('/users/1')
-    check_json_response(response, {
-        'id': 1,
-        'username': 'fakeshit',
-        })
-    assert response.status_code == 200
-
-
 def test_get_user(app, authed_client):
     add_permissions(app, 'view_users')
     response = authed_client.get('/users/2')
