@@ -5,6 +5,7 @@ from . import bp
 from datetime import datetime
 from pulsar import db, cache, APIException, _403Exception, _312Exception
 from pulsar.auth.models import Session, APIKey
+from pulsar.users.models import User
 
 
 @bp.before_app_request
@@ -45,7 +46,7 @@ def check_user_session():
     if user_id and hash:
         session = Session.from_hash(hash)  # Implied active_only
         if session and session.user_id == user_id:
-            flask.g.user = session.user
+            flask.g.user = User.from_id(session.user_id)
             flask.g.user_session = session
             flask.g.csrf_token = session.csrf_token
             update_session_or_key(session)
@@ -65,7 +66,7 @@ def check_api_key():
         # compared with the hash function.
         api_key = APIKey.from_hash(raw_key[:10])  # Implied active_only
         if api_key and api_key.check_key(raw_key[10:]):
-            flask.g.user = api_key.user
+            flask.g.user = User.from_id(api_key.user_id)
             flask.g.api_key = api_key
             update_session_or_key(api_key)
 

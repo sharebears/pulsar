@@ -1,7 +1,6 @@
 import flask
 from .. import bp
 from ..models import User
-from ..schemas import user_schema, detailed_user_schema
 from pulsar import _404Exception
 from pulsar.utils import require_permission
 
@@ -12,9 +11,10 @@ app = flask.current_app
 @require_permission('view_users')
 def get_user(user_id):
     """
-    Return general information about a user with the given user ID.
-    If the user is getting information about themselves,
-    the API will also return their number of invites.
+    Return general information about a user with the given user ID.  If the
+    user is getting information about themselves, the API will return more
+    detailed data about the user. If the requester has the
+    ``moderate_users`` permission, the API will return _even more_ data.
 
     .. :quickref: User; Get user information.
 
@@ -53,7 +53,10 @@ def get_user(user_id):
     user = User.from_id(user_id)
     if not user:
         raise _404Exception('User')
-    if flask.g.user == user or flask.g.user.has_permission('view_users_detailed'):
-        # Do not fuck this permissioning up.
-        return detailed_user_schema.jsonify(user)
-    return user_schema.jsonify(user)
+
+    if flask.g.user.has_permission('moderate_users'):
+        return flask.jsonify(user.to_dict(very_detailed=True))
+    elif flask.g.user == user:
+        return flask.jsonify(user.to_dict(detailed=True))
+    else:
+        return flask.jsonify(user.to_dict())

@@ -8,13 +8,6 @@ Models
     :members:
     :show-inheritance:
 
-Schemas
--------
-
-.. automodule:: pulsar.permissions.schemas
-    :members:
-    :show-inheritance:
-
 Validators
 ----------
 

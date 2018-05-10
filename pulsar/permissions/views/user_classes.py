@@ -4,10 +4,9 @@ from sqlalchemy import func
 from voluptuous import Schema, Optional
 from .. import bp
 from ..models import UserClass, SecondaryUserClass
-from ..schemas import user_class_schema, multiple_user_class_schema
 from ..validators import permissions_list, permissions_dict
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import require_permission, validate_data, bool_get
+from pulsar.utils import require_permission, validate_data, bool_get, many_to_dict
 from pulsar.users.models import User
 
 app = flask.current_app
@@ -64,7 +63,7 @@ def view_user_class(user_class_name, secondary=False):
     """
     user_class = (SecondaryUserClass if secondary else UserClass).from_name(user_class_name)
     if user_class:
-        return user_class_schema.jsonify(user_class)
+        return flask.jsonify(user_class.to_dict(very_detailed=True))
     raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_name}')
 
 
@@ -130,8 +129,8 @@ def view_multiple_user_classes(secondary=False):
     user_classes = UserClass.get_all()
     secondary_classes = SecondaryUserClass.get_all()
     return flask.jsonify({
-        'user_classes': multiple_user_class_schema.dump(user_classes).data,
-        'secondary_classes': multiple_user_class_schema.dump(secondary_classes).data,
+        'user_classes': many_to_dict(user_classes, very_detailed=True),
+        'secondary_classes': many_to_dict(secondary_classes, very_detailed=True),
         })
 
 
@@ -208,7 +207,7 @@ def create_user_class(name, secondary, permissions):
         )
     db.session.add(user_class)
     db.session.commit()
-    return user_class_schema.jsonify(user_class)
+    return flask.jsonify(user_class.to_dict(very_detailed=True))
 
 
 @bp.route('/user_classes/<user_class_name>', methods=['DELETE'])
@@ -360,4 +359,4 @@ def modify_user_class(user_class_name, permissions, secondary):
     # (This is also why uc_perms was copied from user_class.permissions)
     user_class.permissions = uc_perms
     db.session.commit()
-    return user_class_schema.jsonify(user_class)
+    return flask.jsonify(user_class.to_dict(very_detailed=True))

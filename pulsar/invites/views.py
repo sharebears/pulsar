@@ -2,10 +2,9 @@ import flask
 from voluptuous import Schema, Email, Optional
 from . import bp
 from .models import Invite
-from .schemas import invite_schema, invites_schema
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import (validate_data, require_permission,
-                          choose_user, assert_user, bool_get)
+from pulsar.utils import (validate_data, require_permission, choose_user,
+                          assert_user, bool_get, many_to_dict)
 
 app = flask.current_app
 
@@ -58,7 +57,7 @@ def view_invite(code):
     invite = Invite.from_code(code, include_dead=True)
     if not invite or not assert_user(invite.inviter_id, 'view_invites_others'):
         raise _404Exception(f'Invite {code}')
-    return invite_schema.jsonify(invite)
+    return flask.jsonify(invite.to_dict())
 
 
 view_invites_schema = Schema({
@@ -138,7 +137,7 @@ def view_invites(used, include_dead, user_id=None):
     invites = Invite.from_inviter(user.id, include_dead=(include_dead or used))
     if used:
         invites = [invite for invite in invites if invite.invitee_id]
-    return invites_schema.jsonify(invites)
+    return flask.jsonify(many_to_dict(invites))
 
 
 user_invite_schema = Schema({
@@ -211,7 +210,7 @@ def invite_user(email):
     flask.g.user.invites -= 1
     db.session.add(invite)
     db.session.commit()
-    return invite_schema.jsonify(invite)
+    return flask.jsonify(invite.to_dict())
 
 
 @bp.route('/invites/<code>', methods=['DELETE'])
@@ -269,4 +268,4 @@ def revoke_invite(code):
     invite.active = False
     flask.g.user.invites += 1
     db.session.commit()
-    return invite_schema.jsonify(invite)
+    return flask.jsonify(invite.to_dict())

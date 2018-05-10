@@ -55,7 +55,7 @@ def test_api_key_collision(app, monkeypatch):
 def test_from_hash_and_check(app):
     with app.app_context():
         api_key = APIKey.from_hash('abcdefghij')
-        assert api_key.user.id == 1
+        assert api_key.user_id == 1
         assert api_key.check_key(CODE_1)
         assert not api_key.check_key(CODE_2)
 

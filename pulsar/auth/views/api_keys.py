@@ -2,9 +2,9 @@ import flask
 from voluptuous import Schema, Optional
 from .. import bp
 from ..models import APIKey
-from ..schemas import api_key_schema, multiple_api_key_schema
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import require_permission, validate_data, choose_user, bool_get
+from pulsar.utils import (require_permission, validate_data, choose_user,
+                          bool_get, many_to_dict)
 from pulsar.permissions.validators import permissions_list_of_user
 
 app = flask.current_app
@@ -65,7 +65,7 @@ def view_api_key(hash):
     if api_key:
         is_own_key = api_key.user_id == flask.g.user.id
         if is_own_key or flask.g.user.has_permission('view_api_keys_others'):
-            return api_key_schema.jsonify(api_key)
+            return flask.jsonify(api_key.to_dict())
     raise _404Exception(f'API Key {hash}')
 
 
@@ -135,10 +135,8 @@ def view_all_api_keys(include_dead, user_id=None):
     :statuscode 404: User does not exist
     """
     user = choose_user(user_id, 'view_api_keys_others')
-    api_keys = user.api_keys
-    if not include_dead:
-        api_keys = [key for key in api_keys if key.active]
-    return multiple_api_key_schema.jsonify(api_keys)
+    api_keys = APIKey.from_user(user.id, include_dead=include_dead)
+    return flask.jsonify(many_to_dict(api_keys))
 
 
 create_api_key_schema = Schema({

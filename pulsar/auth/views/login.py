@@ -2,7 +2,6 @@ import flask
 from voluptuous import Schema, Optional
 from .. import bp
 from ..models import Session
-from ..schemas import session_schema
 from pulsar import db, _401Exception
 from pulsar.utils import validate_data
 from pulsar.users.models import User
@@ -88,4 +87,4 @@ def login(username, password, persistent):
     flask.session['session_hash'] = session.hash
     flask.session.permanent = persistent
     flask.session.modified = True
-    return session_schema.jsonify(session)
+    return flask.jsonify(session.to_dict())

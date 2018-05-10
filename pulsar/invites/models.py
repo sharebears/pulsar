@@ -1,11 +1,12 @@
 import secrets
 from sqlalchemy import func
-from sqlalchemy.orm import relationship
 from pulsar import db
 
 
 class Invite(db.Model):
     __tablename__ = 'invites'
+    __serializable_attrs__ = ('code', 'inviter_id', 'email',
+                              'time_sent', 'active', 'invitee')
 
     code = db.Column(db.String(24), primary_key=True)
     inviter_id = db.Column(
@@ -16,7 +17,10 @@ class Invite(db.Model):
     from_ip = db.Column(db.String(39), nullable=False, server_default='0.0.0.0')
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
 
-    invitee = relationship('User', uselist=False, foreign_keys=[invitee_id])
+    @property
+    def invitee(self):
+        from pulsar.users.models import User
+        return User.from_id(self.invitee_id) if self.invitee_id else None
 
     @classmethod
     def generate_invite(cls, inviter_id, email, ip):

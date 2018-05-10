@@ -5,13 +5,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
-from pulsar import db
+from pulsar import db, cache
 
 app = flask.current_app
 
 
 class User(db.Model):
     __tablename__ = 'users'
+    __cache_key__ = 'users_{id}'
+    __serializable_attrs__ = ('id', 'username', 'enabled', 'locked', 'user_class',
+                              'secondary_classes', 'uploaded', 'downloaded')
+    __serializable_attrs_detailed__ = ('email', 'invites', 'sessions', 'api_keys')
+    __serializable_attrs_very_detailed__ = ('inviter', )
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique=True, nullable=False)
@@ -27,8 +32,6 @@ class User(db.Model):
     uploaded = db.Column(db.BigInteger, nullable=False, server_default='5368709120')  # 5 GB
     downloaded = db.Column(db.BigInteger, nullable=False, server_default='0')
 
-    sessions = relationship('Session', back_populates='user')
-    api_keys = relationship('APIKey', back_populates='user')
     secondary_class_objs = relationship(
         'SecondaryUserClass',
         secondary=pulsar.permissions.models.secondary_class_assoc_table,
@@ -40,13 +43,34 @@ class User(db.Model):
         return (db.Index('idx_users_username', func.lower(cls.username), unique=True),
                 db.Index('idx_users_email', func.lower(cls.email)))
 
-    def __init__(self, username, password, email):
+    def __init__(self, username, passhash, email, id=None, enabled=None, locked=None,
+                 user_class=None, inviter_id=None, invites=None, uploaded=None,
+                 downloaded=None):
+        self.id = id
         self.username = username
-        self.passhash = generate_password_hash(password)
-        self.email = email.lower().strip()
+        self.passhash = passhash
+        self.email = email
+        self.enabled = enabled
+        self.locked = locked
+        self.user_class = user_class
+        inviter_id = inviter_id
+        invites = invites
 
-    def __eq__(self, other):
-        return self.id == other.id
+    @classmethod
+    def register(cls, username, password, email):
+        """
+        Alternative constructor which generates a password hash and
+        lowercases and strips leading and trailing spaces from the email.
+        """
+        return cls(
+            username=username,
+            passhash=generate_password_hash(password),
+            email=email.lower().strip(),
+            )
+
+    @property
+    def cache_key(self):
+        return self.__cache_key__.format(id=self.id)
 
     @property
     def secondary_classes(self):
@@ -54,10 +78,11 @@ class User(db.Model):
 
     @property
     def permissions(self):
+        from pulsar.permissions.models import UserClass, UserPermission
+
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
 
-        from pulsar.permissions.models import UserClass, UserPermission
         permissions = set(
             db.session.query(UserClass.permissions)
             .filter(UserClass.name == self.user_class)
@@ -78,9 +103,27 @@ class User(db.Model):
 
         return list(permissions)
 
+    @property
+    def inviter(self):
+        return User.from_id(self.inviter_id) if self.inviter_id else None
+
+    @property
+    def api_keys(self):
+        from pulsar.auth.models import APIKey
+        return APIKey.from_user(self.id)
+
+    @property
+    def sessions(self):
+        from pulsar.auth.models import Session
+        return Session.from_user(self.id)
+
     @classmethod
     def from_id(cls, id):
-        return cls.query.get(id)
+        obj = cls.from_cache(cls.__cache_key__.format(id=id))
+        if not obj:
+            obj = cls.query.get(id)
+            cache.cache_model(obj, timeout=3600 * 24 * 7)
+        return obj
 
     @classmethod
     def from_username(cls, username):

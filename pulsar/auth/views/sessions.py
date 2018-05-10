@@ -2,9 +2,9 @@ import flask
 from voluptuous import Schema, Optional
 from .. import bp
 from ..models import Session
-from ..schemas import session_schema, multiple_session_schema
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import require_permission, validate_data, choose_user, bool_get
+from pulsar.utils import (require_permission, validate_data, choose_user,
+                          bool_get, many_to_dict)
 
 app = flask.current_app
 
@@ -63,7 +63,7 @@ def view_session(hash):
     if session:
         is_own_sess = session.user_id == flask.g.user.id
         if is_own_sess or flask.g.user.has_permission('view_sessions_others'):
-            return session_schema.jsonify(session)
+            return flask.jsonify(session.to_dict())
     raise _404Exception(f'Session {hash}')
 
 
@@ -141,10 +141,8 @@ def view_all_sessions(include_dead, user_id=None):
     :statuscode 404: User does not exist
     """
     user = choose_user(user_id, 'view_sessions_others')
-    sessions = user.sessions
-    if not include_dead:
-        sessions = [sess for sess in sessions if sess.active]
-    return multiple_session_schema.jsonify(sessions)
+    sessions = Session.from_user(user.id, include_dead=include_dead)
+    return flask.jsonify(many_to_dict(sessions))
 
 
 expire_sessions_schema = Schema({

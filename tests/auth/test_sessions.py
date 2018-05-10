@@ -40,7 +40,7 @@ def test_session_collision(app, monkeypatch):
 def test_from_hash(app):
     with app.app_context():
         session = Session.from_hash('abcdefghij')
-        assert session.user.id == 1
+        assert session.user_id == 1
         assert session.csrf_token == CODE_1
 
 

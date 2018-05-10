@@ -1,15 +1,13 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
 from werkzeug import find_modules, import_string
-from pulsar.cache import Cache
+from pulsar.cache import Cache, PulsarModel
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
 
-db = SQLAlchemy()
-ma = Marshmallow()
-cache = None
+db = SQLAlchemy(model_class=PulsarModel)
+cache = Cache()
 
 
 def create_app(config):
@@ -18,8 +16,7 @@ def create_app(config):
 
     global cache
     db.init_app(app)
-    ma.init_app(app)
-    cache = Cache(**app.config['REDIS_PARAMS'])
+    cache.init_app(app)
 
     with app.app_context():
         register_blueprints(app)
@@ -34,8 +31,7 @@ def register_blueprints(app):
     # If we register every module with the ``bp`` attribute normally,
     # we would have a lot of duplicate routes, which Werkzeug doesn't filter.
     for name in find_modules('pulsar', recursive=True):
-        if 'view' in name or 'pulsar.hooks' in name:
-            import_string(name)
+        import_string(name)
 
     # Now import and register each blueprint.
     for name in find_modules('pulsar', include_packages=True):

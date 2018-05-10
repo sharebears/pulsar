@@ -77,7 +77,7 @@ def test_moderate_user_schema_failure(schema, error):
 
 
 def test_moderate_user(app, authed_client):
-    add_permissions(app, 'moderate_user')
+    add_permissions(app, 'moderate_users')
     response = authed_client.put('/users/2/moderate', data=json.dumps({
         'email': 'new@ema.il',
         'uploaded': 999,
@@ -95,7 +95,7 @@ def test_moderate_user(app, authed_client):
 
 
 def test_moderate_user_incomplete(app, authed_client):
-    add_permissions(app, 'moderate_user')
+    add_permissions(app, 'moderate_users')
     response = authed_client.put('/users/2/moderate', data=json.dumps({
         'password': 'abcdefGHIfJK12#',
         }))
@@ -110,7 +110,7 @@ def test_moderate_user_incomplete(app, authed_client):
 
 
 def test_moderate_user_not_found(app, authed_client):
-    add_permissions(app, 'moderate_user')
+    add_permissions(app, 'moderate_users')
     response = authed_client.put('/users/10/moderate', data=json.dumps({
         'email': 'new@ema.il',
         }))

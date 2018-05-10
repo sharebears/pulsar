@@ -9,6 +9,7 @@ Code documentation for the pulsar project.
    hacking 
    installation
    hooks
+   cache
    exceptions
    utils
    users

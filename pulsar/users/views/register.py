@@ -75,7 +75,7 @@ def register(username, password, email, code):
     :statuscode 200: registration successful
     :statuscode 400: registration unsuccessful
     """
-    user = User(
+    user = User.register(
         username=username,
         password=password,
         email=email)

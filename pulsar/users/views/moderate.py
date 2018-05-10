@@ -3,9 +3,8 @@ from voluptuous import Schema, Email
 from voluptuous.validators import Match
 from .. import bp
 from ..models import User
-from ..schemas import detailed_user_schema
 from ..validators import ration_bytes
-from pulsar import _404Exception
+from pulsar import db, cache, _404Exception
 from pulsar.utils import PASSWORD_REGEX, validate_data, require_permission
 
 app = flask.current_app
@@ -21,7 +20,7 @@ moderate_user_schema = Schema({
 
 
 @bp.route('/users/<int:user_id>/moderate', methods=['PUT'])
-@require_permission('moderate_user')
+@require_permission('moderate_users')
 @validate_data(moderate_user_schema)
 def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=None):
     """
@@ -81,4 +80,6 @@ def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=
     if downloaded:
         user.downloaded = downloaded
 
-    return detailed_user_schema.jsonify(user)
+    db.session.commit()
+    user.clear_cache()
+    return flask.jsonify(user.to_dict(very_detailed=True))

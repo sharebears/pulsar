@@ -24,7 +24,7 @@ password_change_schema = Schema({
 def change_password(existing_password, new_password, user_id=None):
     """
     Change a user's password. Requires the ``change_password`` permission.
-    Requires the ``change_password_others`` permission to change another user's
+    Requires the ``moderate_users`` permission to change another user's
     password, which can be done by specifying a ``user_id``.
 
     .. :quickref: Password; Change password.
@@ -56,7 +56,7 @@ def change_password(existing_password, new_password, user_id=None):
        }
 
     :json string existing_password: User's existing password, not needed
-        if setting another user's password with ``change_password_others`` permission.
+        if setting another user's password with ``moderate_user`` permission.
     :json string new_password: User's new password. Must be 12+ characters and contain
         at least one letter, one number, and one special character.
 
@@ -66,10 +66,11 @@ def change_password(existing_password, new_password, user_id=None):
     :statuscode 400: Password unsuccessfully changed
     :statuscode 403: User does not have permission to change user's password
     """
-    user = choose_user(user_id, 'change_password_others')
+    user = choose_user(user_id, 'moderate_users')
     if flask.g.user == user and not user.check_password(existing_password):
         raise APIException('Invalid existing password.')
     user.set_password(new_password)
     Session.expire_all_of_user(user.id)
     db.session.commit()
+    user.clear_cache()
     return flask.jsonify('Password changed.')

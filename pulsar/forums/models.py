@@ -15,16 +15,26 @@ class Forum(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('forums_categories.id'), nullable=False)
     position = db.Column(db.SmallInteger, nullable=False, server_default='0')
 
-    threads = relationship('ForumThread', order_by='ForumThread.last_updated')
+    @property
+    def last_updated_thread(self):
+        return db.session.query(ForumThread).filter(
+            ForumThread.forum_id == self.id
+            ).order_by(ForumThread.last_updated).limit(1).first()
 
 
-class ForumCategories(db.Model):
+class ForumCategory(db.Model):
     __tablename__ = 'forums_categories'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
     position = db.Column(db.SmallInteger, nullable=False, server_default='0')
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
+
+    @property
+    def threads(self):
+        return ForumThread.query.filter(
+            ForumThread.category_id == self.id
+            ).order_by(ForumThread.last_updated).all()
 
 
 class ForumThread(db.Model):
@@ -38,9 +48,12 @@ class ForumThread(db.Model):
     sticky = db.Column(db.Boolean, nullable=False, server_default='f')
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
+    forum = relationship('Forum', uselist=False)
+    poster = relationship('User', uselist=False)
+
     @declared_attr
     def __table_args__(cls):
-        return (db.Index('idx_forums_threads_topic', func.lower(cls.title), unique=True),)
+        return (db.Index('idx_forums_threads_topic', func.lower(cls.topic), unique=True),)
 
     @property
     def last_updated(self):
@@ -76,12 +89,12 @@ class ForumPost(db.Model):
 
     @property
     def edit_history(self):
-        return db.session.query(ForumPostEdiHistory).filter(
-            ForumPostEdiHistory.post_id == self.id
-            ).order_by(ForumPostEdiHistory.time.asc()).all()
+        return db.session.query(ForumPostEditHistory).filter(
+            ForumPostEditHistory.post_id == self.id
+            ).order_by(ForumPostEditHistory.time.asc()).all()
 
 
-class ForumPostEdiHistory(db.Model):
+class ForumPostEditHistory(db.Model):
     __tablename__ = 'forums_posts_edit_history'
 
     id = db.Column(db.Integer, primary_key=True)

@@ -1,7 +1,6 @@
 import secrets
 import pulsar.users.models  # noqa
 from sqlalchemy import func
-from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import INET, ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 from pulsar import db
@@ -9,6 +8,8 @@ from pulsar import db
 
 class Session(db.Model):
     __tablename__ = 'sessions'
+    __serializable_attrs__ = ('hash', 'user_id', 'persistent', 'last_used', 'ip',
+                              'user_agent', 'active')
 
     hash = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
@@ -19,8 +20,6 @@ class Session(db.Model):
     user_agent = db.Column(db.Text)
     csrf_token = db.Column(db.String(24), nullable=False)
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
-
-    user = relationship('User', back_populates='sessions', uselist=False, lazy=False)
 
     @classmethod
     def generate_session(cls, user_id, ip, user_agent, persistent=False):
@@ -65,6 +64,22 @@ class Session(db.Model):
             query = query.filter(cls.active == 't')
         return query.one_or_none()
 
+    @classmethod
+    def from_user(cls, user_id, include_dead=False):
+        """
+        Get all sessions owned by a user.
+
+        :param int user_id: The User ID of the owner.
+        :param bool include_dead: (Default ``False``) Whether or not to include dead
+            API keys in the search
+
+        :return: A ``list`` of ``APIKey`` objects
+        """
+        query = cls.query.filter(cls.user_id == user_id)
+        if not include_dead:
+            query = query.filter(cls.active == 't')
+        return query.all()
+
     @staticmethod
     def expire_all_of_user(user_id):
         db.session.query(Session).filter(
@@ -74,6 +89,8 @@ class Session(db.Model):
 
 class APIKey(db.Model):
     __tablename__ = 'api_keys'
+    __serializable_attrs__ = ('hash', 'user_id', 'last_used', 'ip', 'user_agent',
+                              'active', 'permissions')
 
     hash = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
@@ -84,8 +101,6 @@ class APIKey(db.Model):
     user_agent = db.Column(db.Text)
     active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
     permissions = db.Column(ARRAY(db.String(32)))
-
-    user = relationship('User', back_populates='api_keys', uselist=False, lazy=False)
 
     @classmethod
     def generate_key(cls, user_id, ip, user_agent, permissions=[]):
@@ -129,6 +144,22 @@ class APIKey(db.Model):
             query = query.filter(cls.active == 't')
         return query.one_or_none()
 
+    @classmethod
+    def from_user(cls, user_id, include_dead=False):
+        """
+        Get all API keys owned by a user.
+
+        :param int user_id: The User ID of the owner.
+        :param bool include_dead: (Default ``False``) Whether or not to include dead
+            API keys in the search
+
+        :return: A ``list`` of ``APIKey`` objects
+        """
+        query = cls.query.filter(cls.user_id == user_id)
+        if not include_dead:
+            query = query.filter(cls.active == 't')
+        return query.all()
+
     def check_key(self, key):
         """
         Validates the authenticity of an API key against its stored hash.
@@ -147,9 +178,11 @@ class APIKey(db.Model):
         :param str permission: Permission to search for
         :return: ``True`` if permission is present, ``False`` if not
         """
+        from pulsar.users.models import User
         if self.permissions:
             return permission in self.permissions
-        return permission in self.user.permissions
+        user = User.from_id(self.user_id)
+        return permission in user.permissions
 
     @staticmethod
     def revoke_all_of_user(user_id):

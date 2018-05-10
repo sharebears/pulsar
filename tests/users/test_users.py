@@ -1,8 +1,14 @@
 import json
 import pytest
-from conftest import check_json_response, add_permissions
-from pulsar import db
+from conftest import check_json_response, add_permissions, HASHED_CODE_1
+from pulsar import db, cache
 from pulsar.users.models import User
+
+
+@pytest.fixture(autouse=True)
+def populate_db(app, client):
+    yield
+    db.engine.execute("DELETE FROM api_keys")
 
 
 def test_user_creation(app):
@@ -36,7 +42,7 @@ def test_user_has_permission(app):
         assert not user.has_permission('nonexistent_permission')
 
 
-def test_get_user_self(app, authed_client):
+def test_get_user_self_and_caches(app, authed_client):
     add_permissions(app, 'view_users')
     response = authed_client.get('/users/1')
     check_json_response(response, {
@@ -44,6 +50,34 @@ def test_get_user_self(app, authed_client):
         'username': 'lights',
         'user_class': 'User',
         'secondary_classes': ['FLS'],
+        })
+    assert response.status_code == 200
+    user_data = cache.get('users_1')
+    assert user_data['id'] == 1
+    assert user_data['username'] == 'lights'
+
+
+def test_get_user_cache(app, authed_client, monkeypatch):
+    add_permissions(app, 'view_users')
+    monkeypatch.setattr('pulsar.users.models.User.query.get', lambda _: None)
+    cache.set('users_1', {
+        'id': 1,
+        'username': 'fakeshit',
+        'passhash': 'abcdefg',
+        'email': 'lights@puls.ar',
+        'enabled': True,
+        'locked': False,
+        'user_class': 'User',
+        'inviter_id': None,
+        'invites': 999,
+        'uploaded': 9999999,
+        'downloaded': 0,
+        })
+
+    response = authed_client.get('/users/1')
+    check_json_response(response, {
+        'id': 1,
+        'username': 'fakeshit',
         })
     assert response.status_code == 200
 
@@ -63,7 +97,11 @@ def test_get_user(app, authed_client):
 
 
 def test_get_user_detailed(app, authed_client):
-    add_permissions(app, 'view_users', 'view_users_detailed')
+    add_permissions(app, 'view_users', 'moderate_users')
+    db.engine.execute(
+        f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active, permissions) VALUES
+        (1, 'abcdefghij', '{HASHED_CODE_1}', 't',
+         '{{"sample_permission", "sample_2_permission", "sample_3_permission"}}')""")
     response = authed_client.get('/users/1')
     check_json_response(response, {
         'id': 1,
@@ -76,6 +114,8 @@ def test_get_user_detailed(app, authed_client):
     assert response.status_code == 200
     data = response.get_json()
     assert 'api_keys' in data['response']
+    assert len(data['response']['api_keys']) == 1
+    assert data['response']['api_keys'][0]['hash'] == 'abcdefghij'
 
 
 def test_user_does_not_exist(app, authed_client):
@@ -100,12 +140,13 @@ def test_change_password(app, authed_client, existing_password, new_password, me
 
 
 def test_change_password_others(app, authed_client):
-    add_permissions(app, 'change_password', 'change_password_others')
+    add_permissions(app, 'change_password', 'moderate_users')
     response = authed_client.put('/users/2/change_password', data=json.dumps({
         'new_password': 'aB1%ckeofa12342',
         }))
     check_json_response(response, 'Password changed.', strict=True)
     user = User.from_id(2)
+    print(user.passhash)
     assert user.check_password('aB1%ckeofa12342')
 
 

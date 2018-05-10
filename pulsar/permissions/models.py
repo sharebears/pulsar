@@ -37,6 +37,8 @@ class UserPermission(db.Model):
 
 class UserClass(db.Model):
     __tablename__ = 'user_classes'
+    __serializable_attrs__ = ('name', )
+    __serializable_attrs_very_detailed__ = ('permissions', )
 
     name = db.Column(db.String(24), primary_key=True)
     permissions = db.Column(ARRAY(db.String(32)))
@@ -61,6 +63,8 @@ secondary_class_assoc_table = db.Table(
 
 class SecondaryUserClass(db.Model):
     __tablename__ = 'secondary_classes'
+    __serializable_attrs__ = ('name', )
+    __serializable_attrs_very_detailed__ = ('permissions', )
 
     name = db.Column(db.String(24), primary_key=True)
     permissions = db.Column(ARRAY(db.String(32)))

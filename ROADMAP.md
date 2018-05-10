@@ -1,16 +1,12 @@
-# CURRENT ROADMAP
+# Current Path
 
-- [x] Documentation outline via Sphinx
-- [x] Document existing endpoints
-- [x] Make Volup validators out of registration validators
-- [x] User Classes, advanced permissioning
-- [x] User manipulation (enable/disable/lock)
 - [x] Rate Limiting
-- [ ] Forums
-- [ ] Caching
+- [~] Forums
+- [~] Caching
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
+
 
 # TODO
 
@@ -119,12 +115,6 @@
 ## RSS Feeds
 - [ ] Later
 
-# I have no idea what I'm doing
-
-## Caching
-- [x] Redis
-- [ ] Implement caching at the models level in `from_id` and `from_hash` methods.
-- [ ] dogpile from SQLAlchemy examples
 
 # Post-MVP
 
