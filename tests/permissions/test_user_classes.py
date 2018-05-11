@@ -2,9 +2,9 @@ import json
 import pytest
 from voluptuous import Invalid
 from conftest import add_permissions, check_json_response
-from pulsar import db
+from pulsar import db, cache
 from pulsar.users.models import User
-from pulsar.permissions.models import UserClass, SecondaryUserClass
+from pulsar.permissions.models import UserClass, SecondaryClass
 
 
 @pytest.fixture(autouse=True)
@@ -113,7 +113,7 @@ def test_create_user_class_secondary(app, authed_client):
         'name': 'User',
         'permissions': ['list_permissions', 'send_invites']})
 
-    user_class = SecondaryUserClass.from_name('User')
+    user_class = SecondaryClass.from_name('User')
     assert user_class.name == 'User'
     assert user_class.permissions == ['list_permissions', 'send_invites']
 
@@ -179,7 +179,7 @@ def test_modify_secondary_user_class(app, authed_client):
         'secondary': True,
         }))
 
-    secondary_class = SecondaryUserClass.from_name('user_v2')
+    secondary_class = SecondaryClass.from_name('user_v2')
     assert not secondary_class.permissions
 
     user_class = UserClass.from_name('user_v2')
@@ -203,6 +203,37 @@ def test_modify_user_class_nonexistent(app, authed_client):
     response = authed_client.put('/user_classes/kukuku', data=json.dumps({
         'permissions': {'send_invites': True}})).get_json()
     assert response['response'] == 'User class kukuku does not exist.'
+
+
+@pytest.mark.parametrize(
+    'class_, class_name, permission', [
+        (UserClass, 'User', 'list_permissions'),
+        (SecondaryClass, 'FLS', 'send_invites'),
+    ])
+def test_user_class_cache(app, client, class_, class_name, permission):
+    user_class = class_.from_name(class_name)
+    cache_key = cache.cache_model(user_class, timeout=60)
+    user_class = class_.from_name(class_name)
+    assert user_class.name == class_name
+    assert permission in user_class.permissions
+    assert cache.ttl(cache_key) < 61
+
+
+@pytest.mark.parametrize(
+    'class_', [UserClass, SecondaryClass])
+def test_user_class_cache_get_all(app, client, class_):
+    cache.set(class_.__cache_key_all__, ['user_v2'], timeout=60)
+    all_user_classes = class_.get_all()
+    assert len(all_user_classes) == 1
+    assert 'list_permissions' in all_user_classes[0].permissions
+
+
+def test_user_secondary_classes_models(app, client):
+    cache.set(User.__cache_key_secondary_classes__.format(id=1), ['user_v2'], timeout=60)
+    user = User.from_id(1)
+    secondary_classes = user.secondary_class_models
+    assert len(secondary_classes) == 1
+    assert secondary_classes[0].name == 'user_v2'
 
 
 @pytest.mark.parametrize(

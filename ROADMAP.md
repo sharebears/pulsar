@@ -1,19 +1,21 @@
 # Current Path
 
 - [x] Rate Limiting
+- [x] Caching
 - [~] Forums
-- [~] Caching
 - [ ] Pagination
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
+
+- [ ] Properly test cache clearing for APIKeys + more
 
 
 # TODO
 
 ## General
 - [x] Form validation with voluptuous
-- [ ] Pagination abstraction
+- [ ] Pagination abstraction - FSQA has built in?
 
 ## Users
 - [x] Administration Functions

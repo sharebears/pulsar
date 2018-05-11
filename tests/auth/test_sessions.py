@@ -1,7 +1,7 @@
 import json
 import pytest
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response, add_permissions
-from pulsar import db
+from pulsar import db, cache
 from pulsar.auth.models import Session
 
 
@@ -37,30 +37,51 @@ def test_session_collision(app, monkeypatch):
             hex_generator(None)
 
 
-def test_from_hash(app):
-    with app.app_context():
-        session = Session.from_hash('abcdefghij')
-        assert session.user_id == 1
-        assert session.csrf_token == CODE_1
+def test_from_hash(app, client):
+    session = Session.from_hash('abcdefghij')
+    assert session.user_id == 1
+    assert session.csrf_token == CODE_1
 
 
-def test_from_hash_incl_dead(app):
-    with app.app_context():
-        session = Session.from_hash('1234567890', include_dead=True)
-        assert session.csrf_token == CODE_2
+def test_from_hash_cached(app, client):
+    session = Session.from_hash('abcdefghij')
+    cache_key = cache.cache_model(session, timeout=60)
+    session = Session.from_hash('abcdefghij')
+    assert session.user_id == 1
+    assert session.csrf_token == CODE_1
+    assert cache.ttl(cache_key) < 61
 
 
-def test_get_nonexistent_session(app):
-    with app.app_context():
-        session = Session.from_hash('1234567890')
-        assert not session
+def test_from_user(app, client):
+    sessions = Session.from_user(1)
+    assert len(sessions) == 1
+    assert sessions[0].user_id == 1
+    assert sessions[0].csrf_token == CODE_1
 
 
-def test_session_expire_all(app):
-    with app.app_context():
-        Session.expire_all_of_user(1)
-        api_key = Session.from_hash('abcdefghij', include_dead=True)
-        assert not api_key.active
+def test_from_user_cached(app, client):
+    cache_key = Session.__cache_key_of_user__.format(user_id=1)
+    cache.set(cache_key, ['1234567890'], timeout=60)
+    sessions = Session.from_user(1, include_dead=True)
+    assert len(sessions) == 1
+    assert sessions[0].user_id == 2
+    assert sessions[0].csrf_token == CODE_2
+
+
+def test_from_hash_incl_dead(app, client):
+    session = Session.from_hash('1234567890', include_dead=True)
+    assert session.csrf_token == CODE_2
+
+
+def test_get_nonexistent_session(app, client):
+    session = Session.from_hash('1234567890')
+    assert not session
+
+
+def test_session_expire_all(app, client):
+    Session.expire_all_of_user(1)
+    api_key = Session.from_hash('abcdefghij', include_dead=True)
+    assert not api_key.active
 
 
 @pytest.mark.parametrize(
@@ -91,7 +112,7 @@ def test_view_session(app, authed_client, session, expected):
     check_json_response(response, expected)
 
 
-def test_view_all_keys(app, authed_client):
+def test_view_all_sessions(app, authed_client):
     add_permissions(app, 'view_sessions')
     response = authed_client.get('/sessions')
     check_json_response(response, {

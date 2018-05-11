@@ -78,13 +78,22 @@ def update_session_or_key(session_key):
 
     :param Session/APIKey session_key: The session or API key to update.
     """
-    session_key.last_used = datetime.utcnow().replace(tzinfo=pytz.utc)
-    session_key.user_agent = flask.request.headers.get('User-Agent')
+    if flask.g.user.has_permission('no_ip_history'):
+        request_ip = '0.0.0.0'
+    else:
+        request_ip = flask.request.remote_addr
 
-    if not flask.g.user.has_permission('no_ip_history'):
-        session_key.ip = flask.request.remote_addr
+    cache_key = f'{session_key.cache_key}_updated'
+    if (not cache.get(cache_key)
+            or session_key.ip != request_ip
+            or session_key.user_agent != flask.request.headers.get('User-Agent')):
+        session_key.last_used = datetime.utcnow().replace(tzinfo=pytz.utc)
+        session_key.user_agent = flask.request.headers.get('User-Agent')
+        session_key.ip = request_ip
+        db.session.commit()
 
-    db.session.commit()
+        cache.delete(session_key.cache_key)
+        cache.set(cache_key, 1, timeout=60 * 2)  # 2 minute wait before next update
 
 
 def parse_key(headers):

@@ -1,7 +1,6 @@
 from sqlalchemy import func, and_
-from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
-from pulsar import db
+from pulsar import db, cache
 
 
 class UserPermission(db.Model):
@@ -37,6 +36,8 @@ class UserPermission(db.Model):
 
 class UserClass(db.Model):
     __tablename__ = 'user_classes'
+    __cache_key__ = 'user_class_{name}'
+    __cache_key_all__ = 'user_classes'
     __serializable_attrs__ = ('name', )
     __serializable_attrs_very_detailed__ = ('permissions', )
 
@@ -46,11 +47,28 @@ class UserClass(db.Model):
     @classmethod
     def from_name(cls, name):
         name = name.lower()
-        return cls.query.filter(func.lower(cls.name) == name).first()
+        user_class = cls.from_cache(cls.__cache_key__.format(name=name))
+        if not user_class:
+            user_class = cls.query.filter(func.lower(cls.name) == name).first()
+            cache.cache_model(user_class, timeout=3600 * 24 * 28)
+        return user_class
 
     @classmethod
     def get_all(cls):
-        return cls.query.all()
+        cache_key = cls.__cache_key_all__
+        user_class_names = cache.get(cache_key)
+        if not user_class_names:
+            user_class_names = [uc[0] for uc in db.session.query(cls.name).all()]
+            cache.set(cache_key, user_class_names, timeout=3600 * 24 * 28)
+
+        user_classes = []
+        for user_class_name in user_class_names:
+            user_classes.append(cls.from_name(user_class_name))
+        return user_classes
+
+    @property
+    def cache_key(self):
+        return self.__cache_key__.format(name=self.name)
 
 
 secondary_class_assoc_table = db.Table(
@@ -61,22 +79,39 @@ secondary_class_assoc_table = db.Table(
     )
 
 
-class SecondaryUserClass(db.Model):
+class SecondaryClass(db.Model):
     __tablename__ = 'secondary_classes'
+    __cache_key__ = 'secondary_class_{name}'
+    __cache_key_all__ = 'secondary_classes'
+    __cache_key_users__ = 'secondary_class_users_{name}'
     __serializable_attrs__ = ('name', )
     __serializable_attrs_very_detailed__ = ('permissions', )
 
     name = db.Column(db.String(24), primary_key=True)
     permissions = db.Column(ARRAY(db.String(32)))
 
-    users = relationship(
-        'User', secondary=secondary_class_assoc_table, back_populates='secondary_class_objs')
-
     @classmethod
     def from_name(cls, name):
         name = name.lower()
-        return cls.query.filter(func.lower(cls.name) == name).first()
+        user_class = cls.from_cache(cls.__cache_key__.format(name=name))
+        if not user_class:
+            user_class = cls.query.filter(func.lower(cls.name) == name).first()
+            cache.cache_model(user_class, timeout=3600 * 24 * 28)
+        return user_class
 
     @classmethod
     def get_all(cls):
-        return cls.query.all()
+        cache_key = cls.__cache_key_all__
+        user_class_names = cache.get(cache_key)
+        if not user_class_names:
+            user_class_names = [uc[0] for uc in db.session.query(cls.name).all()]
+            cache.set(cache_key, user_class_names, timeout=3600 * 24 * 28)
+
+        user_classes = []
+        for user_class_name in user_class_names:
+            user_classes.append(cls.from_name(user_class_name))
+        return user_classes
+
+    @property
+    def cache_key(self):
+        return self.__cache_key__.format(name=self.name)

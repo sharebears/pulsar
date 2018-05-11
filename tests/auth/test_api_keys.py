@@ -3,7 +3,7 @@ import flask
 import pytest
 from conftest import (CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2,
                       HASHED_CODE_3, add_permissions, check_json_response)
-from pulsar import db
+from pulsar import db, cache
 from pulsar.auth.models import APIKey
 from pulsar.utils import require_permission
 
@@ -109,12 +109,40 @@ def test_view_api_key(app, authed_client, key, expected):
     check_json_response(response, expected)
 
 
+def test_view_api_key_other(app, authed_client):
+    add_permissions(app, 'view_api_keys', 'view_api_keys_others')
+    response = authed_client.get(f'/api_keys/1234567890')
+    check_json_response(response, {'hash': '1234567890', 'active': False})
+
+
+def test_view_api_key_cached(app, authed_client):
+    add_permissions(app, 'view_api_keys', 'view_api_keys_others')
+    api_key = APIKey.from_hash('1234567890', include_dead=True)
+    cache_key = cache.cache_model(api_key, timeout=60)
+
+    response = authed_client.get(f'/api_keys/1234567890')
+    check_json_response(response, {'hash': '1234567890', 'active': False})
+    assert cache.ttl(cache_key) < 61
+
+
 def test_view_all_keys(app, authed_client):
     add_permissions(app, 'view_api_keys')
     response = authed_client.get('/api_keys')
     data = response.get_json()['response']
     assert any('hash' in api_key and api_key['hash'] == CODE_2[:10]
                for api_key in data)
+
+
+def test_view_all_keys_cached(app, authed_client):
+    add_permissions(app, 'view_api_keys')
+    cache_key = APIKey.__cache_key_of_user__.format(user_id=1)
+    cache.set(cache_key, ['abcdefghij', 'bcdefghijk'], timeout=60)
+
+    response = authed_client.get('/api_keys')
+    data = response.get_json()['response']
+    assert any('hash' in api_key and api_key['hash'] == CODE_2[:10]
+               for api_key in data)
+    assert cache.ttl(cache_key)
 
 
 def test_view_empty_api_keys(app, authed_client):

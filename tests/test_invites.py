@@ -1,7 +1,7 @@
 import json
 import pytest
 from conftest import check_json_response, add_permissions, CODE_1, CODE_2, CODE_3
-from pulsar import db
+from pulsar import db, cache
 from pulsar.users.models import User
 from pulsar.invites.models import Invite
 
@@ -20,6 +20,23 @@ def populate_db(client):
          """)
     yield
     db.engine.execute("DELETE FROM invites")
+
+
+def test_view_cache(app, client):
+    invite = Invite.from_code(CODE_1)
+    cache.cache_model(invite, timeout=60)
+    invite = invite.from_code(CODE_1)
+    assert invite.inviter_id == 1
+    assert invite.email == 'bright@puls.ar'
+
+
+def test_view_cache_from_inviter(app, client):
+    cache_key = Invite.__cache_key_of_user__.format(user_id=1)
+    cache.set(cache_key, [CODE_3], timeout=60)
+    invites = Invite.from_inviter(1)
+    assert len(invites) == 1
+    assert invites[0].code == CODE_3
+    assert cache.ttl(cache_key) < 61
 
 
 def test_invite_collision(app, monkeypatch):
@@ -109,7 +126,6 @@ def test_invite_user_with_code(app, authed_client):
         '/invites', data=json.dumps({'email': 'bright@puls.ar'}),
         content_type='application/json')
     user = User.from_id(1)
-    print(response.get_json())
     check_json_response(response, {
         'active': True,
         'email': 'bright@puls.ar',
@@ -117,6 +133,17 @@ def test_invite_user_with_code(app, authed_client):
         })
     assert response.status_code == 200
     assert user.invites == 0
+
+
+def test_invites_list_after_invite(app, authed_client):
+    app.config['REQUIRE_INVITE_CODE'] = True
+    add_permissions(app, 'send_invites')
+    Invite.from_inviter(1)  # Cache it
+
+    authed_client.post('/invites', data=json.dumps({'email': 'bright@puls.ar'}))
+    sent_invites = Invite.from_inviter(1, include_dead=True)
+    print(sent_invites)
+    assert len(sent_invites) == 3
 
 
 def test_does_not_have_invite(app, authed_client):
@@ -151,6 +178,9 @@ def test_revoke_invite(app, authed_client, code, expected, invites):
     user = User.from_id(1)
     check_json_response(response, expected)
     assert user.invites == invites
+    if 'active' in expected and expected['active'] is False:
+        invite = Invite.from_code(code, include_dead=True)
+        assert invite.active is False
 
 
 @pytest.mark.parametrize(

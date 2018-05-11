@@ -3,7 +3,7 @@ from . import bp
 from .models import UserPermission
 from .validators import permissions_dict, check_permissions
 from voluptuous import Schema, Optional
-from pulsar import db, APIException
+from pulsar import db, cache, APIException
 from pulsar.users.models import User
 from pulsar.utils import (choose_user, assert_permission, require_permission,
                           get_all_permissions, validate_data, bool_get)
@@ -151,5 +151,6 @@ def change_permissions(user_id, permissions):
             permission=perm_name,
             granted=False))
     db.session.commit()
+    cache.delete(user.__cache_key_permissions__.format(id=user.id))
 
     return flask.jsonify({'permissions': user.permissions})

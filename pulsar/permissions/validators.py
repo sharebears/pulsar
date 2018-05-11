@@ -1,7 +1,7 @@
 import flask
 from collections import defaultdict
 from voluptuous import Invalid
-from .models import UserPermission
+from .models import UserClass, UserPermission
 from pulsar import APIException
 from pulsar.utils import get_all_permissions
 
@@ -87,7 +87,7 @@ def check_permissions(user, permissions):
         lacks a to-delete permission.
     """
     add, ungrant, delete, errors = [], [], [], defaultdict(list)
-    uc_permissions = user.user_class_obj.permissions or []
+    uc_permissions = UserClass.from_name(user.user_class).permissions or []
     user_permissions = UserPermission.from_user(user.id)
 
     for perm, active in permissions.items():

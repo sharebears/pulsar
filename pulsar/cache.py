@@ -29,8 +29,35 @@ class Cache(RedisCache):
         """
         value = super().inc(key, delta)
         if timeout and value == delta:
-            self._client.expire(self.key_prefix + key, timeout)
+            self._client.expire((self.key_prefix + key).lower(), timeout)
         return value
+
+    def set(self, key, value, timeout=None):
+        """
+        Add a new key/value to the cache (overwrites value,
+        if key already exists in the cache). Keys are automatically
+        lower-cased.
+
+        :param str key: The key to set
+        :param value: The value for the key
+        :param int timeout: The cache timeout for the key in seconds
+            (if not specified, it uses the default timeout).
+            A timeout of 0 indicates that the cache never expires.
+
+        :return: ``True`` if key has been updated, ``False`` for backend
+            errors. Pickling errors, however, will raise a subclass of
+            pickle.PickleError.
+        """
+        return super().set(key.lower(), value, timeout)
+
+    def delete(self, key):
+        """
+        Delete key from the cache.
+
+        :param str key: The key to delete
+        :return: A ``bool`` for whether the key existed and has been deleted
+        """
+        super().delete(key.lower())
 
     def ttl(self, key):
         """
@@ -38,7 +65,7 @@ class Cache(RedisCache):
 
         :return: The seconds left until a key expires (``int``)
         """
-        return self._client.ttl(self.key_prefix + key)
+        return self._client.ttl((self.key_prefix + key).lower())
 
     def cache_model(self, model, timeout=None):
         """
@@ -47,11 +74,12 @@ class Cache(RedisCache):
         :param Model model: The SQLAlchemy ``Model`` to cache
         :param int timeout: The number of seconds to persist the key for
         """
-        if model:
+        if model and isinstance(model, PulsarModel):
             data = {}
             for attr in model.__table__.columns.keys():
                 data[attr] = getattr(model, attr, None)
             self.set(model.cache_key, data, timeout or self.default_timeout)
+            return model.cache_key
 
 
 class PulsarModel(Model):
@@ -87,15 +115,14 @@ class PulsarModel(Model):
         """
         from pulsar import db, cache
         data = cache.get(key)
-        if data:
-            # Validate that all attributes are cached.
-            if cls._valid_data(data):
-                obj = cls(**data)
-                make_transient_to_detached(obj)
-                obj = db.session.merge(obj, load=False)
-                return obj
+        if cls._valid_data(data):
+            obj = cls(**data)
+            make_transient_to_detached(obj)
+            obj = db.session.merge(obj, load=False)
+            return obj
+        else:
             cache.delete(key)
-        return None
+            return None
 
     @classmethod
     def _valid_data(cls, data):
@@ -107,6 +134,8 @@ class PulsarModel(Model):
 
         :return: ``True`` if valid or ``False`` if invalid
         """
+        if not isinstance(data, dict):
+            return False
         for attr in cls.__table__.columns.keys():
             if attr not in data:
                 return False

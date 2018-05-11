@@ -3,11 +3,13 @@ import pulsar.users.models  # noqa
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import INET, ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
-from pulsar import db
+from pulsar import db, cache
 
 
 class Session(db.Model):
     __tablename__ = 'sessions'
+    __cache_key__ = 'sessions_{hash}'
+    __cache_key_of_user__ = 'sessions_user_{user_id}'
     __serializable_attrs__ = ('hash', 'user_id', 'persistent', 'last_used', 'ip',
                               'user_agent', 'active')
 
@@ -36,7 +38,7 @@ class Session(db.Model):
         """
         while True:
             hash = secrets.token_hex(5)
-            if not cls.from_hash(hash, include_dead=True):
+            if not cls.from_hash(hash):
                 break
         csrf_token = secrets.token_hex(12)
         return cls(
@@ -54,15 +56,19 @@ class Session(db.Model):
         Get a session from it's hash.
 
         :param str hash: The hash of the session
-        :param bool include_dead: (Default ``False``) Whether or not to include dead
-            sessions in the search
+        :param bool include_dead: (Default ``False``) Whether or not to
+            include dead sessions in the search
 
         :return: A ``Session`` object or ``None``
         """
-        query = cls.query.filter(cls.hash == hash)
-        if not include_dead:
-            query = query.filter(cls.active == 't')
-        return query.one_or_none()
+        session = cls.from_cache(cls.__cache_key__.format(hash=hash))
+        if not session:
+            session = cls.query.filter(cls.hash == hash).first()
+            cache.cache_model(session, timeout=3600)
+
+        if session and (include_dead or session.active):
+            return session
+        return None
 
     @classmethod
     def from_user(cls, user_id, include_dead=False):
@@ -70,18 +76,40 @@ class Session(db.Model):
         Get all sessions owned by a user.
 
         :param int user_id: The User ID of the owner.
-        :param bool include_dead: (Default ``False``) Whether or not to include dead
-            API keys in the search
+        :param bool include_dead: (Default ``False``) Whether or not to
+            include dead API keys in the search
 
         :return: A ``list`` of ``APIKey`` objects
         """
-        query = cls.query.filter(cls.user_id == user_id)
-        if not include_dead:
-            query = query.filter(cls.active == 't')
-        return query.all()
+        cache_key = cls.__cache_key_of_user__.format(user_id=user_id)
+        session_hashes = cache.get(cache_key)
+        if not session_hashes:
+            session_hashes = [
+                k[0] for k in db.session.query(cls.hash).filter(
+                    cls.user_id == user_id).all()]
+            cache.set(cache_key, session_hashes, timeout=3600 * 24 * 28)
+
+        sessions = []
+        for hash in session_hashes:
+            sessions.append(cls.from_hash(hash, include_dead=True))
+
+        return [s for s in sessions if s and (include_dead or s.active)]
+
+    @property
+    def cache_key(self):
+        return self.__cache_key__.format(hash=self.hash)
 
     @staticmethod
     def expire_all_of_user(user_id):
+        """
+        Expire all active sessions that belong to a user.
+
+        :param int user_id: The expired sessions belong to this user
+        """
+        hashes = db.session.query(Session.hash).filter(Session.active == 't').all()
+        for hash in hashes:
+            cache.delete(Session.__cache_key__.format(hash=hash[0]))
+
         db.session.query(Session).filter(
             Session.user_id == user_id
             ).update({'active': False})
@@ -89,6 +117,8 @@ class Session(db.Model):
 
 class APIKey(db.Model):
     __tablename__ = 'api_keys'
+    __cache_key__ = 'api_keys_{hash}'
+    __cache_key_of_user__ = 'api_keys_user_{user_id}'
     __serializable_attrs__ = ('hash', 'user_id', 'last_used', 'ip', 'user_agent',
                               'active', 'permissions')
 
@@ -139,10 +169,14 @@ class APIKey(db.Model):
 
         :return: An ``APIKey`` object or ``None``
         """
-        query = cls.query.filter(cls.hash == hash)
-        if not include_dead:
-            query = query.filter(cls.active == 't')
-        return query.one_or_none()
+        api_key = cls.from_cache(cls.__cache_key__.format(hash=hash))
+        if not api_key:
+            api_key = cls.query.filter(cls.hash == hash).first()
+            cache.cache_model(api_key, timeout=3600 * 24 * 7)
+
+        if api_key and (include_dead or api_key.active):
+            return api_key
+        return None
 
     @classmethod
     def from_user(cls, user_id, include_dead=False):
@@ -155,10 +189,22 @@ class APIKey(db.Model):
 
         :return: A ``list`` of ``APIKey`` objects
         """
-        query = cls.query.filter(cls.user_id == user_id)
-        if not include_dead:
-            query = query.filter(cls.active == 't')
-        return query.all()
+        api_key_hashes = cache.get(cls.__cache_key_of_user__.format(user_id=user_id))
+        if not api_key_hashes:
+            api_key_hashes = [
+                k[0] for k in db.session.query(cls.hash).filter(cls.user_id == user_id).all()]
+            cache.set(cls.__cache_key_of_user__.format(user_id=user_id),
+                      api_key_hashes, timeout=3600 * 24 * 28)
+
+        api_keys = []
+        for hash in api_key_hashes:
+            api_keys.append(cls.from_hash(hash, include_dead=True))
+
+        return [k for k in api_keys if k and (include_dead or k.active)]
+
+    @property
+    def cache_key(self):
+        return self.__cache_key__.format(hash=self.hash)
 
     def check_key(self, key):
         """
@@ -178,9 +224,10 @@ class APIKey(db.Model):
         :param str permission: Permission to search for
         :return: ``True`` if permission is present, ``False`` if not
         """
-        from pulsar.users.models import User
         if self.permissions:
             return permission in self.permissions
+
+        from pulsar.users.models import User
         user = User.from_id(self.user_id)
         return permission in user.permissions
 
@@ -191,6 +238,10 @@ class APIKey(db.Model):
 
         :param int user_id: API keys of this user will be revoked
         """
+        hashes = db.session.query(APIKey.hash).filter(APIKey.active == 't').all()
+        for hash in hashes:
+            cache.delete(APIKey.__cache_key__.format(hash=hash[0]))
+
         db.session.query(APIKey).filter(
             APIKey.user_id == user_id
             ).update({'active': False})

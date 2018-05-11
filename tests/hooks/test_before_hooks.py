@@ -85,6 +85,24 @@ def test_api_key_auth_and_ip_override(app, client):
     check_json_response(response, 'completed')
 
 
+def test_auth_updates(app, client):
+    @app.route('/test_api_key')
+    def test_api_key():
+        return flask.jsonify('completed')
+
+    db.engine.execute(
+        "UPDATE api_keys SET ip = '127.0.0.1', user_agent = 'pulsar-test-client'")
+    cache.set('api_keys_abcdefghij_updated', 1, timeout=9000)
+    response = client.get('/test_api_key', environ_base={
+            'HTTP_USER_AGENT': 'pulsar-test-client',
+            'REMOTE_ADDR': '127.0.0.1',
+        }, headers={
+            'Authorization': f'Token abcdefghij{CODE_1}',
+        })
+    check_json_response(response, 'completed')
+    assert cache.ttl('api_keys_abcdefghij_updated') > 8000
+
+
 @pytest.mark.parametrize(
     'authorization_header', [
         'Token abcdefgnotarealone',
