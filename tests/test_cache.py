@@ -1,3 +1,4 @@
+import pytest
 from conftest import add_permissions, check_json_response
 from pulsar import cache
 from pulsar.users.models import User
@@ -28,14 +29,14 @@ def test_get_user_cache(app, authed_client, monkeypatch):
     assert response.status_code == 200
 
 
-def test_cache_inc_key(app):
+def test_cache_inc_key(app, client):
     value = cache.inc('test-inc-key', 2, timeout=60)
     time_left = cache.ttl('test-inc-key')
     assert value == 2
     assert time_left > 58 and time_left < 61
 
 
-def test_cache_inc_key_already_exists(app):
+def test_cache_inc_key_already_exists(app, client):
     assert cache.set('test-inc-key', 3, timeout=15)
     value = cache.inc('test-inc-key', 4)
     time_left = cache.ttl('test-inc-key')
@@ -118,3 +119,12 @@ def test_to_dict_plain(app, client):
         'key2': 123,
     }
     assert dict_ == user._objects_to_dict(dict_)
+
+
+@pytest.mark.parametrize(
+    'data, result', [
+        ('not-a-dict', False),
+        ({'id': 1, 'username': 'lights'}, False),
+     ])
+def test_is_valid_data(app, client, data, result):
+    assert User._valid_data(data) is result

@@ -1,7 +1,7 @@
 import json
 import flask
 import pytest
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from voluptuous import Schema, Optional
 from pulsar.utils import validate_data
 from conftest import CODE_1, CODE_2, HASHED_CODE_1, add_permissions, check_json_response
@@ -212,14 +212,17 @@ def test_rate_limit_user_fail(app, client, monkeypatch):
     check_json_response(response, 'User rate limit exceeded. 7 seconds until limit expires.')
 
 
+g = namedtuple('g', ['user', 'user_session', 'api_key', 'cache_keys'])
+api_key = namedtuple('APIKey', ['hash'])
+
+
 def test_rate_limit_function(app, client, monkeypatch):
     from pulsar.hooks.before import check_rate_limit
-    g = namedtuple('g', ['user', 'user_session', 'api_key'])
-    api_key = namedtuple('APIKey', ['hash'])
     monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
         user=User.from_id(1),
         user_session=None,
         api_key=api_key(hash='abcdefghij'),
+        cache_keys=defaultdict(list),
         ))
     with pytest.raises(APIException) as e:
         for i in range(62):
@@ -229,12 +232,11 @@ def test_rate_limit_function(app, client, monkeypatch):
 
 def test_rate_limit_function_global(app, client, monkeypatch):
     from pulsar.hooks.before import check_rate_limit
-    g = namedtuple('g', ['user', 'user_session', 'api_key'])
-    api_key = namedtuple('APIKey', ['hash'])
     monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
         user=User.from_id(1),
         user_session=None,
         api_key=api_key(hash='abcdefghij'),
+        cache_keys=defaultdict(list),
         ))
     cache.set('rate_limit_user_1', 40, timeout=60)
     with pytest.raises(APIException) as e:

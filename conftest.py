@@ -1,5 +1,6 @@
 import flask
 import pytest
+from collections import defaultdict
 from contextlib import contextmanager
 import pulsar
 from pulsar import create_app, db
@@ -82,27 +83,38 @@ def app(monkeypatch):
 
 @pytest.fixture
 def client(app):
-    with app.app_context():
-        yield app.test_client()
+    with set_globals(app):
+        with app.app_context():
+            yield app.test_client()
 
 
 @pytest.fixture
 def authed_client(app, monkeypatch):
     monkeypatch.setattr(app, 'before_request_funcs', {})
-    with app.app_context():
-        user = User.from_id(1)
-    with set_user(app, user):
+    with set_globals(app):
         with app.app_context():
-            db.session.add(user)
-            yield app.test_client()
+            user = User.from_id(1)
+    with set_globals(app):
+        with set_user(app, user):
+            with app.app_context():
+                db.session.add(user)
+                yield app.test_client()
+
+
+@contextmanager
+def set_globals(app_):
+    def handler(sender, **kwargs):
+        flask.g.cache_keys = defaultdict(list)
+        flask.g.api_key = None
+        flask.g.user_session = None
+    with flask.appcontext_pushed.connected_to(handler, app_):
+        yield
 
 
 @contextmanager
 def set_user(app_, user):
     def handler(sender, **kwargs):
         flask.g.user = user
-        flask.g.api_key = None
-        flask.g.user_session = None
     with flask.appcontext_pushed.connected_to(handler, app_):
         yield
 

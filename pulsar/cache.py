@@ -1,3 +1,4 @@
+import flask
 from flask_sqlalchemy import Model
 from sqlalchemy.orm.session import make_transient_to_detached
 from werkzeug.contrib.cache import RedisCache
@@ -7,6 +8,9 @@ class Cache(RedisCache):
     """
     A custom implementation of werkzeug's RedisCache.
     This modifies and adds a few functions to RedisCache.
+
+    All cache key get/set/inc/del are logged in a global variable for
+    debugging purposes.
     """
 
     def __init__(self):
@@ -14,7 +18,7 @@ class Cache(RedisCache):
         pass
 
     def init_app(self, app):
-        """Required flask extension method."""
+        # Required flask extension method.
         super().__init__(**app.config['REDIS_PARAMS'])
 
     def inc(self, key, delta=1, timeout=None):
@@ -27,9 +31,25 @@ class Cache(RedisCache):
         :param int timeout: If the cache key is newly created,
             how long to persist the key for
         """
+        key = key.lower()
         value = super().inc(key, delta)
         if timeout and value == delta:
-            self._client.expire((self.key_prefix + key).lower(), timeout)
+            self._client.expire(self.key_prefix + key, timeout)
+        flask.g.cache_keys['inc'].append(key)
+        return value
+
+    def get(self, key):
+        """
+        Look up key in the cache and return the value for it. Key is
+        automatically lower-cased.
+
+        :param key: the key to be looked up.
+        :returns: The value if it exists and is readable, else ``None``.
+        """
+        key = key.lower()
+        value = super().get(key)
+        if value:
+            flask.g.cache_keys['get'].append(key)
         return value
 
     def set(self, key, value, timeout=None):
@@ -48,7 +68,9 @@ class Cache(RedisCache):
             errors. Pickling errors, however, will raise a subclass of
             pickle.PickleError.
         """
-        return super().set(key.lower(), value, timeout)
+        key = key.lower()
+        flask.g.cache_keys['set'].append(key)
+        return super().set(key, value, timeout)
 
     def delete(self, key):
         """
@@ -57,7 +79,11 @@ class Cache(RedisCache):
         :param str key: The key to delete
         :return: A ``bool`` for whether the key existed and has been deleted
         """
-        super().delete(key.lower())
+        key = key.lower()
+        result = super().delete(key)
+        if result:
+            flask.g.cache_keys['delete'].append(key)
+        return result
 
     def ttl(self, key):
         """
@@ -105,7 +131,7 @@ class PulsarModel(Model):
     """
 
     @classmethod
-    def from_cache(cls, key):
+    def from_cache(cls, key, query=None):
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -115,19 +141,23 @@ class PulsarModel(Model):
         """
         from pulsar import db, cache
         data = cache.get(key)
-        if cls._valid_data(data):
-            obj = cls(**data)
-            make_transient_to_detached(obj)
-            obj = db.session.merge(obj, load=False)
+        if data:
+            if cls._valid_data(data):
+                obj = cls(**data)
+                make_transient_to_detached(obj)
+                obj = db.session.merge(obj, load=False)
+                return obj
+            else:
+                cache.delete(key)
+        if query:
+            obj = query.first()
+            cache.cache_model(obj)
             return obj
-        else:
-            cache.delete(key)
-            return None
+        return None
 
     @classmethod
     def _valid_data(cls, data):
-        """
-        Check the validity of data being passed to a function by making sure that
+        """ Check the validity of data being passed to a function by making sure that
         all of its cacheable attributes are being loaded.
 
         :param dict data: The stored object data to validate
@@ -136,10 +166,7 @@ class PulsarModel(Model):
         """
         if not isinstance(data, dict):
             return False
-        for attr in cls.__table__.columns.keys():
-            if attr not in data:
-                return False
-        return True
+        return not set(data.keys()) != set(cls.__table__.columns.keys())
 
     def clear_cache(self):
         """Clear the cache key for this instance of a model."""

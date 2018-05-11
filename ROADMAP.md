@@ -8,8 +8,6 @@
 - [ ] News Posts
 - [ ] Index
 
-- [ ] Properly test cache clearing for APIKeys + more
-
 
 # TODO
 

@@ -13,6 +13,7 @@ REDIS_PARAMS = {
     'password': None,
     'db': None,
     'key_prefix': None,
+    'default_timeout': 3600 * 24 * 7,  # 1 week
     }
 
 # Determines whether or not unauthenticated users can view pages

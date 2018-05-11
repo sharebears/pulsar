@@ -13,7 +13,10 @@ def populate_db(app, client):
 
 def test_user_creation(app):
     with app.app_context():
-        user = User('bright', '13579', 'bright@puls.ar')
+        user = User.register(
+            username='bright',
+            password='13579',
+            email='bright@puls.ar')
         db.session.add(user)
         db.session.commit()
         assert isinstance(user.id, int) and user.id > 1

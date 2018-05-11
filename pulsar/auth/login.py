@@ -79,9 +79,10 @@ def login(username, password, persistent):
         raise _401Exception(message='Invalid credentials.')
 
     session = Session.generate_session(
-        user.id, flask.request.remote_addr, flask.request.user_agent.string, persistent)
-    db.session.add(session)
-    db.session.commit()
+        user_id=user.id,
+        ip=flask.request.remote_addr,
+        user_agent=flask.request.user_agent.string,
+        persistent=persistent)
 
     flask.session['user_id'] = user.id
     flask.session['session_hash'] = session.hash

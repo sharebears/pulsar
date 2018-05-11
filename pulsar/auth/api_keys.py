@@ -2,7 +2,7 @@ import flask
 from voluptuous import Schema, Optional
 from . import bp
 from .models import APIKey
-from pulsar import db, cache, APIException, _404Exception
+from pulsar import db, APIException, _404Exception
 from pulsar.utils import (require_permission, validate_data, choose_user,
                           bool_get, many_to_dict)
 from pulsar.permissions.validators import permissions_list_of_user
@@ -194,12 +194,7 @@ def create_api_key(permissions):
         flask.g.user.id,
         flask.request.remote_addr,
         flask.request.user_agent.string,
-        permissions
-        )
-    db.session.add(api_key)
-    db.session.commit()
-    cache.delete(APIKey.__cache_key_of_user__.format(user_id=flask.g.user.id))
-
+        permissions)
     return flask.jsonify({
         'identifier': api_key.hash,
         'key': raw_key,
@@ -266,7 +261,6 @@ def revoke_api_key(identifier):
                 raise APIException(f'API Key {identifier} is already revoked.')
             api_key.active = False
             db.session.commit()
-            api_key.clear_cache()
             return flask.jsonify(f'API Key {identifier} has been revoked.')
     raise _404Exception(f'API Key {identifier}')
 
@@ -314,5 +308,4 @@ def revoke_all_api_keys(user_id=None):
     user = choose_user(user_id, 'revoke_api_keys_others')
     APIKey.revoke_all_of_user(user.id)
     db.session.commit()
-    cache.delete(APIKey.__cache_key_of_user__.format(user_id=user.id))
     return flask.jsonify('All api keys have been revoked.')

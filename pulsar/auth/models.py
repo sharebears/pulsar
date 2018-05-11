@@ -41,14 +41,20 @@ class Session(db.Model):
             if not cls.from_hash(hash):
                 break
         csrf_token = secrets.token_hex(12)
-        return cls(
+        session = cls(
             user_id=user_id,
             hash=hash,
             csrf_token=csrf_token,
             ip=ip,
             user_agent=user_agent,
-            persistent=persistent,
-            )
+            persistent=persistent)
+
+        db.session.add(session)
+        db.session.commit()
+
+        cache.cache_model(session)
+        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
+        return session
 
     @classmethod
     def from_hash(cls, hash, include_dead=False):
@@ -61,10 +67,9 @@ class Session(db.Model):
 
         :return: A ``Session`` object or ``None``
         """
-        session = cls.from_cache(cls.__cache_key__.format(hash=hash))
-        if not session:
-            session = cls.query.filter(cls.hash == hash).first()
-            cache.cache_model(session, timeout=3600)
+        session = cls.from_cache(
+            key=cls.__cache_key__.format(hash=hash),
+            query=cls.query.filter(cls.hash == hash))
 
         if session and (include_dead or session.active):
             return session
@@ -149,14 +154,20 @@ class APIKey(db.Model):
             if not cls.from_hash(hash, include_dead=True):
                 break
         key = secrets.token_hex(8)
-        return (hash + key, cls(
+        api_key = cls(
             user_id=user_id,
             hash=hash,
             keyhashsalt=generate_password_hash(key),
             ip=ip,
             user_agent=user_agent,
             permissions=permissions,
-            ))
+            )
+        db.session.add(api_key)
+        db.session.commit()
+
+        cache.cache_model(api_key)
+        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
+        return (hash + key, api_key)
 
     @classmethod
     def from_hash(cls, hash, include_dead=False):
@@ -169,10 +180,9 @@ class APIKey(db.Model):
 
         :return: An ``APIKey`` object or ``None``
         """
-        api_key = cls.from_cache(cls.__cache_key__.format(hash=hash))
-        if not api_key:
-            api_key = cls.query.filter(cls.hash == hash).first()
-            cache.cache_model(api_key, timeout=3600 * 24 * 7)
+        api_key = cls.from_cache(
+            key=cls.__cache_key__.format(hash=hash),
+            query=cls.query.filter(cls.hash == hash))
 
         if api_key and (include_dead or api_key.active):
             return api_key

@@ -22,7 +22,7 @@ class Invite(db.Model):
     @property
     def invitee(self):
         from pulsar.users.models import User
-        return User.from_id(self.invitee_id) if self.invitee_id else None
+        return User.from_id(self.invitee_id)
 
     @classmethod
     def generate_invite(cls, inviter_id, email, ip):
@@ -37,12 +37,18 @@ class Invite(db.Model):
             code = secrets.token_hex(12)
             if not cls.from_code(code, include_dead=True):
                 break
-        return cls(
+        invite = cls(
             inviter_id=inviter_id,
             code=code,
             email=email.lower().strip(),
-            from_ip=ip,
-            )
+            from_ip=ip)
+
+        db.session.add(invite)
+        db.session.commit()
+
+        cache.cache_model(invite)
+        cache.delete(cls.__cache_key_of_user__.format(user_id=inviter_id))
+        return invite
 
     @classmethod
     def from_code(cls, code, include_dead=False):
@@ -55,10 +61,9 @@ class Invite(db.Model):
 
         :return: A ``Invite`` object or ``None``
         """
-        invite = cls.from_cache(cls.__cache_key__.format(code=code))
-        if not invite:
-            invite = cls.query.filter(cls.code == code).first()
-            cache.cache_model(invite, timeout=3600 * 24 * 7)
+        invite = cls.from_cache(
+            key=cls.__cache_key__.format(code=code),
+            query=cls.query.filter(cls.code == code))
 
         if invite and (include_dead or invite.active):
             return invite

@@ -19,7 +19,7 @@ Login
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :modules: pulsar.auth.views.login
+   :modules: pulsar.auth.login
    :groupby: view
    :order: path
 
@@ -28,7 +28,7 @@ Sessions
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :modules: pulsar.auth.views.sessions
+   :modules: pulsar.auth.sessions
    :groupby: view
    :order: path
 
@@ -37,6 +37,6 @@ API Keys
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
-   :modules: pulsar.auth.views.api_keys
+   :modules: pulsar.auth.api_keys
    :groupby: view
    :order: path

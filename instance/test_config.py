@@ -12,6 +12,7 @@ REDIS_PARAMS = {
     'password': None,
     'db': None,
     'key_prefix': 'pulsar_test',
+    'default_timeout': 3600 * 24 * 7,  # 1 week
     }
 
 SITE_PRIVATE = True

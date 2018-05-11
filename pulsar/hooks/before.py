@@ -3,6 +3,7 @@ import pytz
 import flask
 from . import bp
 from datetime import datetime
+from collections import defaultdict
 from pulsar import db, cache, APIException, _403Exception, _312Exception
 from pulsar.auth.models import Session, APIKey
 from pulsar.users.models import User
@@ -14,6 +15,7 @@ def hook():
     flask.g.api_key = None
     flask.g.user_session = None
     flask.g.csrf_token = None
+    flask.g.cache_keys = defaultdict(list)
 
     if not check_user_session():
         check_api_key()
@@ -78,18 +80,13 @@ def update_session_or_key(session_key):
 
     :param Session/APIKey session_key: The session or API key to update.
     """
-    if flask.g.user.has_permission('no_ip_history'):
-        request_ip = '0.0.0.0'
-    else:
-        request_ip = flask.request.remote_addr
-
     cache_key = f'{session_key.cache_key}_updated'
     if (not cache.get(cache_key)
-            or session_key.ip != request_ip
+            or session_key.ip != flask.request.remote_addr
             or session_key.user_agent != flask.request.headers.get('User-Agent')):
         session_key.last_used = datetime.utcnow().replace(tzinfo=pytz.utc)
         session_key.user_agent = flask.request.headers.get('User-Agent')
-        session_key.ip = request_ip
+        session_key.ip = flask.request.remote_addr
         db.session.commit()
 
         cache.delete(session_key.cache_key)

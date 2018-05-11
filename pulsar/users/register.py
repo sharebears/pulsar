@@ -4,7 +4,6 @@ from voluptuous.validators import Email, Match
 
 from . import bp
 from .validators import val_username, val_invite_code
-from pulsar import db
 from pulsar.utils import PASSWORD_REGEX, validate_data
 from pulsar.users.models import User
 
@@ -79,6 +78,4 @@ def register(username, password, email, code):
         username=username,
         password=password,
         email=email)
-    db.session.add(user)
-    db.session.commit()
     return flask.jsonify({'username': user.username})

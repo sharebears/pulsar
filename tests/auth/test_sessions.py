@@ -80,8 +80,23 @@ def test_get_nonexistent_session(app, client):
 
 def test_session_expire_all(app, client):
     Session.expire_all_of_user(1)
-    api_key = Session.from_hash('abcdefghij', include_dead=True)
-    assert not api_key.active
+    db.session.commit()
+    session = Session.from_hash('abcdefghij', include_dead=True)
+    assert not session.active
+
+
+def test_session_expire_all_cached(app, client):
+    session = Session.from_hash('abcdefghij')
+    cache_key = cache.cache_model(session, timeout=60)
+    assert cache.ttl(cache_key) < 61
+
+    Session.expire_all_of_user(1)
+    db.session.commit()
+    session = Session.from_hash('abcdefghij', include_dead=True)
+    assert session.active is False
+    assert cache.ttl(cache_key) > 61
+
+
 
 
 @pytest.mark.parametrize(

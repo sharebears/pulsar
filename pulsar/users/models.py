@@ -39,33 +39,20 @@ class User(db.Model):
         return (db.Index('idx_users_username', func.lower(cls.username), unique=True),
                 db.Index('idx_users_email', func.lower(cls.email)))
 
-    def __init__(self, username, passhash, email, id=None, enabled=None, locked=None,
-                 user_class=None, inviter_id=None, invites=None, uploaded=None,
-                 downloaded=None):
-        self.id = id
-        self.username = username
-        self.passhash = passhash
-        self.email = email
-        self.enabled = enabled
-        self.locked = locked
-        self.user_class = user_class
-        inviter_id = inviter_id
-        invites = invites
-
     @classmethod
     def from_id(cls, id):
-        user = cls.from_cache(cls.__cache_key__.format(id=id))
-        if not user:
-            user = cls.query.get(id)
-            cache.cache_model(user, timeout=3600 * 24 * 7)
-        return user
+        return cls.from_cache(
+            key=cls.__cache_key__.format(id=id),
+            query=cls.query.filter(User.id == id),
+            )
 
     @classmethod
     def from_username(cls, username):
         username = username.lower()
         user = cls.query.filter(func.lower(cls.username) == username).one_or_none()
         if user:
-            cache.cache_model(user, timeout=3600 * 24 * 7)
+            cache.cache_model(user)
+            user.__instantiated = True
         return user
 
     @classmethod
@@ -74,11 +61,16 @@ class User(db.Model):
         Alternative constructor which generates a password hash and
         lowercases and strips leading and trailing spaces from the email.
         """
-        return cls(
+        user = cls(
             username=username,
             passhash=generate_password_hash(password),
-            email=email.lower().strip(),
-            )
+            email=email.lower().strip())
+
+        db.session.add(user)
+        db.session.commit()
+
+        cache.cache_model(user)
+        return user
 
     @property
     def cache_key(self):

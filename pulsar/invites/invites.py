@@ -2,7 +2,7 @@ import flask
 from voluptuous import Schema, Email, Optional
 from . import bp
 from .models import Invite
-from pulsar import db, cache, APIException, _404Exception
+from pulsar import db, APIException, _404Exception
 from pulsar.utils import (validate_data, require_permission, choose_user,
                           assert_user, bool_get, many_to_dict)
 
@@ -210,7 +210,7 @@ def invite_user(email):
     flask.g.user.invites -= 1
     db.session.add(invite)
     db.session.commit()
-    cache.delete(Invite.__cache_key_of_user__.format(user_id=flask.g.user.id))
+    flask.g.user.clear_cache()
     return flask.jsonify(invite.to_dict())
 
 
@@ -269,5 +269,6 @@ def revoke_invite(code):
     invite.active = False
     flask.g.user.invites += 1
     db.session.commit()
+    flask.g.user.clear_cache()
     invite.clear_cache()
     return flask.jsonify(invite.to_dict())
