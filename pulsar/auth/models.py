@@ -1,5 +1,4 @@
 import secrets
-import pulsar.users.models  # noqa
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import INET, ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -237,7 +236,7 @@ class APIKey(db.Model):
         if self.permissions:
             return permission in self.permissions
 
-        from pulsar.users.models import User
+        from pulsar.models import User
         user = User.from_id(self.user_id)
         return permission in user.permissions
 

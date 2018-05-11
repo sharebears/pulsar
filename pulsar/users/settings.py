@@ -3,7 +3,7 @@ from voluptuous import Schema, Optional
 from voluptuous.validators import Match
 from . import bp
 from pulsar import db, APIException
-from pulsar.auth.models import Session
+from pulsar.models import Session
 from pulsar.utils import PASSWORD_REGEX, choose_user, validate_data, require_permission
 
 app = flask.current_app

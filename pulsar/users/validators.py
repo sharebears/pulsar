@@ -4,9 +4,8 @@ import flask
 from datetime import datetime
 from sqlalchemy import func
 from voluptuous import Invalid
-from .models import User
 from pulsar.utils import USERNAME_REGEX
-from pulsar.invites.models import Invite
+from pulsar.models import User, Invite
 
 app = flask.current_app
 

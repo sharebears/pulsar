@@ -51,6 +51,28 @@ def test_user_session_auth(app, client):
     assert session.user_agent == 'pulsar-test-client'
 
 
+def test_session_auth_and_ip_override(app, client):
+    add_permissions(app, 'no_ip_history')
+
+    @app.route('/test_sess')
+    def test_session():
+        assert flask.g.user_session.ip == '0.0.0.0'
+        assert flask.g.user.id == 1
+        assert not flask.g.api_key
+        return flask.jsonify('completed')
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['session_hash'] = 'abcdefghij'
+    response = client.get('/test_sess', environ_base={
+        'HTTP_USER_AGENT': 'pulsar-test-client',
+        'REMOTE_ADDR': '127.0.0.1',
+        })
+    check_json_response(response, 'completed')
+    session = Session.from_hash('abcdefghij')
+    assert session.user_agent == 'pulsar-test-client'
+
+
 @pytest.mark.parametrize(
     'user_id, session_hash', [
         ('testings', 'abcdefghij'),

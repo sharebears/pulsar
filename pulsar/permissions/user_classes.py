@@ -3,11 +3,10 @@ from copy import copy
 from sqlalchemy import func
 from voluptuous import Schema, Optional
 from . import bp
-from .models import UserClass, SecondaryClass
-from .validators import permissions_list, permissions_dict
 from pulsar import db, APIException, _404Exception
 from pulsar.utils import require_permission, validate_data, bool_get, many_to_dict
-from pulsar.users.models import User
+from pulsar.models import User, UserClass, SecondaryClass
+from pulsar.validators import permissions_list, permissions_dict
 
 app = flask.current_app
 

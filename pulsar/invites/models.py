@@ -21,7 +21,7 @@ class Invite(db.Model):
 
     @property
     def invitee(self):
-        from pulsar.users.models import User
+        from pulsar.models import User
         return User.from_id(self.invitee_id)
 
     @classmethod

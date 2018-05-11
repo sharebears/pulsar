@@ -1,11 +1,10 @@
 import flask
 from voluptuous import Schema, Optional
 from voluptuous.validators import Email, Match
-
 from . import bp
-from .validators import val_username, val_invite_code
 from pulsar.utils import PASSWORD_REGEX, validate_data
-from pulsar.users.models import User
+from pulsar.models import User
+from pulsar.validators import val_username, val_invite_code
 
 app = flask.current_app
 

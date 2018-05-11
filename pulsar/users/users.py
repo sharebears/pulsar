@@ -1,7 +1,7 @@
 import flask
 from . import bp
-from .models import User
 from pulsar import _404Exception
+from pulsar.models import User
 from pulsar.utils import require_permission
 
 app = flask.current_app

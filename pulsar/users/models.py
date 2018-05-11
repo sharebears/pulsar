@@ -1,6 +1,4 @@
 import flask
-import pulsar.invites.models  # noqa
-import pulsar.permissions.models  # noqa
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from sqlalchemy.sql import select
@@ -82,7 +80,7 @@ class User(db.Model):
 
     @property
     def secondary_class_models(self):
-        from pulsar.permissions.models import SecondaryClass, secondary_class_assoc_table as sat
+        from pulsar.models import SecondaryClass, secondary_class_assoc_table as sat
         cache_key = self.__cache_key_secondary_classes__.format(id=self.id)
         secondary_class_names = cache.get(cache_key)
         if not secondary_class_names:
@@ -102,17 +100,17 @@ class User(db.Model):
 
     @property
     def api_keys(self):
-        from pulsar.auth.models import APIKey
+        from pulsar.models import APIKey
         return APIKey.from_user(self.id)
 
     @property
     def sessions(self):
-        from pulsar.auth.models import Session
+        from pulsar.models import Session
         return Session.from_user(self.id)
 
     @property
     def permissions(self):
-        from pulsar.permissions.models import UserClass, UserPermission
+        from pulsar.models import UserClass, UserPermission
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
 

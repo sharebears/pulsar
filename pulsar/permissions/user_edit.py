@@ -1,10 +1,9 @@
 import flask
 from . import bp
-from .models import UserPermission
-from .validators import permissions_dict, check_permissions
+from pulsar.validators import permissions_dict, check_permissions
 from voluptuous import Schema, Optional
 from pulsar import db, cache, APIException
-from pulsar.users.models import User
+from pulsar.models import User, UserPermission
 from pulsar.utils import (choose_user, assert_permission, require_permission,
                           get_all_permissions, validate_data, bool_get)
 

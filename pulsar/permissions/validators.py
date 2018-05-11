@@ -1,8 +1,8 @@
 import flask
 from collections import defaultdict
 from voluptuous import Invalid
-from .models import UserClass, UserPermission
 from pulsar import APIException
+from pulsar.models import UserClass, UserPermission
 from pulsar.utils import get_all_permissions
 
 

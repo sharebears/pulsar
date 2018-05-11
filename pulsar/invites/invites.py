@@ -1,8 +1,8 @@
 import flask
 from voluptuous import Schema, Email, Optional
 from . import bp
-from .models import Invite
 from pulsar import db, APIException, _404Exception
+from pulsar.models import Invite
 from pulsar.utils import (validate_data, require_permission, choose_user,
                           assert_user, bool_get, many_to_dict)
 

@@ -5,8 +5,7 @@ from . import bp
 from datetime import datetime
 from collections import defaultdict
 from pulsar import db, cache, APIException, _403Exception, _312Exception
-from pulsar.auth.models import Session, APIKey
-from pulsar.users.models import User
+from pulsar.models import User, Session, APIKey
 
 
 @bp.before_app_request
@@ -23,9 +22,6 @@ def hook():
     if flask.g.user:
         if not flask.g.user.enabled:
             raise _312Exception
-
-        if flask.g.user.has_permission('no_ip_history'):
-            flask.request.environ['REMOTE_ADDR'] = '0.0.0.0'
 
         check_rate_limit()
 
@@ -51,6 +47,8 @@ def check_user_session():
             flask.g.user = User.from_id(session.user_id)
             flask.g.user_session = session
             flask.g.csrf_token = session.csrf_token
+            if flask.g.user.has_permission('no_ip_history'):
+                flask.request.environ['REMOTE_ADDR'] = '0.0.0.0'
             update_session_or_key(session)
             return True
     return False
@@ -70,6 +68,8 @@ def check_api_key():
         if api_key and api_key.check_key(raw_key[10:]):
             flask.g.user = User.from_id(api_key.user_id)
             flask.g.api_key = api_key
+            if flask.g.user.has_permission('no_ip_history'):
+                flask.request.environ['REMOTE_ADDR'] = '0.0.0.0'
             update_session_or_key(api_key)
 
 
