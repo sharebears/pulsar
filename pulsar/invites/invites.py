@@ -3,8 +3,8 @@ from voluptuous import Schema, Email, Optional
 from . import bp
 from pulsar import db, APIException, _404Exception
 from pulsar.models import Invite
-from pulsar.utils import (validate_data, require_permission, choose_user,
-                          assert_user, bool_get, many_to_dict)
+from pulsar.utils import validate_data, require_permission, choose_user, assert_user, many_to_dict
+from pulsar.validators import bool_get
 
 app = flask.current_app
 

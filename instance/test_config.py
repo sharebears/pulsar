@@ -15,7 +15,6 @@ REDIS_PARAMS = {
     'default_timeout': 3600 * 24 * 7,  # 1 week
     }
 
-SITE_PRIVATE = True
 REQUIRE_INVITE_CODE = None
 LOCKED_ACCOUNT_PERMISSIONS = [
     'view_staff_pm',

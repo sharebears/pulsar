@@ -51,20 +51,6 @@ def test_csrf_token(app, client):
         }
 
 
-def test_unauthorized_csrf_token(app, client):
-    app.config['SITE_PRIVATE'] = False
-
-    @app.route('/test_endpoint')
-    def test_endpoint():
-        return flask.jsonify('test')
-
-    response = client.get('/test_endpoint')
-    assert json.loads(response.get_data()) == {
-        'status': 'success',
-        'response': 'test',
-        }
-
-
 def test_cache_keys(app, authed_client):
     add_permissions(app, 'view_cache_keys')
 

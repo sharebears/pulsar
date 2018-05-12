@@ -130,7 +130,7 @@ def check_rate_limit():
                            f'{time_left} seconds until limit expires.')
 
     user_specific_requests = cache.inc(user_cache_key, timeout=80)
-    if user_specific_requests > 70:
+    if user_specific_requests > 90:
         time_left = cache.ttl(user_cache_key)
         raise APIException('User rate limit exceeded. '
                            f'{time_left} seconds until limit expires.')

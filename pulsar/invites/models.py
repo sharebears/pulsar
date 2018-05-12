@@ -90,7 +90,7 @@ class Invite(db.Model):
             invite_codes = [
                 i[0] for i in db.session.query(cls.code).filter(
                     cls.inviter_id == inviter_id).all()]
-            cache.set(cache_key, invite_codes, timeout=3600 * 24 * 28)
+            cache.set(cache_key, invite_codes)
 
         invites = []
         for code in invite_codes:

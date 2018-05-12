@@ -90,7 +90,7 @@ class User(db.Model):
             secondary_class_names = [s[0] for s in db.session.execute(select(
                     [sat.c.secondary_user_class]
                     ).where(sat.c.user_id == self.id))]
-            cache.set(cache_key, secondary_class_names, timeout=3600 * 24 * 28)
+            cache.set(cache_key, secondary_class_names)
 
         secondary_classes = []
         for name in secondary_class_names:
@@ -138,7 +138,7 @@ class User(db.Model):
                 if up[1] is True and up[0] not in permissions:
                     permissions.append(up[0])
 
-            cache.set(cache_key, permissions, timeout=3600 * 24 * 28)
+            cache.set(cache_key, permissions)
         return permissions
 
     def belongs_to_user(self):

@@ -53,7 +53,7 @@ class UserClass(db.Model):
         user_class = cls.from_cache(cls.__cache_key__.format(name=name))
         if not user_class:
             user_class = cls.query.filter(func.lower(cls.name) == name).first()
-            cache.cache_model(user_class, timeout=3600 * 24 * 28)
+            cache.cache_model(user_class)
         return user_class
 
     @classmethod
@@ -62,7 +62,7 @@ class UserClass(db.Model):
         user_class_names = cache.get(cache_key)
         if not user_class_names:
             user_class_names = [uc[0] for uc in db.session.query(cls.name).all()]
-            cache.set(cache_key, user_class_names, timeout=3600 * 24 * 28)
+            cache.set(cache_key, user_class_names)
 
         user_classes = []
         for user_class_name in user_class_names:
@@ -102,7 +102,7 @@ class SecondaryClass(db.Model):
         user_class = cls.from_cache(cls.__cache_key__.format(name=name))
         if not user_class:
             user_class = cls.query.filter(func.lower(cls.name) == name).first()
-            cache.cache_model(user_class, timeout=3600 * 24 * 28)
+            cache.cache_model(user_class)
         return user_class
 
     @classmethod
@@ -111,7 +111,7 @@ class SecondaryClass(db.Model):
         user_class_names = cache.get(cache_key)
         if not user_class_names:
             user_class_names = [uc[0] for uc in db.session.query(cls.name).all()]
-            cache.set(cache_key, user_class_names, timeout=3600 * 24 * 28)
+            cache.set(cache_key, user_class_names)
 
         user_classes = []
         for user_class_name in user_class_names:

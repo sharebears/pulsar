@@ -15,13 +15,7 @@ REDIS_PARAMS = {
     'key_prefix': None,
     'default_timeout': 3600 * 24 * 7,  # 1 week
     }
-
-# Determines whether or not unauthenticated users can view pages
-# with the @required_auth decorator. If True, unauthenticated users
-# will receive a 404 Exception. If False, they will be able to view
-# every page not decorated with @require_permission.
-SITE_PRIVATE = True
-
+#
 # If True, potential users will need an invite code from a member to join.
 # If False, anyone can register.
 REQUIRE_INVITE_CODE = False

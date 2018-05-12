@@ -1,14 +1,18 @@
 import flask
+from voluptuous import Schema, Optional, Any, All, Length
 from . import bp
+from pulsar.models import ForumCategory
+from pulsar.utils import many_to_dict, require_permission, validate_data
 
 app = flask.current_app
 
 
 @bp.route('/forums/categories', methods=['GET'])
+@require_permission('view_forums')
 def view_categories():
     """
     This endpoint allows users to view the available forum categories
-    and the forums in each category, along with some metadata about
+    and the forums in each category, along with some information about
     each forum.
 
     .. :quickref: ForumCategory; View forum categories.
@@ -17,16 +21,10 @@ def view_categories():
 
     .. sourcecode:: http
 
-       POST /login HTTP/1.1
+       POST /forums/categories HTTP/1.1
        Host: pul.sar
        Accept: application/json
        Content-Type: application/json
-
-       {
-         "username": "lights",
-         "password": "y-&~_Wbt7wjkUJdY<j-K",
-         "persistent": true
-       }
 
     **Example response**:
 
@@ -38,30 +36,37 @@ def view_categories():
 
        {
          "status": "success",
-         "csrf_token": "d98a1a142ccae02be58ee64b",
-         "response": {
-           "active": true,
-           "csrf_token": "d98a1a142ccae02be58ee64b",
-           "hash": "abcdefghij",
-           "ip": "127.0.0.1",
-           "last_used": "1970-01-01T00:00:00.000001+00:00",
-           "persistent": true,
-           "user-agent": "curl/7.59.0"
-         }
+         "response": [
+           {
+           }
+         ]
        }
 
-    :json username: Desired username: must start with an alphanumeric
-        character and can only contain alphanumeric characters,
-        underscores, hyphens, and periods.
-    :json password: Desired password: must be 12+ characters and contain
-        at least one letter, one number, and one special character.
-    :json persistent: (Optional) Whether or not to persist the session.
+    :>json list response: A list of forum categories
 
-    :>json dict response: A session, see sessions_
-
-    .. _sessions:
-
-    :statuscode 200: Login successful
-    :statuscode 401: Login unsuccessful
+    :statuscode 200: View successful
+    :statuscode 401: View unsuccessful
     """
-    pass
+    categories = ForumCategory.get_all()
+    return flask.jsonify(many_to_dict(categories))
+
+
+add_forum_category_schema = Schema({
+    'name': All(str, Length(max=32)),
+    Optional('description', default=None): Any(str, None),
+    Optional('position', default=0): int,
+    }, required=True)
+
+
+@bp.route('/forums/categories', methods=['POST'])
+@require_permission('modify_forums')
+@validate_data(add_forum_category_schema)
+def add_category(name, description, position):
+    """
+    GOOd Docstring.
+    """
+    category = ForumCategory.new(
+        name=name,
+        description=description,
+        position=position)
+    return flask.jsonify(category.to_dict())

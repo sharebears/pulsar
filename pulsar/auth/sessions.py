@@ -3,8 +3,8 @@ from voluptuous import Schema, Optional
 from . import bp
 from pulsar import db, APIException, _404Exception
 from pulsar.models import Session
-from pulsar.utils import (require_permission, validate_data, choose_user,
-                          bool_get, many_to_dict)
+from pulsar.utils import require_permission, validate_data, choose_user, many_to_dict
+from pulsar.validators import bool_get
 
 app = flask.current_app
 

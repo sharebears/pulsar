@@ -4,6 +4,7 @@ from datetime import datetime
 from conftest import add_permissions
 from pulsar import cache, PulsarModel
 from pulsar.models import User
+from pulsar.utils.permissions import get_all_permissions
 
 
 def test_serialize_user_attributes(app, authed_client):
@@ -73,5 +74,31 @@ def test_serialization_of_datetimes(app, authed_client):
     assert 'id' in response['key2']
     assert 'username' in response['key2'] and response['key2']['username'] == 'lights'
     assert len(response['key3']) == 2
-    print(response['key3'])
     assert all(k == posix_time for k in response['key3'])
+
+
+def test_all_models_permissions_are_valid():
+    import pulsar.models as models
+    all_permissions = get_all_permissions()
+    classes = [cls for _, cls in models.__dict__.items() if
+               isinstance(cls, type) and issubclass(cls, PulsarModel)]
+    for class_ in classes:
+        permissions = (class_.__permission_detailed__, class_.__permission_very_detailed__, )
+        for p in permissions:
+            assert not p or p in all_permissions
+
+
+def test_all_class_serialization_attributes_valid():
+    import pulsar.models as models
+    classes = [cls for _, cls in models.__dict__.items() if
+               isinstance(cls, type) and issubclass(cls, PulsarModel)]
+    for class_ in classes:
+        attrs = class_.__dict__.keys()
+        serializes = (
+            class_.__serialize__
+            + class_.__serialize_self__
+            + class_.__serialize_detailed__
+            + class_.__serialize_very_detailed__)
+        for s in serializes:
+            print(class_.__name__)
+            assert s in attrs

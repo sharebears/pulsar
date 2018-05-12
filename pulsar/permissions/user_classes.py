@@ -4,9 +4,9 @@ from sqlalchemy import func
 from voluptuous import Schema, Optional
 from . import bp
 from pulsar import db, APIException, _404Exception
-from pulsar.utils import require_permission, validate_data, bool_get, many_to_dict
+from pulsar.utils import require_permission, validate_data, many_to_dict
 from pulsar.models import User, UserClass, SecondaryClass
-from pulsar.validators import permissions_list, permissions_dict
+from pulsar.validators import permissions_list, permissions_dict, bool_get
 
 app = flask.current_app
 

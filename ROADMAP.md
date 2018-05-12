@@ -8,6 +8,9 @@
 - [ ] News Posts
 - [ ] Index
 
+# Issues
+- [ ] Do integer voluptuous validators prevent overflow?
+
 # TODO
 
 ## General
@@ -29,8 +32,8 @@ their dunder attributes
 - [x] Secondary User Classes
 
 ## Forums
-- [-] Models
-- [ ] Category View
+- [x] Models
+- [-] Category View
 - [ ] Forum View
 - [ ] Thread View
 - [ ] Posts View

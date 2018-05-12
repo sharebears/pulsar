@@ -95,7 +95,7 @@ class Session(db.Model):
             session_hashes = [
                 k[0] for k in db.session.query(cls.hash).filter(
                     cls.user_id == user_id).all()]
-            cache.set(cache_key, session_hashes, timeout=3600 * 24 * 28)
+            cache.set(cache_key, session_hashes)
 
         sessions = []
         for hash in session_hashes:
@@ -212,8 +212,7 @@ class APIKey(db.Model):
         if not api_key_hashes:
             api_key_hashes = [
                 k[0] for k in db.session.query(cls.hash).filter(cls.user_id == user_id).all()]
-            cache.set(cls.__cache_key_of_user__.format(user_id=user_id),
-                      api_key_hashes, timeout=3600 * 24 * 28)
+            cache.set(cls.__cache_key_of_user__.format(user_id=user_id), api_key_hashes)
 
         api_keys = []
         for hash in api_key_hashes:

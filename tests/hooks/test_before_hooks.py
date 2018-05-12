@@ -224,7 +224,7 @@ def test_rate_limit_fail(app, client, monkeypatch):
 
 def test_rate_limit_user_fail(app, client, monkeypatch):
     global CACHE_NUM
-    CACHE_NUM = iter([2, 71])
+    CACHE_NUM = iter([2, 91])
     monkeypatch.setattr('pulsar.hooks.before.cache.inc', cache_num_iter)
     monkeypatch.setattr('pulsar.hooks.before.cache.ttl', lambda *a, **k: 7)
     response = client.get('/fake_endpoint', headers={
@@ -259,7 +259,7 @@ def test_rate_limit_function_global(app, client, monkeypatch):
         api_key=api_key(hash='abcdefghij'),
         cache_keys=defaultdict(set),
         ))
-    cache.set('rate_limit_user_1', 40, timeout=60)
+    cache.set('rate_limit_user_1', 70, timeout=60)
     with pytest.raises(APIException) as e:
         for i in range(31):
             check_rate_limit()
