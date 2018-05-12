@@ -244,7 +244,7 @@ def test_rate_limit_function(app, client, monkeypatch):
         user=User.from_id(1),
         user_session=None,
         api_key=api_key(hash='abcdefghij'),
-        cache_keys=defaultdict(list),
+        cache_keys=defaultdict(set),
         ))
     with pytest.raises(APIException) as e:
         for i in range(62):
@@ -258,7 +258,7 @@ def test_rate_limit_function_global(app, client, monkeypatch):
         user=User.from_id(1),
         user_session=None,
         api_key=api_key(hash='abcdefghij'),
-        cache_keys=defaultdict(list),
+        cache_keys=defaultdict(set),
         ))
     cache.set('rate_limit_user_1', 40, timeout=60)
     with pytest.raises(APIException) as e:

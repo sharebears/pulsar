@@ -2,8 +2,8 @@
 
 - [x] Rate Limiting
 - [x] Caching
-- [~] Forums
-- [ ] Pagination
+- [ ] Better serialization abstraction
+- [-] Forums
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
@@ -13,7 +13,6 @@
 
 ## General
 - [x] Form validation with voluptuous
-- [ ] Pagination abstraction - FSQA has built in?
 
 ## Users
 - [x] Administration Functions
@@ -28,15 +27,11 @@
 - [x] Secondary User Classes
 
 ## Forums
-- [ ] Entire Forum View
+- [-] Models
 - [ ] Category View
-- [ ] Sub-Category View
-- [ ] Individual Sub-Forum View
-- [ ] Thread View (Pages)
-- [ ] Individual Posts
-- [ ] Posting/Creation
-- [ ] Editing
-- [ ] Moderation
+- [ ] Forum View
+- [ ] Thread View
+- [ ] Posts View
 
 ## Rules
 - [ ] Fuck it, we're going to make these dictionaries and serve them

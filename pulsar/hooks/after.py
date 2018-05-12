@@ -30,4 +30,10 @@ def wrap_response(response):
     if getattr(flask.g, 'csrf_token', None):
         response_data['csrf_token'] = flask.g.csrf_token
 
+    if flask.g.user and flask.g.user.has_permission('view_cache_keys'):
+        # Can't serialize sets to JSON
+        for key, value in flask.g.cache_keys.items():
+            flask.g.cache_keys[key] = list(value)
+        response_data['cache_keys'] = flask.g.cache_keys
+
     response.set_data(json.dumps(response_data))

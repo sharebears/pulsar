@@ -35,7 +35,7 @@ class Cache(RedisCache):
         value = super().inc(key, delta)
         if timeout and value == delta:
             self._client.expire(self.key_prefix + key, timeout)
-        flask.g.cache_keys['inc'].append(key)
+        flask.g.cache_keys['inc'].add(key)
         return value
 
     def get(self, key):
@@ -49,7 +49,7 @@ class Cache(RedisCache):
         key = key.lower()
         value = super().get(key)
         if value:
-            flask.g.cache_keys['get'].append(key)
+            flask.g.cache_keys['get'].add(key)
         return value
 
     def set(self, key, value, timeout=None):
@@ -69,7 +69,7 @@ class Cache(RedisCache):
             pickle.PickleError.
         """
         key = key.lower()
-        flask.g.cache_keys['set'].append(key)
+        flask.g.cache_keys['set'].add(key)
         return super().set(key, value, timeout)
 
     def delete(self, key):
@@ -82,7 +82,7 @@ class Cache(RedisCache):
         key = key.lower()
         result = super().delete(key)
         if result:
-            flask.g.cache_keys['delete'].append(key)
+            flask.g.cache_keys['delete'].add(key)
         return result
 
     def ttl(self, key):

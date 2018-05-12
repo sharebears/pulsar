@@ -13,9 +13,9 @@ class User(db.Model):
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_permissions_{id}'
     __cache_key_secondary_classes__ = 'users_secondary_classes_{id}'
-    __serializable_attrs__ = ('id', 'username', 'enabled', 'locked', 'user_class',
+    __serializable_attrs__ = ('id', 'username', 'enabled', 'user_class',
                               'secondary_classes', 'uploaded', 'downloaded')
-    __serializable_attrs_detailed__ = ('email', 'invites', 'sessions', 'api_keys')
+    __serializable_attrs_detailed__ = ('email', 'locked', 'invites', 'sessions', 'api_keys')
     __serializable_attrs_very_detailed__ = ('inviter', )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -50,7 +50,6 @@ class User(db.Model):
         user = cls.query.filter(func.lower(cls.username) == username).one_or_none()
         if user:
             cache.cache_model(user)
-            user.__instantiated = True
         return user
 
     @classmethod

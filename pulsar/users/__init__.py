@@ -7,4 +7,5 @@ PERMISSIONS = [
     'change_password',
     'moderate_users',
     'no_ip_tracking',
+    'view_cache_keys',  # View accessed and modified cache keys, for debug in production
 ]

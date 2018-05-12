@@ -14,7 +14,7 @@ def hook():
     flask.g.api_key = None
     flask.g.user_session = None
     flask.g.csrf_token = None
-    flask.g.cache_keys = defaultdict(list)
+    flask.g.cache_keys = defaultdict(set)
 
     if not check_user_session():
         check_api_key()
