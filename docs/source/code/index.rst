@@ -12,7 +12,5 @@ Code documentation for the pulsar project.
    cache
    exceptions
    utils
-   users
-   authentication
-   permissions
-   invites
+   models
+   validators

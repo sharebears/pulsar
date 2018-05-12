@@ -1,15 +1,15 @@
-Permissions
-===========
+Validators
+==========
 
-Models
-------
+Users
+-----
 
-.. automodule:: pulsar.permissions.models
+.. automodule:: pulsar.users.validators
     :members:
     :show-inheritance:
 
-Validators
-----------
+Permissions
+-----------
 
 .. automodule:: pulsar.permissions.validators
     :members:
