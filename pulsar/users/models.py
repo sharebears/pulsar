@@ -11,8 +11,8 @@ app = flask.current_app
 class User(db.Model):
     __tablename__ = 'users'
     __cache_key__ = 'users_{id}'
-    __cache_key_permissions__ = 'users_permissions_{id}'
-    __cache_key_secondary_classes__ = 'users_secondary_classes_{id}'
+    __cache_key_permissions__ = 'users_{id}_permissions'
+    __cache_key_secondary_classes__ = 'users_{id}_secondary_classes'
 
     __serialize__ = ('id', 'username', 'enabled', 'user_class', 'secondary_classes',
                      'uploaded', 'downloaded')

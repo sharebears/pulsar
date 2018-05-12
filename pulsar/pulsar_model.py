@@ -119,11 +119,11 @@ class PulsarModel(Model):
         if nested:
             attrs = [a for a in attrs if a not in self.__serialize_nested_exclude__]
 
-        print(attrs)
         return self._objects_to_dict(
             {attr: getattr(self, attr, None) for attr in list(set(attrs))})
 
-    def _objects_to_dict(self, dict_):
+    @staticmethod
+    def _objects_to_dict(dict_):
         """
         Iterate through all values inside a dictionary and "fix" a dictionary to be
         JSON serializable by applying the to_dict() function to all embedded models.
@@ -133,20 +133,21 @@ class PulsarModel(Model):
 
         :return: A JSON serializable ``dict``
         """
-        for k, v in dict_.items():
-            if isinstance(v, dict):
-                dict_[k] = self._objects_to_dict(v)
-            elif isinstance(v, list):
-                v = [*v]  # Strip SQLA InstrumentedList
+        def iter_handler(value):
+            if isinstance(value, dict):
+                return PulsarModel._objects_to_dict(value)
+            elif isinstance(value, list):
+                value = [*value]  # Strip SQLA InstrumentedList
                 for i, v2 in enumerate(v):
-                    if isinstance(v2, PulsarModel):
-                        v[i] = v2.to_dict()
-                    elif isinstance(v2, dict):
-                        v[i] = self._objects_to_dict(v2)
-                dict_[k] = v
-            elif isinstance(v, PulsarModel):
-                dict_[k] = v.to_dict(nested=True)
-            elif isinstance(v, datetime):
-                dict_[k] = int(v.timestamp())
+                    value[i] = iter_handler(v2)
+                return value
+            elif isinstance(value, PulsarModel):
+                return value.to_dict(nested=True)
+            elif isinstance(value, datetime):
+                return int(value.timestamp())
+            return value
+
+        for k, v in dict_.items():
+            dict_[k] = iter_handler(v)
 
         return dict_

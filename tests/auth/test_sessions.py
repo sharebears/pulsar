@@ -2,7 +2,7 @@ import json
 import pytest
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response, add_permissions
 from pulsar import db, cache
-from pulsar.auth.models import Session
+from pulsar.models import Session
 
 
 def hex_generator(_):
@@ -28,7 +28,7 @@ def test_new_session(app):
 def test_session_collision(app, monkeypatch):
     global HEXES
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_3])
-    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     with app.app_context():
         session = Session.generate_session(2, '127.0.0.2', 'ua-example')
         assert session.hash != CODE_2[:10]

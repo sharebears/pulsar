@@ -2,8 +2,7 @@ import json
 import pytest
 from conftest import check_json_response, add_permissions, CODE_1, CODE_2, CODE_3
 from pulsar import db, cache
-from pulsar.users.models import User
-from pulsar.invites.models import Invite
+from pulsar.models import User, Invite
 
 
 def hex_generator(_):
@@ -42,7 +41,7 @@ def test_view_cache_from_inviter(app, client):
 def test_invite_collision(app, monkeypatch):
     global HEXES
     HEXES = iter([CODE_1, '098765432109876543211234'])
-    monkeypatch.setattr('pulsar.invites.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     with app.app_context():
         invite = Invite.generate_invite(2, 'bitsu@puls.ar', '127.0.0.2')
         assert invite.code != CODE_1

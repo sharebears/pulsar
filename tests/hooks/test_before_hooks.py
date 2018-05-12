@@ -3,11 +3,10 @@ import flask
 import pytest
 from collections import namedtuple, defaultdict
 from voluptuous import Schema, Optional
-from pulsar.utils import validate_data
 from conftest import CODE_1, CODE_2, HASHED_CODE_1, add_permissions, check_json_response
 from pulsar import db, cache, APIException
-from pulsar.users.models import User
-from pulsar.auth.models import Session
+from pulsar.models import User, Session
+from pulsar.utils import validate_data
 
 
 def cache_num_iter(*args, **kwargs):

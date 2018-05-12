@@ -2,7 +2,7 @@ import json
 import pytest
 from conftest import check_json_response, add_permissions, HASHED_CODE_1
 from pulsar import db, cache
-from pulsar.users.models import User
+from pulsar.models import User
 
 
 @pytest.fixture(autouse=True)
@@ -130,12 +130,8 @@ def test_edit_settings_pw_fail(app, authed_client):
 def test_edit_settings_others(app, authed_client):
     add_permissions(app, 'edit_settings', 'change_password', 'moderate_users')
     response = authed_client.put('/users/2/settings', data=json.dumps({
-        'existing_password': 'abcdefg',
-        'new_password': 'aB1%ckeofa12342',
         }))
     check_json_response(response, 'Settings updated.', strict=True)
-    user = User.from_id(2)
-    assert user.check_password('aB1%ckeofa12342')
 
 
 @pytest.mark.parametrize(

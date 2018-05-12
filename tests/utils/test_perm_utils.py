@@ -2,7 +2,7 @@ import flask
 import pytest
 from conftest import add_permissions, check_json_response
 from pulsar import db
-from pulsar.utils import assert_user, assert_permission
+from pulsar.utils import assert_user, assert_permission, choose_user
 
 
 @pytest.fixture(autouse=True)
@@ -52,3 +52,24 @@ def test_assert_permission(app, authed_client, permission, masquerade, expected)
 
     response = authed_client.get('/test_assert_perm')
     check_json_response(response, expected)
+
+
+def test_choose_user(app, authed_client):
+    @app.route('/test_choose_user')
+    def test_choose_user():
+        choose_user(1, 'non-existent-perm')
+        choose_user(2, 'sample_perm_one')
+        return flask.jsonify('Endpoint reached.')
+
+    response = authed_client.get('/test_choose_user')
+    check_json_response(response, 'Endpoint reached.')
+
+
+def test_choose_user_fail(app, authed_client):
+    @app.route('/test_choose_user')
+    def test_choose_user():
+        choose_user(2, 'non-existent-perm')
+        return flask.jsonify('Endpoint reached.')
+
+    response = authed_client.get('/test_choose_user')
+    check_json_response(response, 'You do not have permission to access this resource.')

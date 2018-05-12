@@ -1,8 +1,9 @@
 import json
 import flask
 import pytest
-from conftest import CODE_1
+from conftest import CODE_1, add_permissions
 from pulsar import db
+from pulsar.models import User
 
 
 @pytest.fixture(autouse=True)
@@ -62,3 +63,18 @@ def test_unauthorized_csrf_token(app, client):
         'status': 'success',
         'response': 'test',
         }
+
+
+def test_cache_keys(app, authed_client):
+    add_permissions(app, 'view_cache_keys')
+
+    @app.route('/test_endpoint')
+    def test_endpoint():
+        _ = User.from_id(2)  # noqa
+        return flask.jsonify('test')
+
+    response = authed_client.get('/test_endpoint')
+    data = response.get_json()
+    assert 'set' in data['cache_keys']
+    assert 'users_1_permissions' in data['cache_keys']['set']
+    assert 'users_2' in data['cache_keys']['set']

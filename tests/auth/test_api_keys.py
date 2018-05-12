@@ -4,7 +4,7 @@ import pytest
 from conftest import (CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2,
                       HASHED_CODE_3, add_permissions, check_json_response)
 from pulsar import db, cache
-from pulsar.auth.models import APIKey
+from pulsar.models import APIKey
 from pulsar.utils import require_permission
 
 
@@ -42,7 +42,7 @@ def test_api_key_collision(app, client, monkeypatch):
     # First four are the the hash and csrf_token, last one is the 16char key.
     global HEXES
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16]])
-    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
 
     raw_key, api_key = APIKey.generate_key(2, '127.0.0.2', 'UA')
     assert len(raw_key) == 26
@@ -162,7 +162,7 @@ def test_view_empty_api_keys(app, authed_client):
 def test_create_api_key(app, authed_client, monkeypatch):
     global HEXES
     HEXES = iter(['a' * 8, 'a' * 16])
-    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     add_permissions(app, 'create_api_keys')
     response = authed_client.post('/api_keys')
     check_json_response(response, {'key': 'a' * 24})
@@ -173,7 +173,7 @@ def test_create_api_key(app, authed_client, monkeypatch):
 def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     global HEXES
     HEXES = iter(['a' * 8, 'a' * 16])
-    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     add_permissions(app, 'create_api_keys')
     authed_client.post('/api_keys', data=json.dumps({
         'permissions': ['sample_perm_one', 'sample_perm_two']}),

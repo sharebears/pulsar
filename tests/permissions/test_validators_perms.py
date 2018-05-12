@@ -4,7 +4,7 @@ import pytest
 from voluptuous import Invalid
 from conftest import add_permissions, check_json_response, check_dupe_in_list
 from pulsar import db, APIException
-from pulsar.users.models import User
+from pulsar.models import User
 from pulsar.permissions.validators import (
     permissions_list, permissions_list_of_user, permissions_dict, check_permissions)
 

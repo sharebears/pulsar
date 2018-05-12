@@ -1,12 +1,11 @@
-import pytest
 from conftest import add_permissions, check_json_response
 from pulsar import cache
-from pulsar.users.models import User
+from pulsar.models import User
 
 
 def test_get_user_cache(app, authed_client, monkeypatch):
     add_permissions(app, 'view_users')
-    monkeypatch.setattr('pulsar.users.models.User.query.get', lambda _: None)
+    monkeypatch.setattr('pulsar.models.User.query.get', lambda _: None)
     cache.set('users_1', {
         'id': 1,
         'username': 'fakeshit',
@@ -82,56 +81,3 @@ def test_from_cache_bad(app, client):
     cache.set('users_1', {'id': 2, 'username': 'not-all-the-keys'}, timeout=60)
     assert not User.from_cache('users_1')
     assert not cache.get('users_1')
-
-
-def test_serialize_user_attributes(app, authed_client):
-    user = User.from_id(2)
-    data = user.to_dict()
-    assert 'id' in data
-    assert 'email' not in data
-    assert 'inviter' not in data
-
-    user = User.from_id(1)
-    data = user.to_dict()
-    assert 'id' in data
-    assert 'email' in data
-    assert 'inviter' not in data
-
-    add_permissions(app, 'moderate_users')
-    cache.delete(user.__cache_key_permissions__.format(id=2))
-
-    user = User.from_id(2)
-    data = user.to_dict()
-    assert 'id' in data
-    assert 'email' in data
-    assert 'inviter' in data
-
-
-def test_to_dict_plain(app, authed_client):
-    user = User.from_id(1)  # Instantiation fodder.
-    dict_ = {
-        'key1': {
-            'subkey1': 'subval1',
-            'subkey2': 'subval2',
-            'subkey3': [
-                'subval1',
-                'subval2',
-                {
-                    'subkey1': 'subkey1',
-                    'subkey2': 'subkey2',
-                    'subkey3': 'subval3',
-                },
-            ],
-        },
-        'key2': 123,
-    }
-    assert dict_ == user._objects_to_dict(dict_)
-
-
-@pytest.mark.parametrize(
-    'data, result', [
-        ('not-a-dict', False),
-        ({'id': 1, 'username': 'lights'}, False),
-     ])
-def test_is_valid_data(app, client, data, result):
-    assert User._valid_data(data) is result

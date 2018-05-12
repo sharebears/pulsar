@@ -3,8 +3,7 @@ import pytest
 from voluptuous import Invalid
 from conftest import add_permissions, check_json_response
 from pulsar import db, cache
-from pulsar.users.models import User
-from pulsar.permissions.models import UserClass, SecondaryClass
+from pulsar.models import User, UserClass, SecondaryClass
 
 
 @pytest.fixture(autouse=True)
