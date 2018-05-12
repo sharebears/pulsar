@@ -17,6 +17,7 @@ class PulsarModel(Model):
     * ``__serialize_self__`` (``tuple``)
     * ``__serialize_detailed__`` (``tuple``)
     * ``__serialize_very_detailed__`` (``tuple``)
+    * ``__serialize_nested_include__`` (``tuple``)
     * ``__serialize_nested_exclude__`` (``tuple``)
     * ``__permission_detailed__`` (``str``)
     * ``__permission_very_detailed__`` (``str``)
@@ -32,13 +33,15 @@ class PulsarModel(Model):
 
     Nested model properties will also be serialized if they are the value of a ``dict``
     or in a ``list``. When nested models are serialized, all attributes listed in
-    ``__serialize_nested_exclude__`` will be excluded.
+    ``__serialize_nested_exclude__`` will be excluded, while all attributes in
+    ``__serialize_nested_include__`` will be included.
     """
 
     __serialize__ = tuple()
     __serialize_self__ = tuple()
     __serialize_detailed__ = tuple()
     __serialize_very_detailed__ = tuple()
+    __serialize_nested_include__ = tuple()
     __serialize_nested_exclude__ = tuple()
 
     __permission_detailed__ = None
@@ -91,7 +94,7 @@ class PulsarModel(Model):
         """
         if not isinstance(data, dict):
             return False
-        return not set(data.keys()) != set(cls.__table__.columns.keys())
+        return set(data.keys()) == set(cls.__table__.columns.keys())
 
     def clear_cache(self):
         """Clear the cache key for this instance of a model."""
@@ -117,6 +120,7 @@ class PulsarModel(Model):
         if flask.g.user and flask.g.user.has_permission(self.__permission_very_detailed__):
             attrs += self.__serialize_very_detailed__
         if nested:
+            attrs += self.__serialize_nested_include__
             attrs = [a for a in attrs if a not in self.__serialize_nested_exclude__]
 
         return self._objects_to_dict(

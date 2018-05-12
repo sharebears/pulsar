@@ -10,6 +10,8 @@
 
 # Issues
 - [ ] Do integer voluptuous validators prevent overflow?
+- [ ] Subclass Flask's JSONEncoder instead of using stinky to_dict() and many_to_dict methods
+- [ ] Move dummy data for existing module tests into a module-level conftest
 
 # TODO
 
@@ -37,6 +39,7 @@ their dunder attributes
 - [ ] Forum View
 - [ ] Thread View
 - [ ] Posts View
+- [ ] Forum/Thread Permissions
 
 ## Rules
 - [ ] Fuck it, we're going to make these dictionaries and serve them

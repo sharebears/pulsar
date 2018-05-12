@@ -76,10 +76,9 @@ class UserClass(db.Model):
 
 secondary_class_assoc_table = db.Table(
     'secondary_class_assoc', db.metadata,
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
     db.Column('secondary_user_class', db.String(24),
-              db.ForeignKey('secondary_classes.name')),
-    )
+              db.ForeignKey('secondary_classes.name'), nullable=False),)
 
 
 class SecondaryClass(db.Model):

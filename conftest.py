@@ -78,11 +78,11 @@ def db_create_tables():
 @pytest.fixture
 def app(monkeypatch):
     app = create_app('test_config.py')
+    pulsar.cache.clear()
     with app.app_context():
         unpopulate_db()
         populate_db()
     yield app
-    pulsar.cache.clear()
 
 
 @pytest.fixture

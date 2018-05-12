@@ -2,7 +2,7 @@ import flask
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
 from pulsar.cache import Cache
-from pulsar.pulsar_model import PulsarModel
+from pulsar.base_model import PulsarModel
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
