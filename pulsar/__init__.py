@@ -1,17 +1,19 @@
-from flask import Flask, jsonify
+import flask
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
-from pulsar.cache import Cache, PulsarModel
+from pulsar.cache import Cache
+from pulsar.pulsar_model import PulsarModel
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
+
 
 db = SQLAlchemy(model_class=PulsarModel)
 cache = Cache()
 
 
 def create_app(config):
-    app = Flask(__name__, instance_relative_config=True)
+    app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile(config)
 
     global cache
@@ -33,30 +35,32 @@ def register_blueprints(app):
     for name in find_modules('pulsar', recursive=True):
         import_string(name)
 
-    # Now import and register each blueprint.
+    # Now import and register each blueprint. Since each blueprint
+    # is defined in the package's __init__, we scan packages this time,
+    # unlike the last.
     for name in find_modules('pulsar', include_packages=True):
         mod = import_string(name)
         if hasattr(mod, 'bp'):
             app.register_blueprint(mod.bp)
 
-    # print(app.url_map)
+    # print(app.url_map)  # debug
 
 
 def register_error_handlers(app):
     app.register_error_handler(APIException, lambda err: (
-        jsonify(err.message), err.status_code))
+        flask.jsonify(err.message), err.status_code))
     app.register_error_handler(404, _404_handler)
     app.register_error_handler(405, _405_handler)
     app.register_error_handler(500, _500_handler)
 
 
 def _404_handler(_):
-    return jsonify(_404Exception().message), 404
+    return flask.jsonify(_404Exception().message), 404
 
 
 def _405_handler(_):
-    return jsonify(_405Exception().message), 405
+    return flask.jsonify(_405Exception().message), 405
 
 
 def _500_handler(_):
-    return jsonify(_500Exception().message), 500
+    return flask.jsonify(_500Exception().message), 500

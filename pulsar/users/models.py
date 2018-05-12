@@ -13,10 +13,15 @@ class User(db.Model):
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_permissions_{id}'
     __cache_key_secondary_classes__ = 'users_secondary_classes_{id}'
-    __serializable_attrs__ = ('id', 'username', 'enabled', 'user_class',
-                              'secondary_classes', 'uploaded', 'downloaded')
-    __serializable_attrs_detailed__ = ('email', 'locked', 'invites', 'sessions', 'api_keys')
-    __serializable_attrs_very_detailed__ = ('inviter', )
+
+    __serialize__ = ('id', 'username', 'enabled', 'user_class', 'secondary_classes',
+                     'uploaded', 'downloaded')
+    __serialize_self__ = ('email', 'locked', 'invites', 'sessions', 'api_keys')
+    __serialize_detailed__ = ('email', 'locked', 'invites', 'inviter', 'sessions', 'api_keys')
+    __serialize_nested_exclude__ = ('inviter', 'sessions', 'api_keys')
+
+    __permission_detailed__ = 'moderate_users'
+    __permission_very_detailed__ = 'moderate_users_advanced'
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique=True, nullable=False)
@@ -41,8 +46,7 @@ class User(db.Model):
     def from_id(cls, id):
         return cls.from_cache(
             key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(User.id == id),
-            )
+            query=cls.query.filter(User.id == id))
 
     @classmethod
     def from_username(cls, username):
@@ -137,6 +141,9 @@ class User(db.Model):
             cache.set(cache_key, permissions, timeout=3600 * 24 * 28)
         return permissions
 
+    def belongs_to_user(self):
+        return flask.g.user and self.id == flask.g.user.id
+
     def set_password(self, password):
         self.passhash = generate_password_hash(password)
 
@@ -144,4 +151,4 @@ class User(db.Model):
         return check_password_hash(self.passhash, password)
 
     def has_permission(self, permission):
-        return permission in self.permissions
+        return permission and permission in self.permissions

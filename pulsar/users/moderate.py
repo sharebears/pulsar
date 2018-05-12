@@ -82,4 +82,4 @@ def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=
 
     db.session.commit()
     user.clear_cache()
-    return flask.jsonify(user.to_dict(very_detailed=True))
+    return flask.jsonify(user.to_dict())

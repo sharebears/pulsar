@@ -10,7 +10,7 @@ from pulsar.permissions.validators import (
 
 
 def test_permissions_list(app, authed_client):
-    permissions = ['change_password', 'manipulate_permissions']
+    permissions = ['change_password', 'modify_permissions']
     assert permissions == permissions_list(permissions)
 
 
@@ -61,7 +61,7 @@ def test_permissions_list_of_user_error(app, authed_client, permissions):
 
 def test_permissions_dict():
     permissions = {
-        'manipulate_permissions': True,
+        'modify_permissions': True,
         'view_invites': True,
         'shit_fake_perm': False,
     }

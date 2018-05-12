@@ -38,8 +38,11 @@ class UserClass(db.Model):
     __tablename__ = 'user_classes'
     __cache_key__ = 'user_class_{name}'
     __cache_key_all__ = 'user_classes'
-    __serializable_attrs__ = ('name', )
-    __serializable_attrs_very_detailed__ = ('permissions', )
+
+    __serialize__ = ('name', )
+    __serialize_detailed__ = ('permissions', )
+
+    __permission_detailed__ = 'modify_user_classes'
 
     name = db.Column(db.String(24), primary_key=True)
     permissions = db.Column(ARRAY(db.String(32)))
@@ -84,8 +87,11 @@ class SecondaryClass(db.Model):
     __cache_key__ = 'secondary_class_{name}'
     __cache_key_all__ = 'secondary_classes'
     __cache_key_users__ = 'secondary_class_users_{name}'
-    __serializable_attrs__ = ('name', )
-    __serializable_attrs_very_detailed__ = ('permissions', )
+
+    __serialize__ = ('name', )
+    __serialize_detailed__ = ('permissions', )
+
+    __permission_detailed__ = 'modify_user_classes'
 
     name = db.Column(db.String(24), primary_key=True)
     permissions = db.Column(ARRAY(db.String(32)))

@@ -76,6 +76,7 @@ def login(username, password, persistent):
     user = User.from_username(username)
     if not user or not user.check_password(password):
         raise _401Exception(message='Invalid credentials.')
+    flask.g.user = user
 
     session = Session.generate_session(
         user_id=user.id,

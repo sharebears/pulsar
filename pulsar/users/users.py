@@ -53,10 +53,4 @@ def get_user(user_id):
     user = User.from_id(user_id)
     if not user:
         raise _404Exception('User')
-
-    if flask.g.user.has_permission('moderate_users'):
-        return flask.jsonify(user.to_dict(very_detailed=True))
-    elif flask.g.user == user:
-        return flask.jsonify(user.to_dict(detailed=True))
-    else:
-        return flask.jsonify(user.to_dict())
+    return flask.jsonify(user.to_dict())

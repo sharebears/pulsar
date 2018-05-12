@@ -206,7 +206,10 @@ def invite_user(email):
     if not flask.g.user.invites:
         raise APIException('You do not have an invite to send.')
 
-    invite = Invite.generate_invite(flask.g.user.id, email, flask.request.remote_addr)
+    invite = Invite.generate_invite(
+        inviter_id=flask.g.user.id,
+        email=email,
+        ip=flask.request.remote_addr)
     flask.g.user.invites -= 1
     db.session.add(invite)
     db.session.commit()

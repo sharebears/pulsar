@@ -30,6 +30,10 @@ def check_json_response(response, expected, list_=False, strict=False):
     response_full = response.get_json()
     assert 'response' in response_full
     response = response_full['response']
+    check_dictionary(response, expected, list_, strict)
+
+
+def check_dictionary(response, expected, list_=False, strict=False):
     if strict:
         assert response == expected
     else:
@@ -104,7 +108,7 @@ def authed_client(app, monkeypatch):
 @contextmanager
 def set_globals(app_):
     def handler(sender, **kwargs):
-        flask.g.cache_keys = defaultdict(list)
+        flask.g.cache_keys = defaultdict(set)
         flask.g.api_key = None
         flask.g.user_session = None
     with flask.appcontext_pushed.connected_to(handler, app_):

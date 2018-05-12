@@ -1,3 +1,4 @@
+import flask
 import secrets
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import INET, ARRAY
@@ -9,8 +10,11 @@ class Session(db.Model):
     __tablename__ = 'sessions'
     __cache_key__ = 'sessions_{hash}'
     __cache_key_of_user__ = 'sessions_user_{user_id}'
-    __serializable_attrs__ = ('hash', 'user_id', 'persistent', 'last_used', 'ip',
-                              'user_agent', 'active')
+
+    __serialize_self__ = __serialize_detailed__ = (
+        'hash', 'user_id', 'persistent', 'last_used', 'ip', 'user_agent', 'active')
+
+    __permission_detailed__ = 'view_sessions_others'
 
     hash = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
@@ -103,6 +107,9 @@ class Session(db.Model):
     def cache_key(self):
         return self.__cache_key__.format(hash=self.hash)
 
+    def belongs_to_user(self):
+        return flask.g.user and self.user_id == flask.g.user.id
+
     @staticmethod
     def expire_all_of_user(user_id):
         """
@@ -123,8 +130,11 @@ class APIKey(db.Model):
     __tablename__ = 'api_keys'
     __cache_key__ = 'api_keys_{hash}'
     __cache_key_of_user__ = 'api_keys_user_{user_id}'
-    __serializable_attrs__ = ('hash', 'user_id', 'last_used', 'ip', 'user_agent',
-                              'active', 'permissions')
+
+    __serialize_self__ = __serialize_detailed__ = (
+        'hash', 'user_id', 'last_used', 'ip', 'user_agent', 'active', 'permissions')
+
+    __permission_detailed__ = 'view_api_keys_others'
 
     hash = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
@@ -214,6 +224,9 @@ class APIKey(db.Model):
     @property
     def cache_key(self):
         return self.__cache_key__.format(hash=self.hash)
+
+    def belongs_to_user(self):
+        return flask.g.user and self.user_id == flask.g.user.id
 
     def check_key(self, key):
         """

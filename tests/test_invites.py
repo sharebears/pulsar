@@ -133,7 +133,6 @@ def test_invite_user_with_code(app, authed_client):
     assert response.status_code == 200
 
     user = User.from_id(1)
-    print(db.session.query(User.invites).filter(User.id == 1).first())
     assert user.invites == 0
 
 

@@ -44,7 +44,7 @@ def test_cache_inc_key_already_exists(app, client):
     assert time_left > 13 and time_left < 16
 
 
-def test_cache_model(app, client):
+def test_cache_model(app, authed_client):
     user = User.from_id(1)
     cache.cache_model(user, timeout=60)
     user_data = cache.get('users_1')
@@ -58,7 +58,7 @@ def test_cache_model_when_none(app, client, monkeypatch):
     assert cache.cache_model(None, timeout=60) is None
 
 
-def test_model_clear_cache(app, client):
+def test_model_clear_cache(app, authed_client):
     user = User.from_id(1)
     cache.cache_model(user, timeout=60)
     user_data = cache.get('users_1')
@@ -68,7 +68,7 @@ def test_model_clear_cache(app, client):
     assert not cache.get('users_1')
 
 
-def test_from_cache(app, client):
+def test_from_cache(app, authed_client):
     user = User.from_id(1)
     cache.cache_model(user, timeout=60)
     user_new = User.from_cache('users_1')
@@ -84,23 +84,30 @@ def test_from_cache_bad(app, client):
     assert not cache.get('users_1')
 
 
-def test_serialize_user_attributes(app, client):
+def test_serialize_user_attributes(app, authed_client):
+    user = User.from_id(2)
+    data = user.to_dict()
+    assert 'id' in data
+    assert 'email' not in data
+    assert 'inviter' not in data
+
     user = User.from_id(1)
+    data = user.to_dict()
+    assert 'id' in data
+    assert 'email' in data
+    assert 'inviter' not in data
 
-    assert 'id' in user.to_dict()
-    assert 'email' not in user.to_dict()
-    assert 'inviter' not in user.to_dict()
+    add_permissions(app, 'moderate_users')
+    cache.delete(user.__cache_key_permissions__.format(id=2))
 
-    assert 'id' in user.to_dict(detailed=True)
-    assert 'email' in user.to_dict(detailed=True)
-    assert 'inviter' not in user.to_dict(detailed=True)
-
-    assert 'id' in user.to_dict(very_detailed=True)
-    assert 'email' in user.to_dict(very_detailed=True)
-    assert 'inviter' in user.to_dict(very_detailed=True)
+    user = User.from_id(2)
+    data = user.to_dict()
+    assert 'id' in data
+    assert 'email' in data
+    assert 'inviter' in data
 
 
-def test_to_dict_plain(app, client):
+def test_to_dict_plain(app, authed_client):
     user = User.from_id(1)  # Instantiation fodder.
     dict_ = {
         'key1': {

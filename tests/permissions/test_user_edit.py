@@ -18,63 +18,41 @@ def test_permissions_from_user(app, client):
 
 
 def test_get_all_permissions(app, authed_client):
-    add_permissions(app, 'list_permissions', 'manipulate_permissions')
-    response = authed_client.get('/permissions', query_string={'all': 'true'})
+    add_permissions(app, 'modify_permissions')
+    response = authed_client.get('/permissions')
     data = json.loads(response.get_data())['response']
     assert 'permissions' in data
     assert all(perm in data['permissions'] for perm in [
-        'manipulate_permissions',
+        'modify_permissions',
         'view_invites',
         'no_ip_tracking',
         ])
     assert all(len(perm) <= 32 for perm in data['permissions'])
 
 
-def test_get_limited_permissions(app, authed_client):
-    add_permissions(app, 'list_permissions')
-    response = authed_client.get('/permissions')
-    data = json.loads(response.get_data())['response']
-    assert 'permissions' in data
-    assert 'not_a_permission' not in data['permissions']
-
-
-def test_get_permissions_other(app, authed_client):
-    add_permissions(app, 'list_permissions', 'manipulate_permissions')
-    response = authed_client.get('/permissions/user/2')
-    check_json_response(response, {'permissions': []}, strict=True)
-
-
-def test_choose_user_permission(app, authed_client):
-    add_permissions(app, 'list_permissions')
-    response = authed_client.get('/permissions/user/2')
-    check_json_response(
-        response, 'You do not have permission to access this resource.')
-    assert response.status_code == 403
-
-
 def test_change_permissions(app, authed_client):
-    add_permissions(app, 'manipulate_permissions', 'list_permissions', 'change_password')
+    add_permissions(app, 'modify_user_classes', 'modify_permissions', 'change_password')
     db.engine.execute("INSERT INTO users_permissions VALUES (1, 'send_invites', 'f')")
     db.engine.execute("""UPDATE user_classes
-                       SET permissions = '{"list_permissions", "view_invites"}'""")
+                       SET permissions = '{"modify_permissions", "view_invites"}'""")
 
     response = authed_client.put('/permissions/user/1', data=json.dumps({
         'permissions': {
-            'list_permissions': False,
+            'modify_permissions': False,
             'change_password': False,
             'view_invites': False,
             'send_invites': True,
         }})).get_json()
 
     assert set(response['response']['permissions']) == {
-        'manipulate_permissions', 'send_invites'}
+        'modify_user_classes', 'send_invites'}
 
     u_perms = UserPermission.from_user(1)
     assert u_perms == {
-        'manipulate_permissions': True,
+        'modify_user_classes': True,
         'send_invites': True,
         'view_invites': False,
-        'list_permissions': False,
+        'modify_permissions': False,
         }
 
 
@@ -88,7 +66,7 @@ def test_change_permissions(app, authed_client):
          'legacy is not a valid permission.'),
     ])
 def test_change_permissions_failure(app, authed_client, permissions, expected):
-    add_permissions(app, 'manipulate_permissions', 'send_invites', 'view_invites')
+    add_permissions(app, 'modify_permissions', 'send_invites', 'view_invites')
     db.engine.execute(
         """UPDATE user_classes SET permissions = '{"legacy"}'
         WHERE name = 'User'""")
@@ -98,16 +76,17 @@ def test_change_permissions_failure(app, authed_client, permissions, expected):
 
 
 def test_user_class_permissions(app, authed_client):
-    add_permissions(app, 'view_invites')
+    add_permissions(app, 'view_invites', 'modify_user_classes')
     db.engine.execute(
-        """UPDATE user_classes SET permissions = '{"list_permissions"}'
+        """UPDATE user_classes SET permissions = '{"modify_permissions"}'
         WHERE name = 'User'
         """)
     response = authed_client.get('/permissions')
     data = response.get_json()['response']
     assert all(perm in data['permissions'] for perm in [
-        'list_permissions',
+        'modify_permissions',
         'view_invites',
+        'modify_user_classes',
         ])
 
 

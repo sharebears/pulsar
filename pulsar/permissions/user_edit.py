@@ -1,30 +1,19 @@
 import flask
 from . import bp
 from pulsar.validators import permissions_dict, check_permissions
-from voluptuous import Schema, Optional
+from voluptuous import Schema
 from pulsar import db, cache, APIException
 from pulsar.models import User, UserPermission
-from pulsar.utils import (choose_user, assert_permission, require_permission,
-                          get_all_permissions, validate_data, bool_get)
+from pulsar.utils import require_permission, get_all_permissions, validate_data
 
 app = flask.current_app
 
-view_permissions_schema = Schema({
-    Optional('all', default=False): bool_get,
-    })
-
 
 @bp.route('/permissions', methods=['GET'])
-@bp.route('/permissions/user/<int:user_id>', methods=['GET'])
-@require_permission('list_permissions')
-@validate_data(view_permissions_schema)
+@require_permission('modify_permissions')
 def view_permissions(user_id=None, all=False):
     """
-    View the permissions given to a user. Defaults to self if no user_id
-    is provided. Requires the ``list_permissions`` permission to view
-    one's own permissions list, and the ``manipulate_permissions`` permission
-    to view another's permissions list. One can also view all available
-    permissions, if they have the ``manipulate_permissions`` permission.
+    View all permissions available. Requires the ``modify_permissions`` permission.
 
     .. :quickref: Permission; View available permissions.
 
@@ -48,25 +37,17 @@ def view_permissions(user_id=None, all=False):
          "status": "success",
          "response": [
            "list_permissions",
-           "manipulate_permissions",
+           "modify_permissions",
            "change_password"
          ]
        }
-
-    :query boolean all: Whether or not to return all available permissions
 
     :>json list response: A list of permission name strings
 
     :statuscode 200: View successful
     :statuscode 403: User lacks sufficient permissions to view permissions
     """
-    if all:
-        assert_permission('manipulate_permissions')
-        permissions = get_all_permissions()
-    else:
-        user = choose_user(user_id, 'manipulate_permissions')
-        permissions = user.permissions
-    return flask.jsonify({'permissions': permissions})
+    return flask.jsonify({'permissions': get_all_permissions()})
 
 
 change_permissions_schema = Schema({
@@ -75,12 +56,12 @@ change_permissions_schema = Schema({
 
 
 @bp.route('/permissions/user/<int:user_id>', methods=['PUT'])
-@require_permission('manipulate_permissions')
+@require_permission('modify_permissions')
 @validate_data(change_permissions_schema)
 def change_permissions(user_id, permissions):
     """
     Manually change the permissions assignments of a user.
-    Requires the ``manipulate_permissions`` permission.
+    Requires the ``modify_permissions`` permission.
 
     .. :quickref: Permission; Change assigned permissions.
 
@@ -111,7 +92,7 @@ def change_permissions(user_id, permissions):
          "status": "success",
          "response": [
            "list_permissions",
-           "manipulate_permissions",
+           "modify_permissions",
            "send_invites"
          ]
        }

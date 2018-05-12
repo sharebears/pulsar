@@ -11,15 +11,15 @@ from pulsar.permissions.models import UserClass, SecondaryClass
 def populate_db(app, client):
     add_permissions(app, 'list_user_classes', 'modify_user_classes')
     db.engine.execute("""UPDATE user_classes
-                      SET permissions = '{"list_permissions", "view_invites"}'
+                      SET permissions = '{"modify_permissions", "edit_settings"}'
                       WHERE name = 'User'""")
     db.engine.execute("""UPDATE secondary_classes
                       SET permissions = '{"send_invites"}'
                       WHERE name = 'FLS'""")
     db.engine.execute("""INSERT INTO user_classes (name, permissions) VALUES
-                      ('user_v2', '{"manipulate_permissions", "list_permissions"}')""")
+                      ('user_v2', '{"modify_permissions", "edit_settings"}')""")
     db.engine.execute("""INSERT INTO secondary_classes (name, permissions) VALUES
-                      ('user_v2', '{"list_permissions"}')""")
+                      ('user_v2', '{"edit_settings"}')""")
 
 
 def test_view_user_class(app, authed_client):
@@ -27,7 +27,7 @@ def test_view_user_class(app, authed_client):
     assert 'response' in response
     response = response['response']
     assert response['name'] == 'User'
-    assert set(response['permissions']) == {'list_permissions', 'view_invites'}
+    assert set(response['permissions']) == {'modify_permissions', 'edit_settings'}
 
 
 def test_view_user_class_secondary(app, authed_client):
@@ -36,7 +36,7 @@ def test_view_user_class_secondary(app, authed_client):
     assert 'response' in response
     response = response['response']
     assert response['name'] == 'user_v2'
-    assert response['permissions'] == ['list_permissions']
+    assert response['permissions'] == ['edit_settings']
 
 
 def test_view_user_class_nonexistent(app, authed_client):
@@ -49,15 +49,15 @@ def test_view_multiple_user_classes(app, authed_client):
     response = authed_client.get('/user_classes').get_json()
 
     assert len(response['response']['user_classes']) == 2
-    assert ({'name': 'User', 'permissions': ['list_permissions', 'view_invites']}
+    assert ({'name': 'User', 'permissions': ['modify_permissions', 'edit_settings']}
             in response['response']['user_classes'])
-    assert ({'name': 'user_v2', 'permissions': ['manipulate_permissions', 'list_permissions']}
+    assert ({'name': 'user_v2', 'permissions': ['modify_permissions', 'edit_settings']}
             in response['response']['user_classes'])
 
     assert len(response['response']['secondary_classes']) == 2
     assert ({'name': 'FLS', 'permissions': ['send_invites']}
             in response['response']['secondary_classes'])
-    assert ({'name': 'user_v2', 'permissions': ['list_permissions']}
+    assert ({'name': 'user_v2', 'permissions': ['edit_settings']}
             in response['response']['secondary_classes'])
 
 
@@ -65,7 +65,7 @@ def test_create_user_class_schema(app, authed_client):
     from pulsar.permissions.user_classes import create_user_class_schema
     data = {
         'name': 'user_v3',
-        'permissions': ['list_permissions', 'send_invites'],
+        'permissions': ['edit_settings', 'send_invites'],
         }
     response_data = create_user_class_schema(data)
     data['secondary'] = False
@@ -88,14 +88,14 @@ def test_create_user_class_schema_failure(app, authed_client, data, error):
 def test_create_user_class(app, authed_client):
     response = authed_client.post('/user_classes', data=json.dumps({
         'name': 'user_v3',
-        'permissions': ['list_permissions', 'send_invites']}))
+        'permissions': ['edit_settings', 'send_invites']}))
     check_json_response(response, {
         'name': 'user_v3',
-        'permissions': ['list_permissions', 'send_invites']})
+        'permissions': ['edit_settings', 'send_invites']})
 
     user_class = UserClass.from_name('user_v3')
     assert user_class.name == 'user_v3'
-    assert user_class.permissions == ['list_permissions', 'send_invites']
+    assert user_class.permissions == ['edit_settings', 'send_invites']
 
 
 def test_create_user_class_duplicate(app, authed_client):
@@ -107,15 +107,15 @@ def test_create_user_class_duplicate(app, authed_client):
 def test_create_user_class_secondary(app, authed_client):
     response = authed_client.post('/user_classes', data=json.dumps({
         'name': 'User',
-        'permissions': ['list_permissions', 'send_invites'],
+        'permissions': ['edit_settings', 'send_invites'],
         'secondary': True}))
     check_json_response(response, {
         'name': 'User',
-        'permissions': ['list_permissions', 'send_invites']})
+        'permissions': ['edit_settings', 'send_invites']})
 
     user_class = SecondaryClass.from_name('User')
     assert user_class.name == 'User'
-    assert user_class.permissions == ['list_permissions', 'send_invites']
+    assert user_class.permissions == ['edit_settings', 'send_invites']
 
     assert not UserClass.from_name('user_v3')
 
@@ -152,8 +152,8 @@ def test_modify_user_class_schema(app, authed_client):
     from pulsar.permissions.user_classes import modify_user_class_schema
     data = {
         'permissions': {
-            'manipulate_permissions': False,
-            'list_permissions': True
+            'modify_permissions': False,
+            'edit_settings': True
             },
         'secondary': True,
         }
@@ -163,19 +163,19 @@ def test_modify_user_class_schema(app, authed_client):
 def test_modify_user_class(app, authed_client):
     response = authed_client.put('/user_classes/user', data=json.dumps({
         'permissions': {
-            'list_permissions': False,
+            'edit_settings': False,
             'send_invites': True,
         }}))
     check_json_response(response, {
         'name': 'User',
-        'permissions': ['view_invites', 'send_invites']})
+        'permissions': ['modify_permissions', 'send_invites']})
     user_class = UserClass.from_name('user')
-    assert set(user_class.permissions) == {'view_invites', 'send_invites'}
+    assert set(user_class.permissions) == {'modify_permissions', 'send_invites'}
 
 
 def test_modify_secondary_user_class(app, authed_client):
     authed_client.put('/user_classes/user_v2', data=json.dumps({
-        'permissions': {'list_permissions': False},
+        'permissions': {'edit_settings': False},
         'secondary': True,
         }))
 
@@ -183,13 +183,13 @@ def test_modify_secondary_user_class(app, authed_client):
     assert not secondary_class.permissions
 
     user_class = UserClass.from_name('user_v2')
-    assert 'list_permissions' in user_class.permissions
+    assert 'edit_settings' in user_class.permissions
 
 
 @pytest.mark.parametrize(
     'permissions, error', [
-        ({'list_permissions': True},
-         'User class User already has the permission list_permissions.'),
+        ({'edit_settings': True},
+         'User class User already has the permission edit_settings.'),
         ({'send_invites': False},
          'User class User does not have the permission send_invites.'),
     ])
@@ -207,7 +207,7 @@ def test_modify_user_class_nonexistent(app, authed_client):
 
 @pytest.mark.parametrize(
     'class_, class_name, permission', [
-        (UserClass, 'User', 'list_permissions'),
+        (UserClass, 'User', 'edit_settings'),
         (SecondaryClass, 'FLS', 'send_invites'),
     ])
 def test_user_class_cache(app, client, class_, class_name, permission):
@@ -225,7 +225,7 @@ def test_user_class_cache_get_all(app, client, class_):
     cache.set(class_.__cache_key_all__, ['user_v2'], timeout=60)
     all_user_classes = class_.get_all()
     assert len(all_user_classes) == 1
-    assert 'list_permissions' in all_user_classes[0].permissions
+    assert 'edit_settings' in all_user_classes[0].permissions
 
 
 def test_user_secondary_classes_models(app, client):

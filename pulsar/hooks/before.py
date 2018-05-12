@@ -145,7 +145,7 @@ def check_csrf():
 
     **This function is extremely important, please do not fuck with it.**
 
-    :raises APIException: If input is not JSON serializable.
+    :raises APIException: If input is not JSON serialize.
     :raises _403Exception: If user has incorrect csrf_token.
     """
     data = flask.request.get_data()

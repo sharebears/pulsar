@@ -16,7 +16,7 @@ secondary_schema = Schema({
 
 
 @bp.route('/user_classes/<user_class_name>', methods=['GET'])
-@require_permission('list_user_classes')
+@require_permission('modify_user_classes')
 @validate_data(secondary_schema)
 def view_user_class(user_class_name, secondary=False):
     """
@@ -62,7 +62,7 @@ def view_user_class(user_class_name, secondary=False):
     """
     user_class = (SecondaryClass if secondary else UserClass).from_name(user_class_name)
     if user_class:
-        return flask.jsonify(user_class.to_dict(very_detailed=True))
+        return flask.jsonify(user_class.to_dict())
     raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_name}')
 
 
@@ -128,8 +128,8 @@ def view_multiple_user_classes(secondary=False):
     user_classes = UserClass.get_all()
     secondary_classes = SecondaryClass.get_all()
     return flask.jsonify({
-        'user_classes': many_to_dict(user_classes, very_detailed=True),
-        'secondary_classes': many_to_dict(secondary_classes, very_detailed=True),
+        'user_classes': many_to_dict(user_classes),
+        'secondary_classes': many_to_dict(secondary_classes),
         })
 
 
@@ -206,7 +206,7 @@ def create_user_class(name, secondary, permissions):
         )
     db.session.add(user_class)
     db.session.commit()
-    return flask.jsonify(user_class.to_dict(very_detailed=True))
+    return flask.jsonify(user_class.to_dict())
 
 
 @bp.route('/user_classes/<user_class_name>', methods=['DELETE'])
@@ -360,4 +360,4 @@ def modify_user_class(user_class_name, permissions, secondary):
     user_class.permissions = uc_perms
     db.session.commit()
     user_class.clear_cache()
-    return flask.jsonify(user_class.to_dict(very_detailed=True))
+    return flask.jsonify(user_class.to_dict())

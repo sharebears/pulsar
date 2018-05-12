@@ -1,3 +1,4 @@
+import flask
 import secrets
 from sqlalchemy import func
 from pulsar import db, cache
@@ -7,8 +8,11 @@ class Invite(db.Model):
     __tablename__ = 'invites'
     __cache_key__ = 'invites_{code}'
     __cache_key_of_user__ = 'invites_user_{user_id}'
-    __serializable_attrs__ = ('code', 'inviter_id', 'email',
-                              'time_sent', 'active', 'invitee')
+
+    __serialize_self__ = ('code', 'inviter_id', 'email', 'time_sent', 'active', 'invitee')
+    __serialize_detailed__ = __serialize_self__ + ('from_ip', )
+
+    __permission_detailed__ = 'view_invites_others'
 
     code = db.Column(db.String(24), primary_key=True)
     inviter_id = db.Column(
@@ -97,3 +101,6 @@ class Invite(db.Model):
     @property
     def cache_key(self):
         return self.__cache_key__.format(code=self.code)
+
+    def belongs_to_user(self):
+        return flask.g.user and self.inviter_id == flask.g.user.id

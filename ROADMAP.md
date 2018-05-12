@@ -2,17 +2,19 @@
 
 - [x] Rate Limiting
 - [x] Caching
-- [ ] Better serialization abstraction
+- [x] Permissioned Serialization
 - [-] Forums
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
 
-
 # TODO
 
 ## General
 - [x] Form validation with voluptuous
+- [x] Permissioned Serialization
+- [ ] Write test that iterates over all models and validates
+their dunder attributes
 
 ## Users
 - [x] Administration Functions

@@ -1,27 +1,27 @@
 import flask
-from voluptuous import Schema, Optional
+from voluptuous import Schema
 from voluptuous.validators import Match
 from . import bp
-from pulsar import db, APIException
+from pulsar import db, _401Exception, _403Exception
 from pulsar.models import Session
 from pulsar.utils import PASSWORD_REGEX, choose_user, validate_data, require_permission
 
 app = flask.current_app
 
-password_change_schema = Schema({
-    Optional('existing_password', default=''): str,
+settings_schema = Schema({
+    'existing_password': str,
     'new_password': Match(PASSWORD_REGEX, msg=(
         'Password must be 12 or more characters and contain at least 1 letter, '
         '1 number, and 1 special character.')),
-    }, required=True)
+    })
 
 
-# TODO: Add Admin Log Decorator
-@bp.route('/users/change_password', methods=['PUT'])
-@bp.route('/users/<int:user_id>/change_password', methods=['PUT'])
-@require_permission('change_password')
-@validate_data(password_change_schema)
-def change_password(existing_password, new_password, user_id=None):
+@bp.route('/users/settings', methods=['PUT'])
+@bp.route('/users/<int:user_id>/settings', methods=['PUT'])
+@require_permission('edit_settings')
+@validate_data(settings_schema)
+def edit_settings(user_id=None, existing_password=None, new_password=None):
+    # TODO: Fix documentation
     """
     Change a user's password. Requires the ``change_password`` permission.
     Requires the ``moderate_users`` permission to change another user's
@@ -67,10 +67,16 @@ def change_password(existing_password, new_password, user_id=None):
     :statuscode 403: User does not have permission to change user's password
     """
     user = choose_user(user_id, 'moderate_users')
-    if flask.g.user == user and not user.check_password(existing_password):
-        raise APIException('Invalid existing password.')
-    user.set_password(new_password)
-    Session.expire_all_of_user(user.id)
+
+    if new_password:
+        if not flask.g.user.has_permission('change_password'):
+            raise _403Exception(
+                message='You do not have permission to change this password.')
+        if not user.check_password(existing_password):
+            raise _401Exception(message='Invalid existing password.')
+        user.set_password(new_password)
+        Session.expire_all_of_user(user.id)
+
     db.session.commit()
     user.clear_cache()
-    return flask.jsonify('Password changed.')
+    return flask.jsonify('Settings updated.')

@@ -1,8 +1,24 @@
 #!/usr/bin/env python3
 
 import psycopg2
-from conftest import (CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2,
-                      HASHED_CODE_3, HASHED_PASSWORD_1, HASHED_PASSWORD_2)
+
+HASHED_PASSWORD_1 = ('pbkdf2:sha256:50000$XwKgylbI$a4868823e7889553e3cb9f'
+                     'd922ad08f39c514c2f018cee3c07cd6b9322cc107d')  # 12345
+HASHED_PASSWORD_2 = ('pbkdf2:sha256:50000$xH3qCWmd$a82cb27879cce1cb4de401'
+                     'fb8c171a42ca19bb0ca7b7e0ba7c6856087e25d3a8')  # abcdefg
+HASHED_PASSWORD_3 = ('pbkdf2:sha256:50000$WnhbJYei$7af6aca3be169fb6a8b58b4'
+                     'fb666f0325bba59633eb4b4e292afeafbb9f89fa1')
+
+CODE_1 = '1234567890abcdefghij1234'
+CODE_2 = 'abcdefghijklmnopqrstuvwx'
+CODE_3 = '234567890abcdefghij12345'
+
+HASHED_CODE_1 = ('pbkdf2:sha256:50000$rAUuaX7W$01db64c80f4057c8fdcaddb13cb0'
+                 '01c712d7052717df3e38d647aae5eb1ab4f8')
+HASHED_CODE_2 = ('pbkdf2:sha256:50000$CH2S6Ojr$71fdc1e523d2e6d063780392c83a'
+                 '6b6accbe0ea22bfe44c271e730001181f737')
+HASHED_CODE_3 = ('pbkdf2:sha256:50000$DgIO3cu1$cdc9e2d1060c5f339e1cc7cf247d'
+                 'f32f49a8f94b4de45b2e149f4c00068ece00')
 
 conn = psycopg2.connect('postgresql:///pulsar')
 cursor = conn.cursor()
@@ -19,7 +35,7 @@ cursor.execute("DELETE FROM secondary_classes")
 cursor.execute("""INSERT INTO user_classes (name, permissions) VALUES
                ('User', '{"view_users", "list_permissions",
                 "view_invites", "view_cache_keys", "send_invites"}'),
-               ('user_v2', '{"manipulate_permissions", "list_permissions"}')""")
+               ('user_v2', '{"modify_permissions", "list_permissions"}')""")
 cursor.execute("""INSERT INTO secondary_classes (name, permissions) VALUES
                ('FLS', '{"send_invites"}'),
                ('user_v2', '{"list_permissions"}')""")
@@ -46,7 +62,7 @@ cursor.execute(
     """INSERT INTO users_permissions (user_id, permission) VALUES
     (1, 'view_api_keys'),
     (1, 'revoke_api_keys'),
-    (1, 'manipulate_permissions'),
+    (1, 'modify_permissions'),
     (1, 'list_permissions'),
     (1, 'change_password'),
     (1, 'sample_perm_one'),

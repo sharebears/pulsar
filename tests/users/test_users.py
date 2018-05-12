@@ -105,32 +105,43 @@ def test_user_does_not_exist(app, authed_client):
 
 @pytest.mark.parametrize(
     'existing_password, new_password, message', [
-        ('12345', 'aB1%ckeofa12342', 'Password changed.'),
+        ('12345', 'aB1%ckeofa12342', 'Settings updated.'),
         ('54321', 'aB1%ckeofa12342', 'Invalid existing password.'),
     ])
-def test_change_password(app, authed_client, existing_password, new_password, message):
-    add_permissions(app, 'change_password')
-    response = authed_client.put('/users/change_password', data=json.dumps({
+def test_edit_settings(app, authed_client, existing_password, new_password, message):
+    add_permissions(app, 'edit_settings', 'change_password')
+    response = authed_client.put('/users/settings', data=json.dumps({
         'existing_password': existing_password,
         'new_password': new_password,
         }))
     check_json_response(response, message, strict=True)
 
 
-def test_change_password_others(app, authed_client):
-    add_permissions(app, 'change_password', 'moderate_users')
-    response = authed_client.put('/users/2/change_password', data=json.dumps({
+def test_edit_settings_pw_fail(app, authed_client):
+    add_permissions(app, 'edit_settings')
+    response = authed_client.put('/users/settings', data=json.dumps({
+        'existing_password': '12345',
         'new_password': 'aB1%ckeofa12342',
         }))
-    check_json_response(response, 'Password changed.', strict=True)
+    check_json_response(
+        response, 'You do not have permission to change this password.')
+
+
+def test_edit_settings_others(app, authed_client):
+    add_permissions(app, 'edit_settings', 'change_password', 'moderate_users')
+    response = authed_client.put('/users/2/settings', data=json.dumps({
+        'existing_password': 'abcdefg',
+        'new_password': 'aB1%ckeofa12342',
+        }))
+    check_json_response(response, 'Settings updated.', strict=True)
     user = User.from_id(2)
-    print(user.passhash)
     assert user.check_password('aB1%ckeofa12342')
 
 
 @pytest.mark.parametrize(
     'endpoint, method', [
-        ('/users/change_password', 'PUT'),
+        ('/users/1', 'GET'),
+        ('/users/settings', 'PUT'),
     ])
 def test_route_permissions(app, authed_client, endpoint, method):
     response = authed_client.open(endpoint, method=method)

@@ -1,6 +1,14 @@
 Models
 ======
 
+Base Model
+----------
+
+.. automodule:: pulsar.pulsar_model
+    :members:
+    :show-inheritance:
+
+
 Users
 -----
 
