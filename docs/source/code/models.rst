@@ -4,7 +4,7 @@ Models
 Base Model
 ----------
 
-.. automodule:: pulsar.pulsar_model
+.. automodule:: pulsar.base_model
     :members:
     :show-inheritance:
 

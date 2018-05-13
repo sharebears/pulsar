@@ -1,5 +1,3 @@
-import flask
-from datetime import datetime
 from flask_sqlalchemy import Model
 from sqlalchemy import func
 from sqlalchemy.orm.session import make_transient_to_detached
@@ -262,61 +260,3 @@ class PulsarModel(Model):
         if order is not None:
             query = query.order_by(order)
         return query
-
-    def to_dict(self, nested=False):
-        """
-        Convert the model to a dictionary based on its defined serializable attributes.
-        ``PulsarModel`` objects embedded in the dictionary or lists in the dictionary
-        will be replaced with the result of their ``to_dict`` methods.
-
-        :param bool detailed: Whether or not to include detailed serializable attributes
-        :param bool very_detailed: Whether or not to include very detailed serializable attributes
-
-        :return: The ``dict`` of serialized attributes
-        """
-        attrs = self.__serialize__
-        if self.belongs_to_user():
-            attrs += self.__serialize_self__
-        if flask.g.user and flask.g.user.has_permission(self.__permission_detailed__):
-            attrs += self.__serialize_detailed__
-        if flask.g.user and flask.g.user.has_permission(self.__permission_very_detailed__):
-            attrs += self.__serialize_very_detailed__
-        if nested:
-            attrs += self.__serialize_nested_include__
-            attrs = [a for a in attrs if a not in self.__serialize_nested_exclude__]
-
-        return self._objects_to_dict(
-            {attr: getattr(self, attr, None) for attr in list(set(attrs))})
-
-    @staticmethod
-    def _objects_to_dict(dict_):
-        """
-        Iterate through all values inside a dictionary and "fix" a dictionary to be
-        JSON serializable by applying the to_dict() function to all embedded models.
-        All datetime objects are converted to a POSIX timestamp (seconds since epoch).
-
-        :param dict dict_: The dictionary to iterate over and make JSON serializable
-
-        :return: A JSON serializable ``dict``
-        """
-        from pulsar import PulsarModel
-
-        def iter_handler(value):
-            if isinstance(value, dict):
-                return PulsarModel._objects_to_dict(value)
-            elif isinstance(value, list):
-                new_value = []
-                for i, v2 in enumerate(value):
-                    if v2 is not None:
-                        new_value.append(iter_handler(v2))
-                return new_value
-            elif isinstance(value, PulsarModel):
-                return value.to_dict(nested=True)
-            elif isinstance(value, datetime):
-                return int(value.timestamp())
-            return value
-
-        for k, v in dict_.items():
-            dict_[k] = iter_handler(v)
-
-        return dict_

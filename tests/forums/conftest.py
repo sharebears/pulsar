@@ -9,8 +9,9 @@ def populate_db(app, client):
         (1, 'Site', 'General site discussion', 1, 'f'),
         (2, 'General', 'Discussion about your favorite shit', 3, 'f'),
         (3, 'OldGeneral', NULL, 2, 't'),
-        (4, 'Redacted', 'Discussion about secret site content', '3', 'f')""")
-    db.engine.execute("ALTER SEQUENCE forums_categories_id_seq RESTART WITH 5")
+        (4, 'Redacted', 'Discussion about secret site content', '3', 'f'),
+        (5, 'uWhatMate', 'Empty forum', '5', 'f')""")
+    db.engine.execute("ALTER SEQUENCE forums_categories_id_seq RESTART WITH 6")
     db.engine.execute(
         """INSERT INTO forums (id, name, description, category_id, position, deleted) VALUES
         (1, 'Pulsar', 'Stuff about pulsar', 1, 1, 'f'),

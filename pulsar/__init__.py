@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
 from pulsar.cache import Cache
 from pulsar.base_model import PulsarModel
-from pulsar.json_encoder import JSONEncoder
+from pulsar.serializer import JSONEncoder
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)

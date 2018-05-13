@@ -6,11 +6,12 @@ Code documentation for the pulsar project.
    :maxdepth: 2
 
    style
-   hacking 
    installation
+   hacking
    hooks
+   models
    cache
+   validators
+   serialization
    exceptions
    utils
-   models
-   validators

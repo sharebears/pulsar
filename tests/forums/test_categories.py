@@ -48,4 +48,4 @@ def test_new_category(app, authed_client):
     assert category.name == 'NewCategory'
     assert category.description is None
     assert category.position == 100
-    assert ForumCategory.from_cache(category.cache_key).id == category.id == 5
+    assert ForumCategory.from_cache(category.cache_key).id == category.id == 6

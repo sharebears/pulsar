@@ -235,7 +235,8 @@ def revoke_invite(code):
        Accept: application/json
 
     **Example response**:
-.. sourcecode:: http
+
+    .. sourcecode:: http
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -245,7 +246,7 @@ def revoke_invite(code):
          "status": "success",
          "response": {
            "expired": true,
-           "code": "an-invite-code",
+           "id": "an-invite-code",
            "time-sent": "1970-01-01T00:00:00.000001+00:00",
            "email": "bright@pul.sar",
            "invitee": null
@@ -253,7 +254,7 @@ def revoke_invite(code):
        }
 
     :>jsonarr boolean expired: Whether or not the invite is expired (always true)
-    :>jsonarr string code: The invite code
+    :>jsonarr string id: The invite code
     :>jsonarr string time-sent: When the invite was sent
     :>jsonarr string email: The email that the invite was sent to
     :>jsonarr dict invitee: The user invited by the invite
