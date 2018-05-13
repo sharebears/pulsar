@@ -87,7 +87,7 @@ def check_permissions(user, permissions):
         lacks a to-delete permission.
     """
     add, ungrant, delete, errors = [], [], [], defaultdict(list)
-    uc_permissions = UserClass.from_name(user.user_class).permissions or []
+    uc_permissions = user.user_class.permissions
     user_permissions = UserPermission.from_user(user.id)
 
     for perm, active in permissions.items():

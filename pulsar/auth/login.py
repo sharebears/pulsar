@@ -49,9 +49,9 @@ def login(username, password, persistent):
          "status": "success",
          "csrf_token": "d98a1a142ccae02be58ee64b",
          "response": {
-           "active": true,
+           "expired": false,
            "csrf_token": "d98a1a142ccae02be58ee64b",
-           "hash": "abcdefghij",
+           "id": "abcdefghij",
            "ip": "127.0.0.1",
            "last_used": "1970-01-01T00:00:00.000001+00:00",
            "persistent": true,
@@ -78,14 +78,14 @@ def login(username, password, persistent):
         raise _401Exception(message='Invalid credentials.')
     flask.g.user = user
 
-    session = Session.generate_session(
+    session = Session.new(
         user_id=user.id,
         ip=flask.request.remote_addr,
         user_agent=flask.request.user_agent.string,
         persistent=persistent)
 
     flask.session['user_id'] = user.id
-    flask.session['session_hash'] = session.hash
+    flask.session['session_id'] = session.id
     flask.session.permanent = persistent
     flask.session.modified = True
-    return flask.jsonify(session.to_dict())
+    return flask.jsonify(session)

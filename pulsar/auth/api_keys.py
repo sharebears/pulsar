@@ -3,15 +3,15 @@ from voluptuous import Schema, Optional
 from . import bp
 from pulsar import db, APIException, _404Exception
 from pulsar.models import APIKey
-from pulsar.utils import require_permission, validate_data, choose_user, many_to_dict
+from pulsar.utils import require_permission, validate_data, choose_user
 from pulsar.validators import permissions_list_of_user, bool_get
 
 app = flask.current_app
 
 
-@bp.route('/api_keys/<hash>', methods=['GET'])
+@bp.route('/api_keys/<id>', methods=['GET'])
 @require_permission('view_api_keys')
-def view_api_key(hash):
+def view_api_key(id):
     """
     View info of an API key. Requires the ``view_api_keys`` permission to view
     one's own API keys, and the ``view_api_keys_others`` permission to view
@@ -38,8 +38,8 @@ def view_api_key(hash):
        {
          "status": "success",
          "response": {
-           "active": true,
-           "hash": "abcdefghij",
+           "revoked": false,
+           "id": "abcdefghij",
            "ip": "127.0.0.1",
            "last_used": "1970-01-01T00:00:00.000001+00:00",
            "user-agent": "curl/7.59.0",
@@ -50,8 +50,8 @@ def view_api_key(hash):
          }
        }
 
-    :>jsonarr boolean active: Whether or not the API key is usable
-    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr boolean revoked: Whether or not the API key is revoked
+    :>jsonarr string id: The identification id of the API key
     :>jsonarr string ip: The last IP to access the API key
     :>jsonarr string user-agent: The last User Agent to access the API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
@@ -60,12 +60,12 @@ def view_api_key(hash):
     :statuscode 200: Successfully viewed API key.
     :statuscode 404: API key does not exist.
     """
-    api_key = APIKey.from_hash(hash, include_dead=True)
+    api_key = APIKey.from_id(id, include_dead=True)
     if api_key:
         is_own_key = api_key.user_id == flask.g.user.id
         if is_own_key or flask.g.user.has_permission('view_api_keys_others'):
-            return flask.jsonify(api_key.to_dict())
-    raise _404Exception(f'API Key {hash}')
+            return flask.jsonify(api_key)
+    raise _404Exception(f'API Key {id}')
 
 
 view_all_api_keys_schema = Schema({
@@ -105,8 +105,8 @@ def view_all_api_keys(include_dead, user_id=None):
          "status": "success",
          "response": [
            {
-             "active": true,
-             "hash": "abcdefghij",
+             "revoked": false,
+             "id": "abcdefghij",
              "ip": "127.0.0.1",
              "last_used": "1970-01-01T00:00:00.000001+00:00",
              "user-agent": "curl/7.59.0",
@@ -122,8 +122,8 @@ def view_all_api_keys(include_dead, user_id=None):
 
     :>json list response: A list of API keys
 
-    :>jsonarr boolean active: Whether or not the API key is usable
-    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr boolean revoked: Whether or not the API key is revoked
+    :>jsonarr string id: The identification id of the API key
     :>jsonarr string ip: The last IP to access the API key
     :>jsonarr string user-agent: The last User Agent to access the API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
@@ -135,7 +135,7 @@ def view_all_api_keys(include_dead, user_id=None):
     """
     user = choose_user(user_id, 'view_api_keys_others')
     api_keys = APIKey.from_user(user.id, include_dead=include_dead)
-    return flask.jsonify(many_to_dict(api_keys))
+    return flask.jsonify(api_keys)
 
 
 create_api_key_schema = Schema({
@@ -182,20 +182,20 @@ def create_api_key(permissions):
          }
        }
 
-    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string id: The identification id of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
 
     :statuscode 200: Successfully created API key
     """
-    raw_key, api_key = APIKey.generate_key(
+    raw_key, api_key = APIKey.new(
         flask.g.user.id,
         flask.request.remote_addr,
         flask.request.user_agent.string,
         permissions)
     return flask.jsonify({
-        'identifier': api_key.hash,
+        'id': api_key.id,
         'key': raw_key,
         'permissions': permissions,
         })
@@ -243,7 +243,7 @@ def revoke_api_key(identifier):
          "response": "API Key abcdefghij has been revoked."
        }
 
-    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string id: The identification id of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
@@ -252,13 +252,13 @@ def revoke_api_key(identifier):
     :statuscode 404: API key does not exist or user does not have permission
         to revoke the API key
     """
-    api_key = APIKey.from_hash(identifier, include_dead=True)
+    api_key = APIKey.from_id(identifier, include_dead=True)
     if api_key:
         is_own_key = (api_key.user_id == flask.g.user.id)
         if is_own_key or flask.g.user.has_permission('revoke_api_keys_others'):
-            if not api_key.active:
+            if api_key.revoked:
                 raise APIException(f'API Key {identifier} is already revoked.')
-            api_key.active = False
+            api_key.revoked = True
             db.session.commit()
             return flask.jsonify(f'API Key {identifier} has been revoked.')
     raise _404Exception(f'API Key {identifier}')
@@ -296,7 +296,7 @@ def revoke_all_api_keys(user_id=None):
          "response": "All api keys have been revoked."
        }
 
-    :>jsonarr string hash: The identification hash of the API key
+    :>jsonarr string id: The identification id of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``

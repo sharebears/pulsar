@@ -3,7 +3,7 @@ from sqlalchemy import func, and_
 from sqlalchemy.sql import select
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
-from pulsar import db, cache
+from pulsar import db
 
 app = flask.current_app
 
@@ -26,39 +26,18 @@ class ForumCategory(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
-    def from_id(cls, id, include_dead=False):
-        forum_category = cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(cls.id == id))
-        if forum_category and (include_dead or not forum_category.deleted):
-            return forum_category
-        return None
-
-    @classmethod
     def get_all(cls, include_dead=False):
-        cache_key = cls.__cache_key_all__
-        category_ids = cache.get(cache_key)
-        if not category_ids:
-            category_ids = [
-                c[0] for c in
-                db.session.query(cls.id).order_by(cls.position.asc()).all()]
-            cache.set(cache_key, category_ids)
-
-        categories = []
-        for category_id in category_ids:
-            category = cls.from_id(category_id, include_dead=include_dead)
-            # If user cannot view any forums in the category, exclude it.
-            if category and category.forums:
-                categories.append(category)
-        return categories
+        return cls.get_many(
+            key=cls.__cache_key_all__,
+            order=cls.position.asc(),
+            required_properties=('forums', ))
 
     @classmethod
     def new(cls, name, description, position):
-        category = cls(name=name, description=description, position=position)
-        db.session.add(category)
-        db.session.commit()
-        cache.cache_model(category)
-        return category
+        return super().new(
+            name=name,
+            description=description,
+            position=position)
 
     @property
     def cache_key(self):
@@ -93,46 +72,22 @@ class Forum(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
-    def from_id(cls, id, include_dead=False):
-        forum = cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(cls.id == id))
-        if forum and (include_dead or not forum.deleted):
-            return forum
-        return None
-
-    @classmethod
     def from_category(cls, category_id):
-        cache_key = cls.__cache_key_of_category__.format(id=category_id)
-        forum_ids = cache.get(cache_key)
-        if not forum_ids:
-            forum_ids = [f[0] for f in db.session.query(cls.id).filter(
-                cls.category_id == category_id
-                ).order_by(cls.position.asc()).all()]
-            cache.set(cache_key, forum_ids)
-
-        forums = []
-        for forum_id in forum_ids:
-            forum = cls.from_id(forum_id)
-            if forum:
-                forums.append(forum)
-        return forums
+        return cls.get_many(
+            key=cls.__cache_key_of_category__.format(id=category_id),
+            filter=cls.category_id == category_id,
+            order=cls.position.asc())
 
     @classmethod
     def new(cls, name, description, category_id, position):
         category = ForumCategory.from_id(category_id)
         if not category or category.deleted:
             return None
-
-        forum = cls(
+        return super().new(
             name=name,
             description=description,
             category_id=category_id,
             position=position)
-        db.session.add(forum)
-        db.session.commit()
-        cache.cache_model(forum)
-        return forum
 
     @property
     def cache_key(self):
@@ -144,27 +99,18 @@ class Forum(db.Model):
 
     @property
     def thread_count(self):
-        cache_key = self.__cache_key_thread_count__.format(id=self.id)
-        thread_count = cache.get(cache_key)
-        if not thread_count:
-            thread_count = db.session.query(func.count(ForumThread.id)).filter(and_(
-                (ForumThread.forum_id == self.id),
-                (ForumThread.deleted == 'f')
-                )).first()[0]
-            cache.set(cache_key, thread_count)
-        return thread_count
+        return self.count(
+            key=self.__cache_key_thread_count__.format(id=self.id),
+            attribute=ForumThread.id,
+            filter=and_(ForumThread.forum_id == self.id, ForumThread.deleted == 'f'))
 
     @property
     def last_updated_thread(self):
-        cache_key = self.__cache_key_last_updated__.format(id=self.id)
-        thread_id = cache.get(cache_key)
-        if not thread_id:
-            thread = ForumThread.query.filter(
-                ForumThread.forum_id == self.id
-                ).order_by(ForumThread.last_updated.desc()).limit(1).first()
-            cache.set(cache_key, thread.id)
-            return thread
-        return ForumThread.from_id(thread_id)
+        return self.get_one(
+            key=self.__cache_key_last_updated__.format(id=self.id),
+            model=ForumThread,
+            filter=(ForumThread.forum_id == self.id),
+            order=ForumThread.last_updated.desc())
 
     @property
     def threads(self):
@@ -204,77 +150,36 @@ class ForumThread(db.Model):
         return (db.Index('idx_forums_threads_topic', func.lower(cls.topic), unique=True),)
 
     @classmethod
-    def from_id(cls, id, include_dead=False):
-        forum_thread = cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(cls.id == id))
-        if forum_thread and (include_dead or not forum_thread.deleted):
-            return forum_thread
-        return None
-
-    @classmethod
-    def from_forum(cls, forum_id, page, limit=50, include_dead=False):
-        cache_key = cls.__cache_key_of_forum__.format(id=forum_id)
-        thread_ids = cache.get(cache_key)
-        if not thread_ids:
-            thread_ids = [t[0] for t in db.session.query(cls.id).filter(
-                cls.forum_id == forum_id
-                ).order_by(cls.last_updated.desc()).all()]
-            cache.set(cache_key, thread_ids)
-
-        threads = []
-        num_threads = 0
-        for thread_id in thread_ids[(page - 1) * limit:]:
-            thread = cls.from_id(thread_id)
-            if thread:
-                threads.append(thread)
-                num_threads += 1
-                if num_threads >= limit:
-                    break
-        return threads
+    def from_forum(cls, forum_id, page=1, limit=50, include_dead=False):
+        return cls.get_many(
+            key=cls.__cache_key_of_forum__.format(id=forum_id),
+            filter=(cls.forum_id == forum_id),
+            order=cls.last_updated.desc(),
+            page=page,
+            limit=limit)
 
     @classmethod
     def new(cls, topic, forum_id, poster_id):
         from pulsar.models import User
         forum = Forum.from_id(forum_id)
-        poster = User.from_id(poster_id)
-        if not forum or forum.deleted or not poster:
+        if not forum or forum.deleted or not User.from_id(poster_id):
             return None
-
-        thread = cls(
+        return super().new(
             topic=topic,
             forum_id=forum_id,
             poster_id=poster_id)
-        db.session.add(thread)
-        db.session.commit()
-        cache.cache_model(thread)
-        return thread
 
     @property
     def last_post(self):
-        """
-        Returns the last forum post.
-        """
-        cache_key = self.__cache_key_last_post__.format(id=self.id)
-        last_post_id = cache.get(cache_key)
-        if not last_post_id:
-            post = db.session.query(ForumPost).filter(
-                ForumPost.thread_id == self.id
-                ).order_by(ForumPost.id.desc()).limit(1).first()
-            if post:
-                if not cache.has(post.cache_key):
-                    cache.cache_model(post)
-                cache.set(cache_key, post.id)
-                return post
-        return ForumPost.from_id(last_post_id)
+        return self.get_one(
+            key=self.__cache_key_last_post__.format(id=self.id),
+            model=ForumPost,
+            filter=(ForumPost.thread_id == self.id),
+            order=ForumPost.id.desc())
 
     @hybrid_property
     def last_updated(cls):
         return select([func.max(ForumPost.time)]).where(ForumPost.thread_id == cls.id).as_scalar()
-
-    @property
-    def cache_key(self):
-        return self.__cache_key__.format(id=self.id)
 
     @property
     def forum(self):
@@ -287,16 +192,10 @@ class ForumThread(db.Model):
 
     @property
     def post_count(self):
-        cache_key = self.__cache_key_post_count__.format(id=self.id)
-        post_count = cache.get(cache_key)
-        if not post_count:
-            post_count = db.session.query(func.count(ForumPost.id)).filter(and_(
-                (ForumPost.thread_id == self.id),
-                (ForumPost.deleted == 'f'),
-                )).first()
-            post_count = post_count[0]
-            cache.set(cache_key, post_count)
-        return post_count
+        return self.count(
+            key=self.__cache_key_post_count__.format(id=self.id),
+            attribute=ForumPost.id,
+            filter=and_(ForumPost.thread_id == self.id, ForumPost.deleted == 'f',))
 
     @property
     def posts(self):
@@ -329,35 +228,13 @@ class ForumPost(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
-    def from_id(cls, id, include_dead=False):
-        forum_post = cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(cls.id == id))
-        if forum_post and (include_dead or not forum_post.deleted):
-            return forum_post
-        return None
-
-    @classmethod
-    def from_thread(cls, thread_id, page, limit=50, include_dead=False):
-        cache_key = cls.__cache_key_of_thread__.format(id=thread_id)
-        post_ids = cache.get(cache_key)
-        if not post_ids:
-            post_ids = [p[0] for p in db.session.query(cls.id).filter(
-                cls.thread_id == thread_id
-                ).order_by(cls.id.asc()).all()]
-            print(post_ids)
-            cache.set(cache_key, post_ids)
-
-        posts = []
-        num_posts = 0
-        for post_id in post_ids[(page - 1) * limit:]:
-            post = cls.from_id(post_id)
-            if post:
-                posts.append(post)
-                num_posts += 1
-                if num_posts >= limit:
-                    break
-        return posts
+    def from_thread(cls, thread_id, page=1, limit=50, include_dead=False):
+        return cls.get_many(
+            key=cls.__cache_key_of_thread__.format(id=thread_id),
+            filter=cls.thread_id == thread_id,
+            order=cls.id.asc(),
+            page=page,
+            limit=limit)
 
     @classmethod
     def new(cls, thread_id, poster_id, contents):
@@ -366,19 +243,10 @@ class ForumPost(db.Model):
         poster = User.from_id(poster_id)
         if not thread or thread.deleted or not poster:
             return None
-
-        post = cls(
+        return super().new(
             thread_id=thread_id,
             poster_id=poster_id,
             contents=contents)
-        db.session.add(post)
-        db.session.commit()
-        cache.cache_model(post)
-        return post
-
-    @property
-    def cache_key(self):
-        return self.__cache_key__.format(id=self.id)
 
     @property
     def poster(self):
@@ -412,31 +280,11 @@ class ForumPostEditHistory(db.Model):
     time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
 
     @classmethod
-    def from_id(cls, id):
-        return cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(cls.id == id))
-
-    @classmethod
     def from_post(cls, post_id):
-        cache_key = cls.__cache_key_of_post__.format(id=post_id)
-        history_ids = cache.get(cache_key)
-        if not history_ids:
-            history_ids = [h[0] for h in db.session.query(cls.id).filter(
-                cls.post_id == post_id
-                ).order_by(cls.id.desc()).all()]
-            cache.set(cache_key, history_ids)
-
-        history = []
-        for history_id in history_ids:
-            history_ = cls.from_id(history_id)
-            if history_:
-                history.append(history_)
-        return history
-
-    @property
-    def cache_key(self):
-        return self.__cache_key__.format(id=self.id)
+        return cls.get_many(
+            key=cls.__cache_key_of_post__.format(id=post_id),
+            filter=cls.post_id == post_id,
+            order=cls.id.desc())
 
     @property
     def post(self):

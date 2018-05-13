@@ -12,7 +12,7 @@ def hex_generator(_):
 @pytest.fixture(autouse=True)
 def populate_db(client):
     db.engine.execute(
-        f"""INSERT INTO sessions (user_id, hash, csrf_token, active) VALUES
+        f"""INSERT INTO sessions (user_id, id, csrf_token, active) VALUES
         (1, 'abcdefghij', '{CODE_1}', 't'),
         (2, '1234567890', '{CODE_2}', 'f')
         """)
@@ -31,22 +31,22 @@ def test_session_collision(app, monkeypatch):
     monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     with app.app_context():
         session = Session.generate_session(2, '127.0.0.2', 'ua-example')
-        assert session.hash != CODE_2[:10]
+        assert session.id != CODE_2[:10]
         assert session.csrf_token != CODE_2
         with pytest.raises(StopIteration):
             hex_generator(None)
 
 
-def test_from_hash(app, client):
-    session = Session.from_hash('abcdefghij')
+def test_from_id(app, client):
+    session = Session.from_id('abcdefghij')
     assert session.user_id == 1
     assert session.csrf_token == CODE_1
 
 
-def test_from_hash_cached(app, client):
-    session = Session.from_hash('abcdefghij')
+def test_from_id_cached(app, client):
+    session = Session.from_id('abcdefghij')
     cache_key = cache.cache_model(session, timeout=60)
-    session = Session.from_hash('abcdefghij')
+    session = Session.from_id('abcdefghij')
     assert session.user_id == 1
     assert session.csrf_token == CODE_1
     assert cache.ttl(cache_key) < 61
@@ -68,31 +68,31 @@ def test_from_user_cached(app, client):
     assert sessions[0].csrf_token == CODE_2
 
 
-def test_from_hash_incl_dead(app, client):
-    session = Session.from_hash('1234567890', include_dead=True)
+def test_from_id_incl_dead(app, client):
+    session = Session.from_id('1234567890', include_dead=True)
     assert session.csrf_token == CODE_2
 
 
 def test_get_nonexistent_session(app, client):
-    session = Session.from_hash('1234567890')
+    session = Session.from_id('1234567890')
     assert not session
 
 
 def test_session_expire_all(app, client):
     Session.expire_all_of_user(1)
     db.session.commit()
-    session = Session.from_hash('abcdefghij', include_dead=True)
+    session = Session.from_id('abcdefghij', include_dead=True)
     assert not session.active
 
 
 def test_session_expire_all_cached(app, client):
-    session = Session.from_hash('abcdefghij')
+    session = Session.from_id('abcdefghij')
     cache_key = cache.cache_model(session, timeout=60)
     assert cache.ttl(cache_key) < 61
 
     Session.expire_all_of_user(1)
     db.session.commit()
-    session = Session.from_hash('abcdefghij', include_dead=True)
+    session = Session.from_id('abcdefghij', include_dead=True)
     assert session.active is False
     assert cache.ttl(cache_key) > 61
 
@@ -117,7 +117,7 @@ def test_view_all_sessions_schema_failure(input_):
 
 @pytest.mark.parametrize(
     'session, expected', [
-        ('abcdefghij', {'hash': 'abcdefghij', 'active': True}),
+        ('abcdefghij', {'id': 'abcdefghij', 'active': True}),
         ('1234567890', 'Session 1234567890 does not exist.'),
         ('notrealkey', 'Session notrealkey does not exist.'),
     ])
@@ -131,7 +131,7 @@ def test_view_all_sessions(app, authed_client):
     add_permissions(app, 'view_sessions')
     response = authed_client.get('/sessions')
     check_json_response(response, {
-        'hash': CODE_2[:10],
+        'id': CODE_2[:10],
         }, list_=True)
 
 

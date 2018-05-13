@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
 from pulsar.cache import Cache
 from pulsar.base_model import PulsarModel
+from pulsar.json_encoder import JSONEncoder
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
@@ -15,6 +16,7 @@ cache = Cache()
 def create_app(config):
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile(config)
+    app.json_encoder = JSONEncoder
 
     global cache
     db.init_app(app)

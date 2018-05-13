@@ -2,7 +2,7 @@ import flask
 from voluptuous import Schema, Optional, Any, All, Length
 from . import bp
 from pulsar.models import ForumCategory
-from pulsar.utils import many_to_dict, require_permission, validate_data
+from pulsar.utils import require_permission, validate_data
 
 app = flask.current_app
 
@@ -48,7 +48,7 @@ def view_categories():
     :statuscode 401: View unsuccessful
     """
     categories = ForumCategory.get_all()
-    return flask.jsonify(many_to_dict(categories))
+    return flask.jsonify(categories)
 
 
 add_forum_category_schema = Schema({
@@ -69,4 +69,4 @@ def add_category(name, description, position):
         name=name,
         description=description,
         position=position)
-    return flask.jsonify(category.to_dict())
+    return flask.jsonify(category)

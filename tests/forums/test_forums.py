@@ -20,7 +20,7 @@ def test_forum_cache(app, authed_client):
 
 def test_forum_get_from_category(app, authed_client):
     forums = Forum.from_category(1)
-    assert len(forums) == 2
+    assert len([f for f in forums if f]) == 2
 
     for forum in forums:
         if forum.name == 'Bugs' and forum.id == 2:
@@ -68,6 +68,11 @@ def test_new_forum_failure(app, authed_client, category_id):
         (2, 2), (1, 1), (4, 0)])
 def test_forum_thread_count(app, authed_client, forum_id, count):
     assert Forum.from_id(forum_id).thread_count == count
+
+
+def test_forum_thread_count_from_cache(app, authed_client):
+    cache.set(Forum.__cache_key_thread_count__.format(id=2), 40)
+    assert Forum.from_id(2).thread_count == 40
 
 
 def test_forum_last_updated_thread(app, authed_client):

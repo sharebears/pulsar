@@ -1,6 +1,6 @@
 import pytest
 from pulsar import cache
-from pulsar.models import ForumThread
+from pulsar.models import ForumPost, ForumThread
 
 
 def test_thread_from_id(app, authed_client):
@@ -73,6 +73,11 @@ def test_thread_post_count(app, authed_client, thread_id, count):
     assert ForumThread.from_id(thread_id).post_count == count
 
 
+def test_thread_post_count_cached(app, authed_client):
+    cache.set(ForumThread.__cache_key_post_count__.format(id=1), 100)
+    assert ForumThread.from_id(1).post_count == 100
+
+
 def test_thread_posts(app, authed_client):
     thread = ForumThread.from_id(2, include_dead=True)
     posts = thread.posts
@@ -101,8 +106,22 @@ def test_thread_last_post(app, authed_client):
     assert post.contents == 'Delete this'
 
 
+def test_thread_last_post_empty(app, authed_client):
+    thread = ForumThread.from_id(1, include_dead=True)
+    assert thread.last_post is None
+
+
 def test_thread_last_post_from_cache(app, authed_client):
     cache.set(ForumThread.__cache_key_last_post__.format(id=2), 2)
     thread = ForumThread.from_id(2, include_dead=True)
     post = thread.last_post
     assert post.contents == 'Why the fuck is Gazelle in PHP?!'
+
+
+def test_thread_last_post_already_cached(app, authed_client):
+    thread = ForumThread.from_id(2, include_dead=True)
+    post = ForumPost.from_id(6)
+    cache.cache_model(post, timeout=60)
+    post = thread.last_post
+    assert post.contents == 'Delete this'
+    assert cache.ttl(post.cache_key) < 61

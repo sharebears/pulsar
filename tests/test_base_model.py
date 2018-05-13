@@ -66,7 +66,7 @@ def test_serialization_of_datetimes(app, authed_client):
     data = {
         'key': time,
         'key2': User.from_id(1),
-        'key3': [time, time],
+        'key3': [time, None, time],
     }
 
     response = PulsarModel._objects_to_dict(data)
@@ -100,5 +100,4 @@ def test_all_class_serialization_attributes_valid():
             + class_.__serialize_detailed__
             + class_.__serialize_very_detailed__)
         for s in serializes:
-            print(class_.__name__)
             assert s in attrs

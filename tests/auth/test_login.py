@@ -10,9 +10,9 @@ def test_login_success(client):
         'username': 'lights', 'password': '12345'}))
     response_data = response.get_json()
     assert response_data['response']['active'] is True
-    assert 'ip' in response_data['response'] and 'hash' in response_data['response']
+    assert 'ip' in response_data['response'] and 'id' in response_data['response']
     with client.session_transaction() as sess:
-        assert 'user_id' in sess and 'session_hash' in sess
+        assert 'user_id' in sess and 'session_id' in sess
 
 
 def test_login_success_cached_sessions(client):
@@ -20,9 +20,9 @@ def test_login_success_cached_sessions(client):
         'username': 'lights', 'password': '12345'}))
     response_data = response.get_json()
     assert response_data['response']['active'] is True
-    assert 'ip' in response_data['response'] and 'hash' in response_data['response']
+    assert 'ip' in response_data['response'] and 'id' in response_data['response']
     with client.session_transaction() as sess:
-        assert 'user_id' in sess and 'session_hash' in sess
+        assert 'user_id' in sess and 'session_id' in sess
 
 
 def test_login_persistent(client):

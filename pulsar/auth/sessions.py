@@ -3,15 +3,15 @@ from voluptuous import Schema, Optional
 from . import bp
 from pulsar import db, APIException, _404Exception
 from pulsar.models import Session
-from pulsar.utils import require_permission, validate_data, choose_user, many_to_dict
+from pulsar.utils import require_permission, validate_data, choose_user
 from pulsar.validators import bool_get
 
 app = flask.current_app
 
 
-@bp.route('/sessions/<hash>', methods=['GET'])
+@bp.route('/sessions/<id>', methods=['GET'])
 @require_permission('view_sessions')
-def view_session(hash):
+def view_session(id):
     """
     View info related to a user session. Requires the ``view_sessions`` permission
     to view one's own sessions, and the ``view_sessions_others`` permission to view
@@ -38,9 +38,9 @@ def view_session(hash):
        {
          "status": "success",
          "response": {
-           "active": true,
+           "expired": true,
            "csrf_token": "d98a1a142ccae02be58ee64b",
-           "hash": "abcdefghij",
+           "id": "abcdefghij",
            "ip": "127.0.0.1",
            "last_used": "1970-01-01T00:00:00.000001+00:00",
            "persistent": true,
@@ -48,9 +48,9 @@ def view_session(hash):
          }
        }
 
-    :>jsonarr boolean active: Whether or not the session is usable
+    :>jsonarr boolean expired: Whether or not the session is expired
     :>jsonarr string csrf_token: The csrf token of the session
-    :>jsonarr string hash: The identification hash of the session
+    :>jsonarr string id: The identification id of the session
     :>jsonarr string ip: The last IP to access the session
     :>jsonarr string last_used: The timestamp at which the session was last accessed
     :>jsonarr boolean persistent: The persistence of the session
@@ -59,12 +59,12 @@ def view_session(hash):
     :statuscode 200: Successfully viewed session
     :statuscode 404: Session does not exist
     """
-    session = Session.from_hash(hash, include_dead=True)
+    session = Session.from_id(id, include_dead=True)
     if session:
         is_own_sess = session.user_id == flask.g.user.id
         if is_own_sess or flask.g.user.has_permission('view_sessions_others'):
-            return flask.jsonify(session.to_dict())
-    raise _404Exception(f'Session {hash}')
+            return flask.jsonify(session)
+    raise _404Exception(f'Session {id}')
 
 
 view_all_sessions_schema = Schema({
@@ -104,18 +104,18 @@ def view_all_sessions(include_dead, user_id=None):
          "status": "success",
          "response": [
            {
-             "active": true,
+             "expired": false,
              "csrf_token": "d98a1a142ccae02be58ee64b",
-             "hash": "abcdefghij",
+             "id": "abcdefghij",
              "ip": "127.0.0.1",
              "last_used": "1970-01-01T00:00:00.000001+00:00",
              "persistent": true,
              "user-agent": "curl/7.59.0"
            },
            {
-             "active": true,
+             "expired": false,
              "csrf_token": "a-long-csrf-token",
-             "hash": "bcdefghijk",
+             "id": "bcdefghijk",
              "ip": "127.0.0.1",
              "last_used": "1970-01-01T00:00:00.000001+00:00",
              "persistent": false,
@@ -128,9 +128,9 @@ def view_all_sessions(include_dead, user_id=None):
 
     :>json list response: A list of sessions
 
-    :>jsonarr boolean active: Whether or not the session is usable
+    :>jsonarr boolean expired: Whether or not the session is expired
     :>jsonarr string csrf_token: The csrf token of the session
-    :>jsonarr string hash: The identification hash of the session
+    :>jsonarr string id: The identification id of the session
     :>jsonarr string ip: The last IP to access the session
     :>jsonarr string last_used: The timestamp at which the session was last accessed
     :>jsonarr boolean persistent: The persistence of the session
@@ -142,7 +142,7 @@ def view_all_sessions(include_dead, user_id=None):
     """
     user = choose_user(user_id, 'view_sessions_others')
     sessions = Session.from_user(user.id, include_dead=include_dead)
-    return flask.jsonify(many_to_dict(sessions))
+    return flask.jsonify(sessions)
 
 
 expire_sessions_schema = Schema({
@@ -187,7 +187,7 @@ def expire_session(identifier):
          "response": "Session abcdefghij has been expired."
        }
 
-    :<json string identifier: The identification hash of the to-be expired session
+    :<json string identifier: The identification id of the to-be expired session
 
     :>json string response: Status message of the response
 
@@ -195,13 +195,13 @@ def expire_session(identifier):
     :statuscode 400: Session is already expired
     :statuscode 404: Session does not exist
     """
-    session = Session.from_hash(identifier, include_dead=True)
+    session = Session.from_id(identifier, include_dead=True)
     if session:
         is_own_key = (session.user_id == flask.g.user.id)
         if is_own_key or flask.g.user.has_permission('expire_sessions_others'):
-            if not session.active:
+            if session.expired:
                 raise APIException(f'Session {identifier} is already expired.')
-            session.active = False
+            session.expired = True
             db.session.commit()
             return flask.jsonify(f'Session {identifier} has been expired.')
     raise _404Exception(f'Session {identifier}')
@@ -239,7 +239,7 @@ def expire_all_sessions(user_id=None):
          "response": "All sessions have been expired."
        }
 
-    :<json string identifier: The identification hash of the to-be expired session
+    :<json string identifier: The identification id of the to-be expired session
 
     :>json string response: Status message of the response
 

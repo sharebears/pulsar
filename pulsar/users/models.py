@@ -29,8 +29,7 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, server_default='t')
     locked = db.Column(db.Boolean, nullable=False, server_default='f')
-    user_class = db.Column(
-        db.String, db.ForeignKey('user_classes.name'), nullable=False, server_default='User')
+    user_class_id = db.Column(db.Integer, db.ForeignKey('user_classes.id'), nullable=False)
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
@@ -43,17 +42,10 @@ class User(db.Model):
                 db.Index('idx_users_email', func.lower(cls.email)))
 
     @classmethod
-    def from_id(cls, id):
-        return cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
-            query=cls.query.filter(User.id == id))
-
-    @classmethod
     def from_username(cls, username):
         username = username.lower()
-        user = cls.query.filter(func.lower(cls.username) == username).one_or_none()
-        if user:
-            cache.cache_model(user)
+        user = cls.query.filter(func.lower(cls.username) == username).first()
+        cache.cache_model(user)
         return user
 
     @classmethod
@@ -62,20 +54,10 @@ class User(db.Model):
         Alternative constructor which generates a password hash and
         lowercases and strips leading and trailing spaces from the email.
         """
-        user = cls(
+        return super().new(
             username=username,
             passhash=generate_password_hash(password),
             email=email.lower().strip())
-
-        db.session.add(user)
-        db.session.commit()
-
-        cache.cache_model(user)
-        return user
-
-    @property
-    def cache_key(self):
-        return self.__cache_key__.format(id=self.id)
 
     @property
     def secondary_classes(self):
@@ -85,17 +67,12 @@ class User(db.Model):
     def secondary_class_models(self):
         from pulsar.models import SecondaryClass, secondary_class_assoc_table as sat
         cache_key = self.__cache_key_secondary_classes__.format(id=self.id)
-        secondary_class_names = cache.get(cache_key)
-        if not secondary_class_names:
-            secondary_class_names = [s[0] for s in db.session.execute(select(
-                    [sat.c.secondary_user_class]
-                    ).where(sat.c.user_id == self.id))]
-            cache.set(cache_key, secondary_class_names)
-
-        secondary_classes = []
-        for name in secondary_class_names:
-            secondary_classes.append(SecondaryClass.from_name(name))
-        return secondary_classes
+        secondary_class_ids = cache.get(cache_key)
+        if not secondary_class_ids:
+            secondary_class_ids = [s[0] for s in db.session.execute(select(
+                    [sat.c.secondary_user_class]).where(sat.c.user_id == self.id))]
+            cache.set(cache_key, secondary_class_ids)
+        return [SecondaryClass.from_name(name) for name in secondary_class_ids]
 
     @property
     def inviter(self):
@@ -113,23 +90,21 @@ class User(db.Model):
 
     @property
     def permissions(self):
-        from pulsar.models import UserClass, UserPermission
+        from pulsar.models import UserPermission
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
 
         cache_key = self.__cache_key_permissions__.format(id=self.id)
         permissions = cache.get(cache_key)
         if not permissions:
-            permissions = (db.session.query(UserClass.permissions)
-                           .filter(UserClass.name == self.user_class)
-                           .all()[0][0] or [])
+            permissions = self.user_class.permissions
 
             for secondary in self.secondary_class_models:
                 permissions += secondary.permissions or []
             permissions = list(set(permissions))  # De-dupe
 
-            user_permissions = (
-                db.session.query(UserPermission.permission, UserPermission.granted)
+            user_permissions = (db.session.query(
+                UserPermission.permission, UserPermission.granted)
                 .filter(UserPermission.user_id == self.id).all())
 
             for up in user_permissions:

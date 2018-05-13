@@ -40,10 +40,10 @@ def check_user_session():
     :return: ``True`` or ``False``, depending on whether or not a session was obtained.
     """
     user_id = flask.session.get('user_id')
-    hash = flask.session.get('session_hash')
-    if user_id and hash:
-        session = Session.from_hash(hash)  # Implied active_only
-        if session and session.user_id == user_id:
+    id = flask.session.get('session_id')
+    if user_id and id:
+        session = Session.from_id(id)  # Implied active_only
+        if session and session.user_id == user_id and not session.expired:
             flask.g.user = User.from_id(session.user_id)
             flask.g.user_session = session
             flask.g.csrf_token = session.csrf_token
@@ -64,8 +64,8 @@ def check_api_key():
         # The API Key stores the identification hash as the first 10 values,
         # and the secret after it, so the key can be looked up and then
         # compared with the hash function.
-        api_key = APIKey.from_hash(raw_key[:10])  # Implied active_only
-        if api_key and api_key.check_key(raw_key[10:]):
+        api_key = APIKey.from_id(raw_key[:10])  # Implied active_only
+        if api_key and api_key.check_key(raw_key[10:]) and not api_key.revoked:
             flask.g.user = User.from_id(api_key.user_id)
             flask.g.api_key = api_key
             if flask.g.user.has_permission('no_ip_history'):
@@ -119,9 +119,9 @@ def check_rate_limit():
     """
     user_cache_key = f'rate_limit_user_{flask.g.user.id}'
     if flask.g.user_session:
-        auth_cache_key = f'rate_limit_session_{flask.g.user_session.hash}'
+        auth_cache_key = f'rate_limit_session_{flask.g.user_session.id}'
     else:  # API key
-        auth_cache_key = f'rate_limit_session_{flask.g.api_key.hash}'
+        auth_cache_key = f'rate_limit_api_key_{flask.g.api_key.id}'
 
     auth_specific_requests = cache.inc(auth_cache_key, timeout=80)
     if auth_specific_requests > 50:

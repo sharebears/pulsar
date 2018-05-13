@@ -8,15 +8,15 @@ from pulsar import db, cache
 
 class Session(db.Model):
     __tablename__ = 'sessions'
-    __cache_key__ = 'sessions_{hash}'
+    __cache_key__ = 'sessions_{id}'
     __cache_key_of_user__ = 'sessions_user_{user_id}'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'hash', 'user_id', 'persistent', 'last_used', 'ip', 'user_agent', 'active')
+        'id', 'user_id', 'persistent', 'last_used', 'ip', 'user_agent', 'active')
 
     __permission_detailed__ = 'view_sessions_others'
 
-    hash = db.Column(db.String(10), primary_key=True)
+    id = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     persistent = db.Column(db.Boolean, nullable=False, server_default='f')
     last_used = db.Column(
@@ -24,10 +24,10 @@ class Session(db.Model):
     ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent = db.Column(db.Text)
     csrf_token = db.Column(db.String(24), nullable=False)
-    active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
+    expired = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
 
     @classmethod
-    def generate_session(cls, user_id, ip, user_agent, persistent=False):
+    def new(cls, user_id, ip, user_agent, persistent=False):
         """
         Create a new session with randomly generated secret keys and the
         user details passed in as params.
@@ -40,43 +40,18 @@ class Session(db.Model):
         :return: A ``Session`` object
         """
         while True:
-            hash = secrets.token_hex(5)
-            if not cls.from_hash(hash):
+            id = secrets.token_hex(5)
+            if not cls.from_id(id):
                 break
         csrf_token = secrets.token_hex(12)
-        session = cls(
+        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
+        return super().new(
             user_id=user_id,
-            hash=hash,
+            id=id,
             csrf_token=csrf_token,
             ip=ip,
             user_agent=user_agent,
             persistent=persistent)
-
-        db.session.add(session)
-        db.session.commit()
-
-        cache.cache_model(session)
-        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
-        return session
-
-    @classmethod
-    def from_hash(cls, hash, include_dead=False):
-        """
-        Get a session from it's hash.
-
-        :param str hash: The hash of the session
-        :param bool include_dead: (Default ``False``) Whether or not to
-            include dead sessions in the search
-
-        :return: A ``Session`` object or ``None``
-        """
-        session = cls.from_cache(
-            key=cls.__cache_key__.format(hash=hash),
-            query=cls.query.filter(cls.hash == hash))
-
-        if session and (include_dead or session.active):
-            return session
-        return None
 
     @classmethod
     def from_user(cls, user_id, include_dead=False):
@@ -89,23 +64,10 @@ class Session(db.Model):
 
         :return: A ``list`` of ``APIKey`` objects
         """
-        cache_key = cls.__cache_key_of_user__.format(user_id=user_id)
-        session_hashes = cache.get(cache_key)
-        if not session_hashes:
-            session_hashes = [
-                k[0] for k in db.session.query(cls.hash).filter(
-                    cls.user_id == user_id).all()]
-            cache.set(cache_key, session_hashes)
-
-        sessions = []
-        for hash in session_hashes:
-            sessions.append(cls.from_hash(hash, include_dead=True))
-
-        return [s for s in sessions if s and (include_dead or s.active)]
-
-    @property
-    def cache_key(self):
-        return self.__cache_key__.format(hash=self.hash)
+        return cls.get_many(
+            key=cls.__cache_key_of_user__.format(user_id=user_id),
+            filter=cls.user_id == user_id,
+            include_dead=include_dead)
 
     def belongs_to_user(self):
         return flask.g.user and self.user_id == flask.g.user.id
@@ -117,37 +79,37 @@ class Session(db.Model):
 
         :param int user_id: The expired sessions belong to this user
         """
-        hashes = db.session.query(Session.hash).filter(Session.active == 't').all()
-        for hash in hashes:
-            cache.delete(Session.__cache_key__.format(hash=hash[0]))
+        ids = db.session.query(Session.id).filter(Session.expired == 'f').all()
+        for id in ids:
+            cache.delete(Session.__cache_key__.format(id=id[0]))
 
         db.session.query(Session).filter(
             Session.user_id == user_id
-            ).update({'active': False})
+            ).update({'expired': True})
 
 
 class APIKey(db.Model):
     __tablename__ = 'api_keys'
-    __cache_key__ = 'api_keys_{hash}'
+    __cache_key__ = 'api_keys_{id}'
     __cache_key_of_user__ = 'api_keys_user_{user_id}'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'hash', 'user_id', 'last_used', 'ip', 'user_agent', 'active', 'permissions')
+        'id', 'user_id', 'last_used', 'ip', 'user_agent', 'active', 'permissions')
 
     __permission_detailed__ = 'view_api_keys_others'
 
-    hash = db.Column(db.String(10), primary_key=True)
+    id = db.Column(db.String(10), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     keyhashsalt = db.Column(db.String(128))
     last_used = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent = db.Column(db.Text)
-    active = db.Column(db.Boolean, nullable=False, index=True, server_default='t')
+    revoked = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
     permissions = db.Column(ARRAY(db.String(32)))
 
     @classmethod
-    def generate_key(cls, user_id, ip, user_agent, permissions=[]):
+    def new(cls, user_id, ip, user_agent, permissions=[]):
         """
         Create a new API Key with randomly generated secret keys and the
         user details passed in as params.
@@ -159,43 +121,19 @@ class APIKey(db.Model):
         :return: An ``APIKey`` object
         """
         while True:
-            hash = secrets.token_hex(5)
-            if not cls.from_hash(hash, include_dead=True):
+            id = secrets.token_hex(5)
+            if not cls.from_id(id, include_dead=True):
                 break
         key = secrets.token_hex(8)
-        api_key = cls(
+        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
+        api_key = super().new(
             user_id=user_id,
-            hash=hash,
+            id=id,
             keyhashsalt=generate_password_hash(key),
             ip=ip,
             user_agent=user_agent,
-            permissions=permissions,
-            )
-        db.session.add(api_key)
-        db.session.commit()
-
-        cache.cache_model(api_key)
-        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
-        return (hash + key, api_key)
-
-    @classmethod
-    def from_hash(cls, hash, include_dead=False):
-        """
-        Get an API key from it's hash.
-
-        :param str hash: The hash of the API key
-        :param bool include_dead: (Default ``False``) Whether or not to include dead
-            API keys in the search
-
-        :return: An ``APIKey`` object or ``None``
-        """
-        api_key = cls.from_cache(
-            key=cls.__cache_key__.format(hash=hash),
-            query=cls.query.filter(cls.hash == hash))
-
-        if api_key and (include_dead or api_key.active):
-            return api_key
-        return None
+            permissions=permissions)
+        return (id + key, api_key)
 
     @classmethod
     def from_user(cls, user_id, include_dead=False):
@@ -208,30 +146,19 @@ class APIKey(db.Model):
 
         :return: A ``list`` of ``APIKey`` objects
         """
-        api_key_hashes = cache.get(cls.__cache_key_of_user__.format(user_id=user_id))
-        if not api_key_hashes:
-            api_key_hashes = [
-                k[0] for k in db.session.query(cls.hash).filter(cls.user_id == user_id).all()]
-            cache.set(cls.__cache_key_of_user__.format(user_id=user_id), api_key_hashes)
-
-        api_keys = []
-        for hash in api_key_hashes:
-            api_keys.append(cls.from_hash(hash, include_dead=True))
-
-        return [k for k in api_keys if k and (include_dead or k.active)]
-
-    @property
-    def cache_key(self):
-        return self.__cache_key__.format(hash=self.hash)
+        return cls.get_many(
+            key=cls.__cache_key_of_user__.format(user_id=user_id),
+            filter=cls.user_id == user_id,
+            include_dead=include_dead)
 
     def belongs_to_user(self):
         return flask.g.user and self.user_id == flask.g.user.id
 
     def check_key(self, key):
         """
-        Validates the authenticity of an API key against its stored hash.
+        Validates the authenticity of an API key against its stored id.
 
-        :param str key: The key to check against the hash
+        :param str key: The key to check against the id
         :return: ``True`` if it matches, ``False`` if it doesn't
         """
         return check_password_hash(self.keyhashsalt, key)
@@ -259,10 +186,10 @@ class APIKey(db.Model):
 
         :param int user_id: API keys of this user will be revoked
         """
-        hashes = db.session.query(APIKey.hash).filter(APIKey.active == 't').all()
-        for hash in hashes:
-            cache.delete(APIKey.__cache_key__.format(hash=hash[0]))
+        ids = db.session.query(APIKey.id).filter(APIKey.revoked == 'f').all()
+        for id in ids:
+            cache.delete(APIKey.__cache_key__.format(id=id[0]))
 
         db.session.query(APIKey).filter(
             APIKey.user_id == user_id
-            ).update({'active': False})
+            ).update({'revoked': True})

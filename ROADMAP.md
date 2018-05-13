@@ -10,8 +10,9 @@
 
 # Issues
 - [ ] Do integer voluptuous validators prevent overflow?
-- [ ] Subclass Flask's JSONEncoder instead of using stinky to_dict() and many_to_dict methods
 - [ ] Move dummy data for existing module tests into a module-level conftest
+- [ ] A lot of documentation about model abstractions and column names / types
+- [ ] Add test for expired session / revoked API Key auth
 
 # TODO
 
