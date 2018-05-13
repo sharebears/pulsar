@@ -31,3 +31,12 @@ LOCKED_ACCOUNT_PERMISSIONS = [
 
 # The time in seconds it takes for an invite to expire.
 INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days
+
+# The rate limit, in (requests, seconds). The auth-specific rate limit
+# applies to each individual API key or session, whereas the per-user 
+# rate limit applies to all requests made by a user. In order to prevent
+# a user from impropertly running a script and blocking all normal
+# requests via rate limit abuse, the per-user limit should be higher
+# than the auth-specific limit.
+RATE_LIMIT_AUTH_SPECIFIC = (50, 80)
+RATE_LIMIT_PER_USER = (80, 80)

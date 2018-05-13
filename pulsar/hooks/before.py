@@ -7,6 +7,8 @@ from collections import defaultdict
 from pulsar import db, cache, APIException, _403Exception, _312Exception
 from pulsar.models import User, Session, APIKey
 
+app = flask.current_app
+
 
 @bp.before_app_request
 def hook():
@@ -111,7 +113,10 @@ def parse_key(headers):
 
 def check_rate_limit():
     """
-    Check whether or not a user has exceeded the rate limits of
+    Check whether or not a user has exceeded the rate limits specified in the
+    config. Rate limits per API key or session and per user are recorded.
+    The redis database is used to keep track of caching, by incrementing
+    "rate limit" cache keys on each request and setting a timeout on them.
     50 requests / 80 seconds per API key or session and 70 requests / 80 seconds
     per account. Records requests in the cache DB.
 
@@ -123,17 +128,19 @@ def check_rate_limit():
     else:  # API key
         auth_cache_key = f'rate_limit_api_key_{flask.g.api_key.id}'
 
-    auth_specific_requests = cache.inc(auth_cache_key, timeout=80)
-    if auth_specific_requests > 50:
+    auth_specific_requests = cache.inc(
+        auth_cache_key, timeout=app.config['RATE_LIMIT_AUTH_SPECIFIC'][1])
+    if auth_specific_requests > app.config['RATE_LIMIT_AUTH_SPECIFIC'][0]:
         time_left = cache.ttl(auth_cache_key)
         raise APIException('Client rate limit exceeded. '
-                           f'{time_left} seconds until limit expires.')
+                           f'{time_left} seconds until lock expires.')
 
-    user_specific_requests = cache.inc(user_cache_key, timeout=80)
-    if user_specific_requests > 90:
+    user_specific_requests = cache.inc(
+        user_cache_key, timeout=app.config['RATE_LIMIT_PER_USER'][1])
+    if user_specific_requests > app.config['RATE_LIMIT_PER_USER'][0]:
         time_left = cache.ttl(user_cache_key)
         raise APIException('User rate limit exceeded. '
-                           f'{time_left} seconds until limit expires.')
+                           f'{time_left} seconds until lock expires.')
 
 
 def check_csrf():

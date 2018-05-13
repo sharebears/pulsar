@@ -22,3 +22,6 @@ LOCKED_ACCOUNT_PERMISSIONS = [
     'resolve_staff_pm',
     ]
 INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days
+
+RATE_LIMIT_AUTH_SPECIFIC = (50, 80)
+RATE_LIMIT_PER_USER = (80, 80)

@@ -204,7 +204,7 @@ def test_rate_limit_fail(app, client, monkeypatch):
         sess['session_id'] = 'abcdefghij'
 
     response = client.get('/fake_endpoint')
-    check_json_response(response, 'Client rate limit exceeded. 7 seconds until limit expires.')
+    check_json_response(response, 'Client rate limit exceeded. 7 seconds until lock expires.')
 
 
 def test_rate_limit_user_fail(app, client, monkeypatch):
@@ -215,7 +215,7 @@ def test_rate_limit_user_fail(app, client, monkeypatch):
     response = client.get('/fake_endpoint', headers={
         'Authorization': f'Token abcdefghij{CODE_1}',
         })
-    check_json_response(response, 'User rate limit exceeded. 7 seconds until limit expires.')
+    check_json_response(response, 'User rate limit exceeded. 7 seconds until lock expires.')
 
 
 g = namedtuple('g', ['user', 'user_session', 'api_key', 'cache_keys'])
