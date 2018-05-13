@@ -1,6 +1,6 @@
 import flask
 import secrets
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.dialects.postgresql import INET
 from pulsar import db, cache
 
@@ -10,7 +10,7 @@ class Invite(db.Model):
     __cache_key__ = 'invites_{id}'
     __cache_key_of_user__ = 'invites_user_{user_id}'
 
-    __serialize_self__ = ('id', 'inviter_id', 'email', 'time_sent', 'active', 'invitee')
+    __serialize_self__ = ('id', 'inviter_id', 'email', 'time_sent', 'expired', 'invitee')
     __serialize_detailed__ = __serialize_self__ + ('from_ip', )
 
     __permission_detailed__ = 'view_invites_others'
@@ -39,18 +39,18 @@ class Invite(db.Model):
         :param str ip: IP address the invite was sent from
         """
         while True:
-            code = secrets.token_hex(12)
-            if not cls.from_code(code, include_dead=True):
+            id = secrets.token_hex(12)
+            if not cls.from_id(id, include_dead=True):
                 break
         cache.delete(cls.__cache_key_of_user__.format(user_id=inviter_id))
         return super().new(
             inviter_id=inviter_id,
-            code=code,
+            id=id,
             email=email.lower().strip(),
             from_ip=ip)
 
     @classmethod
-    def from_inviter(cls, inviter_id, include_dead=False):
+    def from_inviter(cls, inviter_id, include_dead=False, used=False):
         """
         Get all invites sent by a user.
 
@@ -60,11 +60,14 @@ class Invite(db.Model):
 
         :return: A ``list`` of ``Invite`` objects
         """
+        filter = cls.inviter_id == inviter_id
+        if used:
+            filter = and_(filter, cls.invitee_id.isnot(None))
         return cls.get_many(
             key=cls.__cache_key_of_user__.format(user_id=inviter_id),
-            filter=cls.inviter_id == inviter_id,
+            filter=filter,
             order=cls.time_sent.desc(),
-            include_dead=include_dead)
+            include_dead=include_dead or used)
 
     def belongs_to_user(self):
         return flask.g.user and self.inviter_id == flask.g.user.id

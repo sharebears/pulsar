@@ -2,16 +2,7 @@ import json
 import flask
 import pytest
 from conftest import CODE_1, add_permissions
-from pulsar import db
 from pulsar.models import User
-
-
-@pytest.fixture(autouse=True)
-def populate_db(client):
-    db.engine.execute(
-        f"""INSERT INTO sessions (hash, user_id, csrf_token) VALUES
-        ('abcdefghij', 1, '{CODE_1}')
-        """)
 
 
 @pytest.mark.parametrize(
@@ -41,7 +32,7 @@ def test_csrf_token(app, client):
 
     with client.session_transaction() as sess:
         sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
+        sess['session_id'] = 'abcdefghij'
 
     response = client.get('/test_endpoint')
     assert json.loads(response.get_data()) == {

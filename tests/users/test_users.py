@@ -1,14 +1,8 @@
 import json
 import pytest
-from conftest import check_json_response, add_permissions, HASHED_CODE_1
+from conftest import check_json_response, add_permissions
 from pulsar import db, cache
 from pulsar.models import User
-
-
-@pytest.fixture(autouse=True)
-def populate_db(app, client):
-    yield
-    db.engine.execute("DELETE FROM api_keys")
 
 
 def test_user_creation(app):
@@ -51,11 +45,11 @@ def test_get_user_self_and_caches(app, authed_client):
     check_json_response(response, {
         'id': 1,
         'username': 'lights',
-        'user_class': 'User',
         'secondary_classes': ['FLS'],
         })
     assert response.status_code == 200
     user_data = cache.get('users_1')
+    assert user_data['user_class_id'] == 1
     assert user_data['id'] == 1
     assert user_data['username'] == 'lights'
 
@@ -66,25 +60,30 @@ def test_get_user(app, authed_client):
     check_json_response(response, {
         'id': 2,
         'username': 'paffu',
-        'user_class': 'User',
+        'user_class': {
+            'id': 1,
+            'name': 'User',
+        }
         })
     assert response.status_code == 200
     data = response.get_json()
+    assert 'user_class' in data['response']
+    assert data['response']['user_class']['id'] == 1
+    assert data['response']['user_class']['name'] == 'User'
     assert 'api_keys' not in data['response']
     assert 'email' not in data['response']
 
 
 def test_get_user_detailed(app, authed_client):
     add_permissions(app, 'view_users', 'moderate_users')
-    db.engine.execute(
-        f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, active, permissions) VALUES
-        (1, 'abcdefghij', '{HASHED_CODE_1}', 't',
-         '{{"sample_permission", "sample_2_permission", "sample_3_permission"}}')""")
     response = authed_client.get('/users/1')
     check_json_response(response, {
         'id': 1,
         'username': 'lights',
-        'user_class': 'User',
+        'user_class': {
+            'id': 1,
+            'name': 'User',
+        },
         'secondary_classes': ['FLS'],
         'downloaded': 0,
         'email': 'lights@puls.ar',
@@ -93,7 +92,7 @@ def test_get_user_detailed(app, authed_client):
     data = response.get_json()
     assert 'api_keys' in data['response']
     assert len(data['response']['api_keys']) == 1
-    assert data['response']['api_keys'][0]['hash'] == 'abcdefghij'
+    assert data['response']['api_keys'][0]['id'] == 'abcdefghij'
 
 
 def test_user_does_not_exist(app, authed_client):

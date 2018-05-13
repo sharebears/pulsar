@@ -1,28 +1,13 @@
 import json
 import pytest
 from voluptuous import Invalid
-from conftest import add_permissions, check_json_response
+from conftest import check_json_response
 from pulsar import db, cache
 from pulsar.models import User, UserClass, SecondaryClass
 
 
-@pytest.fixture(autouse=True)
-def populate_db(app, client):
-    add_permissions(app, 'list_user_classes', 'modify_user_classes')
-    db.engine.execute("""UPDATE user_classes
-                      SET permissions = '{"modify_permissions", "edit_settings"}'
-                      WHERE name = 'User'""")
-    db.engine.execute("""UPDATE secondary_classes
-                      SET permissions = '{"send_invites"}'
-                      WHERE name = 'FLS'""")
-    db.engine.execute("""INSERT INTO user_classes (name, permissions) VALUES
-                      ('user_v2', '{"modify_permissions", "edit_settings"}')""")
-    db.engine.execute("""INSERT INTO secondary_classes (name, permissions) VALUES
-                      ('user_v2', '{"edit_settings"}')""")
-
-
 def test_view_user_class(app, authed_client):
-    response = authed_client.get('/user_classes/user').get_json()
+    response = authed_client.get('/user_classes/1').get_json()
     assert 'response' in response
     response = response['response']
     assert response['name'] == 'User'
@@ -30,7 +15,7 @@ def test_view_user_class(app, authed_client):
 
 
 def test_view_user_class_secondary(app, authed_client):
-    response = authed_client.get('/user_classes/user_v2', query_string={
+    response = authed_client.get('/user_classes/2', query_string={
         'secondary': True}).get_json()
     assert 'response' in response
     response = response['response']
@@ -39,24 +24,24 @@ def test_view_user_class_secondary(app, authed_client):
 
 
 def test_view_user_class_nonexistent(app, authed_client):
-    response = authed_client.get('/user_classes/non_existent').get_json()
+    response = authed_client.get('/user_classes/10').get_json()
     assert 'response' in response
-    assert response['response'] == 'User class non_existent does not exist.'
+    assert response['response'] == 'User class 10 does not exist.'
 
 
 def test_view_multiple_user_classes(app, authed_client):
     response = authed_client.get('/user_classes').get_json()
 
     assert len(response['response']['user_classes']) == 2
-    assert ({'name': 'User', 'permissions': ['modify_permissions', 'edit_settings']}
+    assert ({'id': 1, 'name': 'User', 'permissions': ['modify_permissions', 'edit_settings']}
             in response['response']['user_classes'])
-    assert ({'name': 'user_v2', 'permissions': ['modify_permissions', 'edit_settings']}
+    assert ({'id': 2, 'name': 'user_v2', 'permissions': ['modify_permissions', 'edit_settings']}
             in response['response']['user_classes'])
 
     assert len(response['response']['secondary_classes']) == 2
-    assert ({'name': 'FLS', 'permissions': ['send_invites']}
+    assert ({'id': 1, 'name': 'FLS', 'permissions': ['send_invites']}
             in response['response']['secondary_classes'])
-    assert ({'name': 'user_v2', 'permissions': ['edit_settings']}
+    assert ({'id': 2, 'name': 'user_v2', 'permissions': ['edit_settings']}
             in response['response']['secondary_classes'])
 
 
@@ -89,10 +74,11 @@ def test_create_user_class(app, authed_client):
         'name': 'user_v3',
         'permissions': ['edit_settings', 'send_invites']}))
     check_json_response(response, {
+        'id': 3,
         'name': 'user_v3',
         'permissions': ['edit_settings', 'send_invites']})
 
-    user_class = UserClass.from_name('user_v3')
+    user_class = UserClass.from_id(3)
     assert user_class.name == 'user_v3'
     assert user_class.permissions == ['edit_settings', 'send_invites']
 
@@ -109,42 +95,44 @@ def test_create_user_class_secondary(app, authed_client):
         'permissions': ['edit_settings', 'send_invites'],
         'secondary': True}))
     check_json_response(response, {
+        'id': 3,
         'name': 'User',
         'permissions': ['edit_settings', 'send_invites']})
 
-    user_class = SecondaryClass.from_name('User')
+    user_class = SecondaryClass.from_id(3)
     assert user_class.name == 'User'
     assert user_class.permissions == ['edit_settings', 'send_invites']
 
-    assert not UserClass.from_name('user_v3')
+    assert not UserClass.from_id(4)
 
 
 def test_delete_user_class(app, authed_client):
-    response = authed_client.delete('/user_classes/user_v2').get_json()
+    response = authed_client.delete('/user_classes/2').get_json()
     assert response['response'] == 'User class user_v2 has been deleted.'
+    assert not UserClass.from_id(2)
     assert not UserClass.from_name('user_v2')
 
 
 def test_delete_user_class_nonexistent(app, authed_client):
-    response = authed_client.delete('/user_classes/user_v4').get_json()
-    assert response['response'] == 'User class user_v4 does not exist.'
+    response = authed_client.delete('/user_classes/10').get_json()
+    assert response['response'] == 'User class 10 does not exist.'
 
 
 def test_delete_secondary_with_uc_name(app, authed_client):
-    response = authed_client.delete('/user_classes/User', query_string={
+    response = authed_client.delete('/user_classes/5', query_string={
         'secondary': True}).get_json()
-    assert response['response'] == 'Secondary class User does not exist.'
+    assert response['response'] == 'Secondary class 5 does not exist.'
 
 
 def test_delete_user_class_with_user(app, authed_client):
     user = User.from_id(2)
-    user.user_class = 'user_v2'
+    user.user_class_id = 2
     db.session.commit()
 
-    response = authed_client.delete('/user_classes/user_v2').get_json()
+    response = authed_client.delete('/user_classes/2').get_json()
     assert response['response'] == \
         'You cannot delete a user class while users are assigned to it.'
-    assert UserClass.from_name('user_v2')
+    assert UserClass.from_id(2)
 
 
 def test_modify_user_class_schema(app, authed_client):
@@ -160,7 +148,7 @@ def test_modify_user_class_schema(app, authed_client):
 
 
 def test_modify_user_class(app, authed_client):
-    response = authed_client.put('/user_classes/user', data=json.dumps({
+    response = authed_client.put('/user_classes/1', data=json.dumps({
         'permissions': {
             'edit_settings': False,
             'send_invites': True,
@@ -168,20 +156,20 @@ def test_modify_user_class(app, authed_client):
     check_json_response(response, {
         'name': 'User',
         'permissions': ['modify_permissions', 'send_invites']})
-    user_class = UserClass.from_name('user')
+    user_class = UserClass.from_id(1)
     assert set(user_class.permissions) == {'modify_permissions', 'send_invites'}
 
 
 def test_modify_secondary_user_class(app, authed_client):
-    authed_client.put('/user_classes/user_v2', data=json.dumps({
+    authed_client.put('/user_classes/2', data=json.dumps({
         'permissions': {'edit_settings': False},
         'secondary': True,
         }))
 
-    secondary_class = SecondaryClass.from_name('user_v2')
+    secondary_class = SecondaryClass.from_id(2)
     assert not secondary_class.permissions
 
-    user_class = UserClass.from_name('user_v2')
+    user_class = UserClass.from_id(2)
     assert 'edit_settings' in user_class.permissions
 
 
@@ -193,27 +181,27 @@ def test_modify_secondary_user_class(app, authed_client):
          'User class User does not have the permission send_invites.'),
     ])
 def test_modify_user_class_failure(app, authed_client, permissions, error):
-    response = authed_client.put('/user_classes/user', data=json.dumps({
+    response = authed_client.put('/user_classes/1', data=json.dumps({
         'permissions': permissions})).get_json()
     assert response['response'] == error
 
 
 def test_modify_user_class_nonexistent(app, authed_client):
-    response = authed_client.put('/user_classes/kukuku', data=json.dumps({
+    response = authed_client.put('/user_classes/3', data=json.dumps({
         'permissions': {'send_invites': True}})).get_json()
-    assert response['response'] == 'User class kukuku does not exist.'
+    assert response['response'] == 'User class 3 does not exist.'
 
 
 @pytest.mark.parametrize(
-    'class_, class_name, permission', [
-        (UserClass, 'User', 'edit_settings'),
-        (SecondaryClass, 'FLS', 'send_invites'),
+    'class_, class_id, permission', [
+        (UserClass, 1, 'edit_settings'),
+        (SecondaryClass, 1, 'send_invites'),
     ])
-def test_user_class_cache(app, client, class_, class_name, permission):
-    user_class = class_.from_name(class_name)
+def test_user_class_cache(app, client, class_, class_id, permission):
+    user_class = class_.from_id(class_id)
     cache_key = cache.cache_model(user_class, timeout=60)
-    user_class = class_.from_name(class_name)
-    assert user_class.name == class_name
+    user_class = class_.from_id(class_id)
+    assert user_class.id == class_id
     assert permission in user_class.permissions
     assert cache.ttl(cache_key) < 61
 
@@ -221,14 +209,14 @@ def test_user_class_cache(app, client, class_, class_name, permission):
 @pytest.mark.parametrize(
     'class_', [UserClass, SecondaryClass])
 def test_user_class_cache_get_all(app, client, class_):
-    cache.set(class_.__cache_key_all__, ['user_v2'], timeout=60)
+    cache.set(class_.__cache_key_all__, [2], timeout=60)
     all_user_classes = class_.get_all()
     assert len(all_user_classes) == 1
     assert 'edit_settings' in all_user_classes[0].permissions
 
 
 def test_user_secondary_classes_models(app, client):
-    cache.set(User.__cache_key_secondary_classes__.format(id=1), ['user_v2'], timeout=60)
+    cache.set(User.__cache_key_secondary_classes__.format(id=1), [2], timeout=60)
     user = User.from_id(1)
     secondary_classes = user.secondary_class_models
     assert len(secondary_classes) == 1
@@ -237,11 +225,11 @@ def test_user_secondary_classes_models(app, client):
 
 @pytest.mark.parametrize(
     'endpoint, method', [
-        ('/user_classes/user', 'GET'),
+        ('/user_classes/1', 'GET'),
         ('/user_classes', 'GET'),
         ('/user_classes', 'POST'),
-        ('/user_classes/usar', 'DELETE'),
-        ('/user_classes/usir', 'PUT'),
+        ('/user_classes/5', 'DELETE'),
+        ('/user_classes/6', 'PUT'),
     ])
 def test_route_permissions(authed_client, endpoint, method):
     db.engine.execute("DELETE FROM users_permissions")

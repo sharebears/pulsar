@@ -53,4 +53,4 @@ def get_user(user_id):
     user = User.from_id(user_id)
     if not user:
         raise _404Exception('User')
-    return flask.jsonify(user.to_dict())
+    return flask.jsonify(user)

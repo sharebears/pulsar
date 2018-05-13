@@ -29,7 +29,8 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=False)
     enabled = db.Column(db.Boolean, nullable=False, server_default='t')
     locked = db.Column(db.Boolean, nullable=False, server_default='f')
-    user_class_id = db.Column(db.Integer, db.ForeignKey('user_classes.id'), nullable=False)
+    user_class_id = db.Column(
+        db.Integer, db.ForeignKey('user_classes.id'), nullable=False, server_default='1')
     inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     invites = db.Column(db.Integer, nullable=False, server_default='0')
 
@@ -60,6 +61,11 @@ class User(db.Model):
             email=email.lower().strip())
 
     @property
+    def user_class(self):
+        from pulsar.models import UserClass
+        return UserClass.from_id(self.user_class_id)
+
+    @property
     def secondary_classes(self):
         return [sc.name for sc in self.secondary_class_models]
 
@@ -72,7 +78,7 @@ class User(db.Model):
             secondary_class_ids = [s[0] for s in db.session.execute(select(
                     [sat.c.secondary_user_class]).where(sat.c.user_id == self.id))]
             cache.set(cache_key, secondary_class_ids)
-        return [SecondaryClass.from_name(name) for name in secondary_class_ids]
+        return [SecondaryClass.from_id(id) for id in secondary_class_ids]
 
     @property
     def inviter(self):
@@ -97,7 +103,7 @@ class User(db.Model):
         cache_key = self.__cache_key_permissions__.format(id=self.id)
         permissions = cache.get(cache_key)
         if not permissions:
-            permissions = self.user_class.permissions
+            permissions = self.user_class.permissions or []
 
             for secondary in self.secondary_class_models:
                 permissions += secondary.permissions or []

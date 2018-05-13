@@ -11,11 +11,8 @@ class JSONEncoder(JSONEncoder):
 
     def default(self, obj):
         from pulsar import PulsarModel
-        try:
-            if isinstance(obj, PulsarModel):
-                return PulsarModel.to_dict()
-            elif isinstance(obj, datetime):
-                return datetime.timestamp()
-        except TypeError:
-            pass
-        return JSONEncoder.default(self, obj)
+        if isinstance(obj, datetime):
+            return datetime.timestamp()
+        elif isinstance(obj, PulsarModel):
+            return obj.to_dict()
+        return super().default(obj)

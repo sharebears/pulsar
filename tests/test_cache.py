@@ -13,7 +13,7 @@ def test_get_user_cache(app, authed_client, monkeypatch):
         'email': 'lights@puls.ar',
         'enabled': True,
         'locked': False,
-        'user_class': 'User',
+        'user_class_id': 1,
         'inviter_id': None,
         'invites': 999,
         'uploaded': 9999999,

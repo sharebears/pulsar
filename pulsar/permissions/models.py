@@ -1,4 +1,4 @@
-from sqlalchemy import and_
+from sqlalchemy import func, and_
 from sqlalchemy.dialects.postgresql import ARRAY
 from pulsar import db
 
@@ -39,7 +39,7 @@ class UserClass(db.Model):
     __cache_key__ = 'user_class_{id}'
     __cache_key_all__ = 'user_classes'
 
-    __serialize__ = ('name', )
+    __serialize__ = ('id', 'name', )
     __serialize_detailed__ = ('permissions', )
 
     __permission_detailed__ = 'modify_user_classes'
@@ -47,6 +47,11 @@ class UserClass(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(24), nullable=False, unique=True)
     permissions = db.Column(ARRAY(db.String(32)))
+
+    @classmethod
+    def from_name(cls, name):
+        name = name.lower()
+        return cls.query.filter(func.lower(cls.name) == name).first()
 
     @classmethod
     def get_all(cls):
@@ -66,7 +71,7 @@ class SecondaryClass(db.Model):
     __cache_key_all__ = 'secondary_classes'
     __cache_key_users__ = 'secondary_class_{id}_users'
 
-    __serialize__ = ('name', )
+    __serialize__ = ('id', 'name', )
     __serialize_detailed__ = ('permissions', )
 
     __permission_detailed__ = 'modify_user_classes'
@@ -74,6 +79,11 @@ class SecondaryClass(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(24), nullable=False, unique=True)
     permissions = db.Column(ARRAY(db.String(32)))
+
+    @classmethod
+    def from_name(cls, name):
+        name = name.lower()
+        return cls.query.filter(func.lower(cls.name) == name).first()
 
     @classmethod
     def get_all(cls):

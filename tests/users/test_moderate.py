@@ -1,7 +1,7 @@
 import json
 import pytest
 from voluptuous import Invalid, MultipleInvalid
-from conftest import CODE_2, check_json_response, add_permissions
+from conftest import check_json_response, add_permissions
 from pulsar import db
 from pulsar.models import User
 from pulsar.users.validators import ration_bytes
@@ -9,26 +9,20 @@ from pulsar.users.moderate import moderate_user_schema
 
 
 def test_locked_acc_perms_blocked(app, client):
-    db.engine.execute(
-        f"""INSERT INTO sessions (hash, user_id, csrf_token) VALUES
-        ('bcdefghijk', 2, '{CODE_2}')""")
     db.engine.execute("UPDATE users SET locked = 't' where id = 2")
     with client.session_transaction() as sess:
         sess['user_id'] = 2
-        sess['session_hash'] = 'bcdefghijk'
+        sess['session_id'] = 'bcdefghijk'
 
     response = client.get('/users/1')
     check_json_response(response, 'Your account has been locked.')
 
 
 def test_locked_acc_perms_can_access(app, client):
-    db.engine.execute(
-        f"""INSERT INTO sessions (hash, user_id, csrf_token) VALUES
-        ('bcdefghijk', 2, '{CODE_2}')""")
     db.engine.execute("UPDATE users SET locked = 't' where id = 2")
     with client.session_transaction() as sess:
         sess['user_id'] = 2
-        sess['session_hash'] = 'bcdefghijk'
+        sess['session_id'] = 'bcdefghijk'
     app.config['LOCKED_ACCOUNT_PERMISSIONS'] = 'view_users'
 
     response = client.get('/users/1')

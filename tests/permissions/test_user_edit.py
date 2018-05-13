@@ -13,6 +13,8 @@ def test_permissions_from_user(app, client):
         'perm_one': True,
         'perm_two': True,
         'perm_three': False,
+        'list_user_classes': True,
+        'modify_user_classes': True,
         }
 
 
@@ -30,7 +32,7 @@ def test_get_all_permissions(app, authed_client):
 
 
 def test_change_permissions(app, authed_client):
-    add_permissions(app, 'modify_user_classes', 'modify_permissions', 'change_password')
+    add_permissions(app, 'modify_permissions', 'change_password')
     db.engine.execute("INSERT INTO users_permissions VALUES (1, 'send_invites', 'f')")
     db.engine.execute("""UPDATE user_classes
                        SET permissions = '{"modify_permissions", "view_invites"}'""")
@@ -44,10 +46,11 @@ def test_change_permissions(app, authed_client):
         }})).get_json()
 
     assert set(response['response']['permissions']) == {
-        'modify_user_classes', 'send_invites'}
+        'modify_user_classes', 'send_invites', 'list_user_classes'}
 
     u_perms = UserPermission.from_user(1)
     assert u_perms == {
+        'list_user_classes': True,
         'modify_user_classes': True,
         'send_invites': True,
         'view_invites': False,
@@ -75,7 +78,7 @@ def test_change_permissions_failure(app, authed_client, permissions, expected):
 
 
 def test_user_class_permissions(app, authed_client):
-    add_permissions(app, 'view_invites', 'modify_user_classes')
+    add_permissions(app, 'view_invites')
     db.engine.execute(
         """UPDATE user_classes SET permissions = '{"modify_permissions"}'
         WHERE name = 'User'
@@ -100,7 +103,8 @@ def test_user_class_permission_override(app, authed_client):
         """)
 
     user = User.from_id(1)
-    assert set(user.permissions) == {'sample_a', 'sample_c', 'sample_d', 'sample_e'}
+    assert set(user.permissions) == {
+        'sample_a', 'sample_c', 'sample_d', 'sample_e', 'modify_user_classes', 'list_user_classes'}
 
 
 @pytest.mark.parametrize(
@@ -109,12 +113,16 @@ def test_user_class_permission_override(app, authed_client):
         ('/permissions/user/1', 'PUT'),
     ])
 def test_route_permissions(authed_client, endpoint, method):
+    db.engine.execute("DELETE FROM users_permissions")
+    db.engine.execute("UPDATE user_classes SET permissions = '{}'")
     response = authed_client.open(endpoint, method=method)
     check_json_response(response, 'You do not have permission to access this resource.')
     assert response.status_code == 403
 
 
 def test_get_all_permissions_permission(authed_client):
+    db.engine.execute("DELETE FROM users_permissions")
+    db.engine.execute("UPDATE user_classes SET permissions = '{}'")
     response = authed_client.get('/permissions', query_string={'all': 'true'})
     check_json_response(response, 'You do not have permission to access this resource.')
     assert response.status_code == 403

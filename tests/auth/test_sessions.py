@@ -9,18 +9,9 @@ def hex_generator(_):
     return next(HEXES)
 
 
-@pytest.fixture(autouse=True)
-def populate_db(client):
-    db.engine.execute(
-        f"""INSERT INTO sessions (user_id, id, csrf_token, active) VALUES
-        (1, 'abcdefghij', '{CODE_1}', 't'),
-        (2, '1234567890', '{CODE_2}', 'f')
-        """)
-
-
 def test_new_session(app):
     with app.app_context():
-        session = Session.generate_session(2, '127.0.0.2', 'ua-example')
+        session = Session.new(2, '127.0.0.2', 'ua-example')
         assert session.ip == '127.0.0.2'
         assert session.user_id == 2
 
@@ -30,7 +21,7 @@ def test_session_collision(app, monkeypatch):
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_3])
     monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     with app.app_context():
-        session = Session.generate_session(2, '127.0.0.2', 'ua-example')
+        session = Session.new(2, '127.0.0.2', 'ua-example')
         assert session.id != CODE_2[:10]
         assert session.csrf_token != CODE_2
         with pytest.raises(StopIteration):
@@ -82,7 +73,7 @@ def test_session_expire_all(app, client):
     Session.expire_all_of_user(1)
     db.session.commit()
     session = Session.from_id('abcdefghij', include_dead=True)
-    assert not session.active
+    assert session.expired
 
 
 def test_session_expire_all_cached(app, client):
@@ -93,10 +84,8 @@ def test_session_expire_all_cached(app, client):
     Session.expire_all_of_user(1)
     db.session.commit()
     session = Session.from_id('abcdefghij', include_dead=True)
-    assert session.active is False
+    assert session.expired is True
     assert cache.ttl(cache_key) > 61
-
-
 
 
 @pytest.mark.parametrize(
@@ -117,7 +106,7 @@ def test_view_all_sessions_schema_failure(input_):
 
 @pytest.mark.parametrize(
     'session, expected', [
-        ('abcdefghij', {'id': 'abcdefghij', 'active': True}),
+        ('abcdefghij', {'id': 'abcdefghij', 'expired': False}),
         ('1234567890', 'Session 1234567890 does not exist.'),
         ('notrealkey', 'Session notrealkey does not exist.'),
     ])

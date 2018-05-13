@@ -15,7 +15,7 @@ secondary_schema = Schema({
     })
 
 
-@bp.route('/user_classes/<user_class_id>', methods=['GET'])
+@bp.route('/user_classes/<int:user_class_id>', methods=['GET'])
 @require_permission('modify_user_classes')
 @validate_data(secondary_schema)
 def view_user_class(user_class_id, secondary=False):
@@ -62,7 +62,7 @@ def view_user_class(user_class_id, secondary=False):
 
     :statuscode 200: View successful
     """
-    user_class = (SecondaryClass if secondary else UserClass).from_name(user_class_id)
+    user_class = (SecondaryClass if secondary else UserClass).from_id(user_class_id)
     if user_class:
         return flask.jsonify(user_class)
     raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_id}')
@@ -213,7 +213,7 @@ def create_user_class(name, secondary, permissions):
     return flask.jsonify(user_class)
 
 
-@bp.route('/user_classes/<user_class_id>', methods=['DELETE'])
+@bp.route('/user_classes/<int:user_class_id>', methods=['DELETE'])
 @require_permission('modify_user_classes')
 def delete_user_class(user_class_id):
     """
@@ -260,12 +260,11 @@ def delete_user_class(user_class_id):
     request_args = flask.request.args.to_dict()
     secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
 
-    user_class = (SecondaryClass if secondary else UserClass).from_name(user_class_id)
+    user_class = (SecondaryClass if secondary else UserClass).from_id(user_class_id)
     if not user_class:
         raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_id}')
     if db.session.query(User.id).filter(
-            func.lower(User.user_class) == user_class_id.lower()
-            ).limit(1).first():
+            User.user_class_id == user_class_id).limit(1).first():
         raise APIException(
             'You cannot delete a user class while users are assigned to it.')
 

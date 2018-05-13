@@ -52,7 +52,7 @@ def val_invite_code(code):
     if code is not None and not isinstance(code, str):
         raise Invalid('code must be a string')
 
-    invite = Invite.from_code(code)
+    invite = Invite.from_id(code)
     if invite and not invite.invitee_id:
         time_since_usage = datetime.utcnow().replace(tzinfo=pytz.utc) - invite.time_sent
         if time_since_usage.total_seconds() < app.config['INVITE_LIFETIME']:

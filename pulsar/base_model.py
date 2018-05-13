@@ -150,7 +150,7 @@ class PulsarModel(Model):
                 else:
                     models.append(model)
                     num_models += 1
-                    if limit and num_models > limit:
+                    if limit and num_models >= limit:
                         break
         return models
 

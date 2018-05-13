@@ -5,18 +5,6 @@ from conftest import CODE_1, CODE_2, CODE_3, check_json_response
 from pulsar import db
 
 
-@pytest.fixture(autouse=True)
-def populate_db(client):
-    db.engine.execute(
-        f"""INSERT INTO invites (inviter_id, email, code, time_sent, active) VALUES
-        (1, 'bright@puls.ar', '{CODE_1}', NOW(), 't'),
-        (1, 'bitsu@puls.ar', '{CODE_2}', NOW(), 'f'),
-        (1, 'bright@quas.ar', '{CODE_3}', '2018-03-25 01:09:35.260808+00', 't')
-        """)
-    yield
-    db.engine.execute("DELETE FROM invites")
-
-
 @pytest.mark.parametrize(
     'code, status_code, expected', [
         (CODE_1, 200, {'username': 'bright'}),

@@ -10,17 +10,17 @@
 
 # Issues
 - [ ] Do integer voluptuous validators prevent overflow?
-- [ ] Move dummy data for existing module tests into a module-level conftest
 - [ ] A lot of documentation about model abstractions and column names / types
 - [ ] Add test for expired session / revoked API Key auth
+- [ ] User classes need unique lowercase constraints
+- [ ] Abstract 404 exceptions to model queries
+
 
 # TODO
 
 ## General
 - [x] Form validation with voluptuous
 - [x] Permissioned Serialization
-- [ ] Write test that iterates over all models and validates
-their dunder attributes
 
 ## Users
 - [x] Administration Functions

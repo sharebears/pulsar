@@ -203,7 +203,7 @@ class ForumThread(db.Model):
             return self._posts
         return ForumPost.from_thread(self.id, 1, limit=50)
 
-    def set_posts(self, page, limit=50, include_dead=False):
+    def set_posts(self, page=1, limit=50, include_dead=False):
         self._posts = ForumPost.from_thread(self.id, page, limit, include_dead)
 
 

@@ -125,15 +125,15 @@ def set_user(app_, user):
 
 def populate_db():
     "Populate the database with test user information."
-    db.engine.execute("""INSERT INTO user_classes VALUES ('User')""")
-    db.engine.execute("""INSERT INTO secondary_classes VALUES ('FLS')""")
+    db.engine.execute("""INSERT INTO user_classes (name) VALUES ('User')""")
+    db.engine.execute("""INSERT INTO secondary_classes (name) VALUES ('FLS')""")
     db.engine.execute(
-        f"""INSERT INTO users (username, passhash, email, invites, inviter_id) VALUES
-        ('lights', '{HASHED_PASSWORD_1}', 'lights@puls.ar', 1, NULL),
-        ('paffu', '{HASHED_PASSWORD_2}', 'paffu@puls.ar', 0, 1),
-        ('bitsu', '{HASHED_PASSWORD_3}', 'bitsu@puls.ar', 0, NULL)
+        f"""INSERT INTO users (username, passhash, email, invites, inviter_id, user_class_id) VALUES
+        ('lights', '{HASHED_PASSWORD_1}', 'lights@puls.ar', 1, NULL, 1),
+        ('paffu', '{HASHED_PASSWORD_2}', 'paffu@puls.ar', 0, 1, 1),
+        ('bitsu', '{HASHED_PASSWORD_3}', 'bitsu@puls.ar', 0, NULL, 1)
         """)
-    db.engine.execute("""INSERT INTO secondary_class_assoc VALUES (1, 'FLS')""")
+    db.engine.execute("""INSERT INTO secondary_class_assoc VALUES (1, 1)""")
 
 
 def unpopulate_db():
@@ -141,7 +141,11 @@ def unpopulate_db():
     db.engine.execute("DELETE FROM secondary_class_assoc")
     db.engine.execute("DELETE FROM users_permissions")
     db.engine.execute("DELETE FROM sessions")
+    db.engine.execute("DELETE FROM api_keys")
+    db.engine.execute("DELETE FROM invites")
     db.engine.execute("DELETE FROM users")
     db.engine.execute("DELETE FROM user_classes")
     db.engine.execute("DELETE FROM secondary_classes")
     db.engine.execute("ALTER SEQUENCE users_id_seq RESTART WITH 1")
+    db.engine.execute("ALTER SEQUENCE user_classes_id_seq RESTART WITH 1")
+    db.engine.execute("ALTER SEQUENCE secondary_classes_id_seq RESTART WITH 1")

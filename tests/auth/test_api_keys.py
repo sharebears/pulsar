@@ -1,8 +1,7 @@
 import json
 import flask
 import pytest
-from conftest import (CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2,
-                      HASHED_CODE_3, add_permissions, check_json_response)
+from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
 from pulsar import db, cache
 from pulsar.models import APIKey
 from pulsar.utils import require_permission
@@ -12,27 +11,8 @@ def hex_generator(_):
     return next(HEXES)
 
 
-@pytest.fixture(autouse=True)
-def populate_db(client):
-    db.engine.execute(
-        f"""INSERT INTO api_keys (user_id, id, keyhashsalt, active, permissions) VALUES
-        (1, 'abcdefghij', '{HASHED_CODE_1}', 't',
-         '{{"sample_permission", "sample_2_permission", "sample_3_permission"}}'),
-        (1, 'bcdefghijk', '{HASHED_CODE_3}', 't', '{{}}'),
-        (2, '1234567890', '{HASHED_CODE_2}', 'f', '{{}}')
-        """)
-    db.engine.execute(
-        """INSERT INTO users_permissions (user_id, permission) VALUES
-        (1, 'sample_permission'),
-        (1, 'sample_perm_one'),
-        (1, 'sample_perm_two')
-        """)
-    yield
-    db.engine.execute("DELETE FROM api_keys")
-
-
 def test_new_key(app, client):
-    raw_key, api_key = APIKey.generate_key(2, '127.0.0.2', 'UA')
+    raw_key, api_key = APIKey.new(2, '127.0.0.2', 'UA')
     assert len(raw_key) == 26
     assert api_key.ip == '127.0.0.2'
     assert api_key.user_id == 2
@@ -44,7 +24,7 @@ def test_api_key_collision(app, client, monkeypatch):
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16]])
     monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
 
-    raw_key, api_key = APIKey.generate_key(2, '127.0.0.2', 'UA')
+    raw_key, api_key = APIKey.new(2, '127.0.0.2', 'UA')
     assert len(raw_key) == 26
     assert api_key.id != CODE_2[:10]
     with pytest.raises(StopIteration):
@@ -68,7 +48,7 @@ def test_api_key_revoke_all(app, client):
     APIKey.revoke_all_of_user(1)
     db.session.commit()
     api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert not api_key.active
+    assert api_key.revoked
 
 
 def test_api_key_revoke_all_cache(client):
@@ -78,7 +58,7 @@ def test_api_key_revoke_all_cache(client):
     APIKey.revoke_all_of_user(1)
     db.session.commit()
     api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert api_key.active is False
+    assert api_key.revoked is True
     assert cache.ttl(cache_key) > 61
 
 
@@ -106,7 +86,7 @@ def test_view_all_api_keys_schema_failure(input_):
 
 @pytest.mark.parametrize(
     'key, expected', [
-        ('abcdefghij', {'id': 'abcdefghij', 'active': True}),
+        ('abcdefghij', {'id': 'abcdefghij', 'revoked': False}),
         ('1234567890', 'API Key 1234567890 does not exist.'),
         ('notrealkey', 'API Key notrealkey does not exist.'),
     ])
@@ -119,7 +99,7 @@ def test_view_api_key(app, authed_client, key, expected):
 def test_view_api_key_other(app, authed_client):
     add_permissions(app, 'view_api_keys', 'view_api_keys_others')
     response = authed_client.get(f'/api_keys/1234567890')
-    check_json_response(response, {'id': '1234567890', 'active': False})
+    check_json_response(response, {'id': '1234567890', 'revoked': True})
 
 
 def test_view_api_key_cached(app, authed_client):
@@ -128,7 +108,7 @@ def test_view_api_key_cached(app, authed_client):
     cache_key = cache.cache_model(api_key, timeout=60)
 
     response = authed_client.get(f'/api_keys/1234567890')
-    check_json_response(response, {'id': '1234567890', 'active': False})
+    check_json_response(response, {'id': '1234567890', 'revoked': True})
     assert cache.ttl(cache_key) < 61
 
 

@@ -12,19 +12,19 @@ def hex_generator(_):
 @pytest.fixture(autouse=True)
 def populate_db(client):
     db.engine.execute(
-        f"""INSERT INTO invites (inviter_id, invitee_id, email, code, active) VALUES
-        (1, NULL, 'bright@puls.ar', '{CODE_1}', 't'),
-        (1, 2, 'bright@quas.ar', '{CODE_2}', 'f'),
-        (2, NULL, 'bright@puls.ar', '{CODE_3}', 't')
+        f"""INSERT INTO invites (inviter_id, invitee_id, email, id, expired) VALUES
+        (1, NULL, 'bright@puls.ar', '{CODE_1}', 'f'),
+        (1, 2, 'bright@quas.ar', '{CODE_2}', 't'),
+        (2, NULL, 'bright@puls.ar', '{CODE_3}', 'f')
          """)
     yield
     db.engine.execute("DELETE FROM invites")
 
 
 def test_view_cache(app, client):
-    invite = Invite.from_code(CODE_1)
+    invite = Invite.from_id(CODE_1)
     cache.cache_model(invite, timeout=60)
-    invite = invite.from_code(CODE_1)
+    invite = invite.from_id(CODE_1)
     assert invite.inviter_id == 1
     assert invite.email == 'bright@puls.ar'
 
@@ -34,7 +34,7 @@ def test_view_cache_from_inviter(app, client):
     cache.set(cache_key, [CODE_3], timeout=60)
     invites = Invite.from_inviter(1)
     assert len(invites) == 1
-    assert invites[0].code == CODE_3
+    assert invites[0].id == CODE_3
     assert cache.ttl(cache_key) < 61
 
 
@@ -44,7 +44,7 @@ def test_invite_collision(app, monkeypatch):
     monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     with app.app_context():
         invite = Invite.generate_invite(2, 'bitsu@puls.ar', '127.0.0.2')
-        assert invite.code != CODE_1
+        assert invite.id != CODE_1
         with pytest.raises(StopIteration):
             hex_generator(None)
 
@@ -52,14 +52,14 @@ def test_invite_collision(app, monkeypatch):
 @pytest.mark.parametrize(
     'code, expected', [
         (CODE_1, {
-            'active': True,
-            'code': CODE_1,
+            'expired': False,
+            'id': CODE_1,
             'email': 'bright@puls.ar',
             'invitee': None,
             }),
         (CODE_2, {
-            'active': False,
-            'code': CODE_2,
+            'expired': True,
+            'id': CODE_2,
             'email': 'bright@quas.ar',
             }),
         ('abcdef', 'Invite abcdef does not exist.')
@@ -84,8 +84,8 @@ def test_view_invites(app, authed_client):
     add_permissions(app, 'view_invites')
     response = authed_client.get('/invites')
     check_json_response(response, {
-        'active': True,
-        'code': CODE_1,
+        'expired': False,
+        'id': CODE_1,
         'email': 'bright@puls.ar',
         'invitee': None,
         }, list_=True)
@@ -104,8 +104,8 @@ def test_view_invites_used(app, authed_client):
     add_permissions(app, 'view_invites')
     response = authed_client.get('/invites', query_string={'used': True})
     check_json_response(response, {
-        'active': False,
-        'code': CODE_2,
+        'expired': True,
+        'id': CODE_2,
         'email': 'bright@quas.ar',
         }, list_=True)
     assert len(response.get_json()['response']) == 1
@@ -125,7 +125,7 @@ def test_invite_user_with_code(app, authed_client):
         '/invites', data=json.dumps({'email': 'bright@puls.ar'}),
         content_type='application/json')
     check_json_response(response, {
-        'active': True,
+        'expired': False,
         'email': 'bright@puls.ar',
         'invitee': None,
         })
@@ -168,7 +168,7 @@ def test_invite_without_code(app, authed_client):
 
 @pytest.mark.parametrize(
     'code, expected, invites', [
-        (CODE_1, {'active': False}, 2),
+        (CODE_1, {'expired': True}, 2),
         (CODE_2, f'Invite {CODE_2} does not exist.', 1),
         ('abc', f'Invite abc does not exist.', 1),
     ])
@@ -178,9 +178,9 @@ def test_revoke_invite(app, authed_client, code, expected, invites):
     user = User.from_id(1)
     check_json_response(response, expected)
     assert user.invites == invites
-    if 'active' in expected and expected['active'] is False:
-        invite = Invite.from_code(code, include_dead=True)
-        assert invite.active is False
+    if 'expired' in expected and expected['expired'] is True:
+        invite = Invite.from_id(code, include_dead=True)
+        assert invite.expired is True
 
 
 @pytest.mark.parametrize(

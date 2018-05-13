@@ -12,7 +12,7 @@ class Session(db.Model):
     __cache_key_of_user__ = 'sessions_user_{user_id}'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'id', 'user_id', 'persistent', 'last_used', 'ip', 'user_agent', 'active')
+        'id', 'user_id', 'persistent', 'last_used', 'ip', 'user_agent', 'expired')
 
     __permission_detailed__ = 'view_sessions_others'
 
@@ -94,7 +94,7 @@ class APIKey(db.Model):
     __cache_key_of_user__ = 'api_keys_user_{user_id}'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'id', 'user_id', 'last_used', 'ip', 'user_agent', 'active', 'permissions')
+        'id', 'user_id', 'last_used', 'ip', 'user_agent', 'revoked', 'permissions')
 
     __permission_detailed__ = 'view_api_keys_others'
 
