@@ -1,5 +1,5 @@
 import flask
-from voluptuous import Schema, Optional
+from voluptuous import Schema, Optional, All, Length
 from . import bp
 from pulsar import _401Exception
 from pulsar.utils import validate_data
@@ -8,7 +8,7 @@ from pulsar.models import User, Session
 app = flask.current_app
 
 login_schema = Schema({
-    'username': str,
+    'username': All(str, Length(max=32)),
     'password': str,
     Optional('persistent', default=False): bool,
 }, required=True)

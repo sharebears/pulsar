@@ -1,42 +1,52 @@
 import json
 import pytest
+from sqlalchemy.exc import IntegrityError
 from conftest import check_json_response, add_permissions
-from pulsar import db, cache
+from pulsar import db, cache, APIException
 from pulsar.models import User
 
 
-def test_user_creation(app):
-    with app.app_context():
-        user = User.register(
-            username='bright',
+def test_user_creation(app, client):
+    user = User.new(
+        username='bright',
+        password='13579',
+        email='bright@puls.ar')
+    assert isinstance(user.id, int) and user.id > 1
+
+
+def test_user_creation_dupe_username(app, client):
+    with pytest.raises(APIException):
+        User.new(
+            username='ligHts',
             password='13579',
             email='bright@puls.ar')
-        db.session.add(user)
-        db.session.commit()
-        assert isinstance(user.id, int) and user.id > 1
 
 
-def test_user_obj(app):
-    with app.app_context():
-        user_id = User.from_id(1)
-        user_name = User.from_username('lights')
-        assert repr(user_id) == f'<User 1>'
-        assert user_id == user_name
+def test_user_creation_dupe_username_database(app, client):
+    with pytest.raises(IntegrityError):
+        db.session.execute(
+            """INSERT INTO users (username, passhash, email) VALUES
+            ('LiGhTs', '13579', 'bright@puls.ar')""")
 
 
-def test_user_passwords(app):
-    with app.app_context():
-        user = User.from_id(1)
-        user.set_password('secure password')
-        assert user.check_password('secure password')
+def test_user_obj(app, client):
+    user_id = User.from_id(1)
+    user_name = User.from_username('lights')
+    assert repr(user_id) == f'<User 1>'
+    assert user_id == user_name
 
 
-def test_user_has_permission(app):
-    with app.app_context():
-        add_permissions(app, 'sample_permission')
-        user = User.from_id(1)
-        assert user.has_permission('sample_permission')
-        assert not user.has_permission('nonexistent_permission')
+def test_user_passwords(app, client):
+    user = User.from_id(1)
+    user.set_password('secure password')
+    assert user.check_password('secure password')
+
+
+def test_user_has_permission(app, client):
+    add_permissions(app, 'sample_permission')
+    user = User.from_id(1)
+    assert user.has_permission('sample_permission')
+    assert not user.has_permission('nonexistent_permission')
 
 
 def test_get_user_self_and_caches(app, authed_client):
@@ -98,7 +108,7 @@ def test_get_user_detailed(app, authed_client):
 def test_user_does_not_exist(app, authed_client):
     add_permissions(app, 'view_users')
     response = authed_client.get('/users/4')
-    check_json_response(response, 'User does not exist.', strict=True)
+    check_json_response(response, 'User 4 does not exist.', strict=True)
     assert response.status_code == 404
 
 

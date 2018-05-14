@@ -1,11 +1,18 @@
 import json
 import pytest
-from voluptuous import Invalid, MultipleInvalid
+from voluptuous import MultipleInvalid
 from conftest import check_json_response, add_permissions
 from pulsar import db
 from pulsar.models import User
-from pulsar.users.validators import ration_bytes
 from pulsar.users.moderate import moderate_user_schema
+
+
+def test_int_overflow(app, authed_client):
+    add_permissions(app, 'moderate_users')
+    response = authed_client.put('/users/1/moderate', data=json.dumps({
+        'invites': 99999999999999999999999999,
+        }))
+    check_json_response(response, 'Invalid data: value must be at most 2147483648 (key "invites")')
 
 
 def test_locked_acc_perms_blocked(app, client):
@@ -31,26 +38,10 @@ def test_locked_acc_perms_can_access(app, client):
 
 
 @pytest.mark.parametrize(
-    'bytes_', [0, 9999999929313993]
-    )
-def test_ration_bytes_validator(bytes_):
-    assert bytes_ == ration_bytes(bytes_)
-
-
-@pytest.mark.parametrize(
-    'bytes_', ['0', 1234567890123456789012]
-    )
-def test_ration_bytes_validator_fail(bytes_):
-    with pytest.raises(Invalid) as e:
-        ration_bytes(bytes_)
-    assert str(e.value) == 'number must be a valid <20 digit bytes count'
-
-
-@pytest.mark.parametrize(
     'schema', [
         {'email': 'new@ema.il'},
         {'email': 'new@ema.il', 'password': 'abcdefGHIfJK12#'},
-        {'downloaded': 123123123},
+        {'downloaded': 123123123, 'invites': 104392},
     ])
 def test_moderate_user_schema(schema):
     assert schema == moderate_user_schema(schema)
@@ -76,6 +67,7 @@ def test_moderate_user(app, authed_client):
         'email': 'new@ema.il',
         'uploaded': 999,
         'downloaded': 998,
+        'invites': 100,
         }))
     check_json_response(response, {
         'id': 2,

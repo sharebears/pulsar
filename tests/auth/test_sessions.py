@@ -139,13 +139,13 @@ def test_view_empty_sessions(app, authed_client):
     ])
 def test_expire_session(app, authed_client, identifier, message):
     add_permissions(app, 'expire_sessions', 'expire_sessions_others')
-    response = authed_client.delete('/sessions', data=json.dumps({'identifier': identifier}))
+    response = authed_client.delete('/sessions', data=json.dumps({'id': identifier}))
     check_json_response(response, message)
 
 
 def test_expire_session_not_mine(app, authed_client):
     add_permissions(app, 'expire_sessions')
-    response = authed_client.delete('/sessions', data=json.dumps({'identifier': '1234567890'}))
+    response = authed_client.delete('/sessions', data=json.dumps({'id': '1234567890'}))
     check_json_response(response, 'Session 1234567890 does not exist.')
 
 

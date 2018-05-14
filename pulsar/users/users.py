@@ -1,6 +1,5 @@
 import flask
 from . import bp
-from pulsar import _404Exception
 from pulsar.models import User
 from pulsar.utils import require_permission
 
@@ -50,7 +49,4 @@ def get_user(user_id):
     :statuscode 200: User exists
     :statuscode 404: User does not exist
     """
-    user = User.from_id(user_id)
-    if not user:
-        raise _404Exception('User')
-    return flask.jsonify(user)
+    return flask.jsonify(User.from_id(user_id, _404='User'))

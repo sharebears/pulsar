@@ -1,5 +1,5 @@
 import flask
-from voluptuous import Schema, Optional, Any, All, Length
+from voluptuous import Schema, Optional, Any, All, Length, Range
 from . import bp
 from pulsar.models import ForumCategory
 from pulsar.utils import require_permission, validate_data
@@ -53,8 +53,8 @@ def view_categories():
 
 add_forum_category_schema = Schema({
     'name': All(str, Length(max=32)),
-    Optional('description', default=None): Any(str, None),
-    Optional('position', default=0): int,
+    Optional('description', default=None): Any(All(str, Length(max=1024), None)),
+    Optional('position', default=0): All(int, Range(min=0, max=99999)),
     }, required=True)
 
 

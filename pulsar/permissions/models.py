@@ -1,6 +1,8 @@
 from sqlalchemy import func, and_
+from sqlalchemy.sql import select
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.dialects.postgresql import ARRAY
-from pulsar import db
+from pulsar import db, APIException
 
 
 class UserPermission(db.Model):
@@ -45,13 +47,29 @@ class UserClass(db.Model):
     __permission_detailed__ = 'modify_user_classes'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(24), nullable=False, unique=True)
+    name = db.Column(db.String(24), nullable=False)
     permissions = db.Column(ARRAY(db.String(32)))
+
+    @declared_attr
+    def __table_args__(cls):
+        return (db.Index('ix_user_classes_name', func.lower(cls.name), unique=True), )
 
     @classmethod
     def from_name(cls, name):
         name = name.lower()
         return cls.query.filter(func.lower(cls.name) == name).first()
+
+    def has_users(self):
+        from pulsar.models import User
+        return User.query.filter(User.user_class_id == self.id).limit(1).first()
+
+    @classmethod
+    def new(cls, name, permissions=None):
+        if cls.from_name(name):
+            raise APIException(f'Another user class already has the name {name}.')
+        return super().new(
+            name=name,
+            permissions=permissions)
 
     @classmethod
     def get_all(cls):
@@ -61,7 +79,7 @@ class UserClass(db.Model):
 secondary_class_assoc_table = db.Table(
     'secondary_class_assoc', db.metadata,
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('secondary_user_class', db.Integer, db.ForeignKey('secondary_classes.id'),
+    db.Column('secondary_class_id', db.Integer, db.ForeignKey('secondary_classes.id'),
               nullable=False))
 
 
@@ -69,7 +87,7 @@ class SecondaryClass(db.Model):
     __tablename__ = 'secondary_classes'
     __cache_key__ = 'secondary_class_{id}'
     __cache_key_all__ = 'secondary_classes'
-    __cache_key_users__ = 'secondary_class_{id}_users'
+    __cache_key_of_user__ = 'secondary_classes_users_{id}'
 
     __serialize__ = ('id', 'name', )
     __serialize_detailed__ = ('permissions', )
@@ -77,13 +95,38 @@ class SecondaryClass(db.Model):
     __permission_detailed__ = 'modify_user_classes'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(24), nullable=False, unique=True)
+    name = db.Column(db.String(24), nullable=False)
     permissions = db.Column(ARRAY(db.String(32)))
+
+    @declared_attr
+    def __table_args__(cls):
+        return (db.Index('ix_secondary_classes_name', func.lower(cls.name), unique=True), )
 
     @classmethod
     def from_name(cls, name):
         name = name.lower()
         return cls.query.filter(func.lower(cls.name) == name).first()
+
+    @classmethod
+    def from_user(cls, user_id):
+        return cls.get_many(
+            key=cls.__cache_key_of_user__.format(id=user_id),
+            expr_override=select(
+                [secondary_class_assoc_table.c.secondary_class_id]).where(
+                    secondary_class_assoc_table.c.user_id == user_id))
+
+    def has_users(self):
+        return db.session.execute(
+            select([secondary_class_assoc_table.c.user_id]).where(
+               secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1))
+
+    @classmethod
+    def new(cls, name, permissions=None):
+        if cls.from_name(name):
+            raise APIException(f'Another secondary class already has the name {name}.')
+        return super().new(
+            name=name,
+            permissions=permissions)
 
     @classmethod
     def get_all(cls):

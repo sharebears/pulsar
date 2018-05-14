@@ -1,15 +1,17 @@
+import flask
 from flask_sqlalchemy import Model
 from sqlalchemy import func
 from sqlalchemy.orm.session import make_transient_to_detached
 
 
-class PulsarModel(Model):
+class BaseModel(Model):
     """
     This is a custom model for the pulsar project, which adds caching
     and JSON serialization methods to the base model. Subclasses are
     expected to define their serializable attributes, permission restrictions,
     and cache key template with the following class attributes. They are required
-    if one wants to cache or serialize data for a model.
+    if one wants to cache or serialize data for a model. By default, all "serialize"
+    tuples are empty, so only the populated ones need to be defined.
 
     * ``__cache_key__`` (``str``)
     * ``__serialize__`` (``tuple``)
@@ -34,7 +36,14 @@ class PulsarModel(Model):
     or in a ``list``. When nested models are serialized, all attributes listed in
     ``__serialize_nested_exclude__`` will be excluded, while all attributes in
     ``__serialize_nested_include__`` will be included.
+
+    Due to how models are cached, writing out the logic to obtain from cache and,
+    if the model wasn't cached, execute a query for every model is tedious and repetitive.
+    Generalized functions to abstract those are included in this class, and are
+    expected to be utilized wherever possible.
     """
+
+    # Default values
 
     __cache_key__ = None
 
@@ -50,20 +59,38 @@ class PulsarModel(Model):
 
     @property
     def cache_key(self):
-        """Default property for cache key, override if not formatted by ID."""
+        """
+        Default property for cache key which should be overridden if the
+        cache key is not formatted with an ID column. If the cache key
+        string for the model only takes an {id} param, then this function
+        will suffice.
+
+        :return: A ``str`` cache key representing the model
+        """
         return self.__cache_key__.format(id=self.id)
 
     @classmethod
-    def from_id(cls, id, *, include_dead=False):
+    def from_id(cls, id, *, include_dead=False, _404=False, asrt=False):
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
-        ``include_dead`` kwarg against it.
+        ``include_dead`` kwarg against it. This function first attempts to load
+        an object from the cache by formatting its ``__cache_key__`` with the
+        ID parameter, and executes a query if the object isn't cached.
+        Can optionally raise a ``_404Exception`` if the object is not queried.
 
         :param int id: The primary key ID of the object to query for.
+        :param bool include_dead: Whether or not to return deleted/revoked/expired objects
+        :param _404: Whether or not to raise a _404Exception with the value of _404 and
+            the given ID as the resource name if a model is not found
+        :param asrt: Whether or not to check for ownership of the model or a permission,
+            otherwise raising a ``_404Exception``
 
-        :return: A ``PulsarModel`` model or ``None``.
+        :return: A ``BaseModel`` model or ``None``
+        :raises _404Exception: If ``_404`` is passed and a model is not found, or
+            ``asrt`` and ``_404`` are passed and the permission checks fail
         """
+        from pulsar import _404Exception
         model = cls.from_cache(
             key=cls.__cache_key__.format(id=id),
             query=cls.query.filter(cls.id == id))
@@ -72,18 +99,25 @@ class PulsarModel(Model):
                     getattr(model, 'deleted', False)
                     or getattr(model, 'revoked', False)
                     or getattr(model, 'expired', False)):
-                return model
+                if not asrt or not _404 or (
+                        model.belongs_to_user() or flask.g.user.has_permission(asrt)):
+                    return model
+        if _404:
+            raise _404Exception(f'{_404} {id}')
         return None
 
     @classmethod
-    def from_cache(cls, key, query=None):
+    def from_cache(cls, key, *, query=None):
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
         If found, the object is merged into the database session and returned.
+        Otherwise, if a query is passed, the query is ran and the result is cached and
+        returned. Model returns ``None`` if the object doesn't exist.
 
         :param str key: The cache key to get
-        :return: The uncached ``PulsarModel`` or ``None``
+
+        :return: The uncached ``BaseModel`` or ``None``
         """
         from pulsar import db, cache
         data = cache.get(key)
@@ -102,8 +136,38 @@ class PulsarModel(Model):
         return None
 
     @classmethod
+    def from_query(cls, *, key, filter=None, order=None):
+        """
+        Function to get a single object from the database (limit(1), first()).
+        Getting the object via the provided cache key will be attempted first; if
+        it does not exist, then a query will be constructed with the other
+        parameters. The resultant object (if exists) will be cached and returned.
+
+        *The queried model must have a primary key column named ``id`` and a
+        ``from_id`` classmethod constructor.*
+
+        :param str key: The cache key to check
+        :param filter: A SQLAlchemy expression to filter the query with
+        :param order: A SQLAlchemy expression to order the query by
+
+        :return: A ``BaseModel`` object of the ``model`` class, or ``None``
+        """
+        from pulsar import cache
+        cls_id = cache.get(key)
+        if not cls_id:
+            query = cls._construct_query(cls.query, filter, order)
+            model = query.limit(1).first()
+            if model:
+                if not cache.has(model.cache_key):
+                    cache.cache_model(model)
+                cache.set(key, model.id)
+                return model
+            return None
+        return cls.from_id(cls_id)
+
+    @classmethod
     def get_many(cls, *, key, filter=None, order=None, required_properties=tuple(),
-                 include_dead=False, page=None, limit=None):
+                 include_dead=False, page=None, limit=None, expr_override=None):
         """
         Abstraction function to get a list of IDs from the cache with a cache
         key, and query for those IDs if the key does not exist. If the query
@@ -125,12 +189,19 @@ class PulsarModel(Model):
         :param int page: The page number of results to return
         :param int limit: The limit of results to return, defaults to 50 if page
             is set, otherwise infinite
+        :param expr_override: If passed, this will override filter and order, and
+            be called verbatim in a ``db.session.execute`` if the cache key does not exist
+
+        :return: A ``list`` of objects belonging to the class this method was called from
         """
         from pulsar import db, cache
         ids = cache.get(key)
         if not ids:
-            query = cls._construct_query(db.session.query(cls.id), filter, order)
-            ids = [x[0] for x in query.all()]
+            if expr_override is not None:
+                ids = [x[0] for x in db.session.execute(expr_override)]
+            else:
+                query = cls._construct_query(db.session.query(cls.id), filter, order)
+                ids = [x[0] for x in query.all()]
             cache.set(key, ids)
 
         if page is not None:
@@ -154,16 +225,15 @@ class PulsarModel(Model):
 
     @classmethod
     def _valid_data(cls, data):
-        """ Check the validity of data being passed to a function by making sure that
-        all of its cacheable attributes are being loaded.
+        """
+        Validate the data returned from the cache by ensuring that it is a dictionary
+        and that the returned values match the columns of the object.
 
         :param dict data: The stored object data to validate
 
         :return: ``True`` if valid or ``False`` if invalid
         """
-        if not isinstance(data, dict):
-            return False
-        return set(data.keys()) == set(cls.__table__.columns.keys())
+        return isinstance(data, dict) and set(data.keys()) == set(cls.__table__.columns.keys())
 
     @classmethod
     def new(cls, **kwargs):
@@ -179,36 +249,6 @@ class PulsarModel(Model):
         db.session.commit()
         cache.cache_model(model)
         return model
-
-    def get_one(self, *, key, model, filter=None, order=None):
-        """
-        Function to get a single object from the database (limit(1), first()).
-        Getting the object via the provided cache key will be attempted first; if
-        it does not exist, then a query will be constructed with the other
-        parameters. The resultant object (if exists) will be cached and returned.
-
-        *The queried model must have a primary key column named ``id`` and a
-        ``from_id`` classmethod constructor.*
-
-        :param str key: The cache key to check
-        :param PulsarModel model: The model to query
-        :param filter: A SQLAlchemy expression to filter the query with
-        :param order: A SQLAlchemy expression to order the query by
-
-        :return: A ``PulsarModel`` object of the ``model`` class, or ``None``
-        """
-        from pulsar import cache
-        model_id = cache.get(key)
-        if not model_id:
-            query = self._construct_query(model.query, filter, order)
-            model = query.limit(1).first()
-            if model:
-                if not cache.has(model.cache_key):
-                    cache.cache_model(model)
-                cache.set(key, model.id)
-                return model
-            return None
-        return model.from_id(model_id)
 
     def count(self, *, key, attribute, filter=None):
         """
@@ -239,7 +279,7 @@ class PulsarModel(Model):
         return False
 
     def clear_cache(self):
-        """Clear the cache key for this instance of a model."""
+        """Clear the cache key for this model instance."""
         from pulsar import cache
         cache.delete(self.cache_key)
 
@@ -250,6 +290,7 @@ class PulsarModel(Model):
         Takes filters and orders and applies them to the query if they are present,
         returning a query ready to be ran.
 
+        :param BaseQuery query: A query that can be built upon
         :param filter: A SQLAlchemy query filter expression
         :param order: A SQLAlchemy query order_by expression
 

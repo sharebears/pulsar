@@ -1,5 +1,5 @@
 import flask
-from voluptuous import Schema, Optional
+from voluptuous import Schema, Optional, All, Length
 from . import bp
 from pulsar import db, APIException, _404Exception
 from pulsar.models import APIKey
@@ -60,12 +60,8 @@ def view_api_key(id):
     :statuscode 200: Successfully viewed API key.
     :statuscode 404: API key does not exist.
     """
-    api_key = APIKey.from_id(id, include_dead=True)
-    if api_key:
-        is_own_key = api_key.user_id == flask.g.user.id
-        if is_own_key or flask.g.user.has_permission('view_api_keys_others'):
-            return flask.jsonify(api_key)
-    raise _404Exception(f'API Key {id}')
+    return flask.jsonify(APIKey.from_id(
+        id, include_dead=True, _404='API Key', asrt='view_api_keys_others'))
 
 
 view_all_api_keys_schema = Schema({
@@ -202,14 +198,14 @@ def create_api_key(permissions):
 
 
 revoke_api_key_schema = Schema({
-    'identifier': str,
+    'id': All(str, Length(min=10, max=10)),
     }, required=True)
 
 
 @bp.route('/api_keys', methods=['DELETE'])
 @require_permission('revoke_api_keys')
 @validate_data(revoke_api_key_schema)
-def revoke_api_key(identifier):
+def revoke_api_key(id):
     """
     Revokes an API key currently in use by the user. Requires the
     ``revoke_api_keys`` permission to revoke one's own API keys, and the
@@ -227,7 +223,7 @@ def revoke_api_key(identifier):
        Content-Type: application/json
 
        {
-         "identifier": "abcdefghij"
+         "id": "abcdefghij"
        }
 
     **Example response**:
@@ -243,7 +239,9 @@ def revoke_api_key(identifier):
          "response": "API Key abcdefghij has been revoked."
        }
 
-    :>jsonarr string id: The identification id of the API key
+    :<json str id: The ID of the API key
+
+    :>jsonarr string id: The ID of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
@@ -252,16 +250,13 @@ def revoke_api_key(identifier):
     :statuscode 404: API key does not exist or user does not have permission
         to revoke the API key
     """
-    api_key = APIKey.from_id(identifier, include_dead=True)
-    if api_key:
-        is_own_key = (api_key.user_id == flask.g.user.id)
-        if is_own_key or flask.g.user.has_permission('revoke_api_keys_others'):
-            if api_key.revoked:
-                raise APIException(f'API Key {identifier} is already revoked.')
-            api_key.revoked = True
-            db.session.commit()
-            return flask.jsonify(f'API Key {identifier} has been revoked.')
-    raise _404Exception(f'API Key {identifier}')
+    api_key = APIKey.from_id(
+        id, include_dead=True, _404='API Key', asrt='revoke_api_keys_others')
+    if api_key.revoked:
+        raise APIException(f'API Key {id} is already revoked.')
+    api_key.revoked = True
+    db.session.commit()
+    return flask.jsonify(f'API Key {id} has been revoked.')
 
 
 @bp.route('/api_keys/all', methods=['DELETE'])

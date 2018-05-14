@@ -1,11 +1,11 @@
 import flask
-from voluptuous import Schema, Email
+from voluptuous import Schema, Email, All, Range
 from voluptuous.validators import Match
 from . import bp
-from pulsar import db, _404Exception
+from pulsar import db
 from pulsar.models import User
-from pulsar.validators import ration_bytes
-from pulsar.utils import PASSWORD_REGEX, validate_data, require_permission
+from pulsar.utils import validate_data, require_permission
+from pulsar.validators import PASSWORD_REGEX
 
 app = flask.current_app
 
@@ -14,15 +14,17 @@ moderate_user_schema = Schema({
     'password': Match(PASSWORD_REGEX, msg=(
         'Password must be 12 or more characters and contain at least 1 letter, '
         '1 number, and 1 special character,')),
-    'uploaded': ration_bytes,
-    'downloaded': ration_bytes,
+    'uploaded': All(int, Range(min=0, max=9223372036854775808)),
+    'downloaded': All(int, Range(min=0, max=9223372036854775808)),
+    'invites': All(int, Range(min=0, max=2147483648)),
     })
 
 
 @bp.route('/users/<int:user_id>/moderate', methods=['PUT'])
 @require_permission('moderate_users')
 @validate_data(moderate_user_schema)
-def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=None):
+def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=None,
+                  invites=None):
     """
     Moderate a user - change password for them, alter stats, modify basic permissions,
     etc.
@@ -67,9 +69,7 @@ def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=
     :statuscode 400: User unsuccessfully moderated
     :statuscode 403: User does not have permission to moderate some parts of user
     """
-    user = User.from_id(user_id)
-    if not user:
-        raise _404Exception(f'User {user_id}')
+    user = User.from_id(user_id, _404='User')
 
     if email:
         user.email = email
@@ -79,6 +79,8 @@ def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=
         user.uploaded = uploaded
     if downloaded:
         user.downloaded = downloaded
+    if invites:
+        user.invites = invites
 
     db.session.commit()
     user.clear_cache()

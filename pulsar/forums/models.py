@@ -106,9 +106,8 @@ class Forum(db.Model):
 
     @property
     def last_updated_thread(self):
-        return self.get_one(
+        return ForumThread.from_query(
             key=self.__cache_key_last_updated__.format(id=self.id),
-            model=ForumThread,
             filter=(ForumThread.forum_id == self.id),
             order=ForumThread.last_updated.desc())
 
@@ -147,7 +146,7 @@ class ForumThread(db.Model):
 
     @declared_attr
     def __table_args__(cls):
-        return (db.Index('idx_forums_threads_topic', func.lower(cls.topic), unique=True),)
+        return (db.Index('ix_forums_threads_topic', func.lower(cls.topic), unique=True),)
 
     @classmethod
     def from_forum(cls, forum_id, page=1, limit=50, include_dead=False):
@@ -171,9 +170,8 @@ class ForumThread(db.Model):
 
     @property
     def last_post(self):
-        return self.get_one(
+        return ForumPost.from_query(
             key=self.__cache_key_last_post__.format(id=self.id),
-            model=ForumPost,
             filter=(ForumPost.thread_id == self.id),
             order=ForumPost.id.desc())
 

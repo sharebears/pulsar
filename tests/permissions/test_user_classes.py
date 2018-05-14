@@ -1,9 +1,30 @@
 import json
 import pytest
 from voluptuous import Invalid
+from sqlalchemy.exc import IntegrityError
 from conftest import check_json_response
-from pulsar import db, cache
-from pulsar.models import User, UserClass, SecondaryClass
+from pulsar import db, cache, APIException
+from pulsar.models import UserClass, SecondaryClass
+
+
+@pytest.mark.parametrize(
+    'class_, name', [
+        (UserClass, 'UsEr'), (SecondaryClass, 'Fls')
+    ])
+def test_create_dupe_user_classes(app, client, class_, name):
+    with pytest.raises(APIException):
+        class_.new(
+            name=name,
+            permissions=None)
+
+
+@pytest.mark.parametrize(
+    'class_, name', [
+        ('user_classes', 'USeR'), ('secondary_classes', 'fLS')
+    ])
+def test_create_dupe_user_classes_database(app, client, class_, name):
+    with pytest.raises(IntegrityError):
+        db.session.execute(f"INSERT INTO {class_} (name) VALUES ('{name}')")
 
 
 def test_view_user_class(app, authed_client):
@@ -86,7 +107,7 @@ def test_create_user_class(app, authed_client):
 def test_create_user_class_duplicate(app, authed_client):
     response = authed_client.post('/user_classes', data=json.dumps({
         'name': 'user_v2', 'permissions': []})).get_json()
-    assert response['response'] == 'Another user class is already named user_v2.'
+    assert response['response'] == 'Another user class already has the name user_v2.'
 
 
 def test_create_user_class_secondary(app, authed_client):
@@ -125,14 +146,18 @@ def test_delete_secondary_with_uc_name(app, authed_client):
 
 
 def test_delete_user_class_with_user(app, authed_client):
-    user = User.from_id(2)
-    user.user_class_id = 2
-    db.session.commit()
-
-    response = authed_client.delete('/user_classes/2').get_json()
+    response = authed_client.delete('/user_classes/1').get_json()
     assert response['response'] == \
         'You cannot delete a user class while users are assigned to it.'
-    assert UserClass.from_id(2)
+    assert UserClass.from_id(1)
+
+
+def test_delete_secondary_class_with_user(app, authed_client):
+    response = authed_client.delete('/user_classes/1', query_string={
+        'secondary': True}).get_json()
+    assert response['response'] == \
+        'You cannot delete a secondary class while users are assigned to it.'
+    assert SecondaryClass.from_id(1)
 
 
 def test_modify_user_class_schema(app, authed_client):
@@ -216,9 +241,8 @@ def test_user_class_cache_get_all(app, client, class_):
 
 
 def test_user_secondary_classes_models(app, client):
-    cache.set(User.__cache_key_secondary_classes__.format(id=1), [2], timeout=60)
-    user = User.from_id(1)
-    secondary_classes = user.secondary_class_models
+    cache.set(SecondaryClass.__cache_key_of_user__.format(id=1), [2], timeout=60)
+    secondary_classes = SecondaryClass.from_user(1)
     assert len(secondary_classes) == 1
     assert secondary_classes[0].name == 'user_v2'
 

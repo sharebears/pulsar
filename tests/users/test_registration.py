@@ -58,7 +58,7 @@ def test_username_validation_fail(app, client, username):
 
 @pytest.mark.parametrize(
     'code, error', [
-        (123, 'code must be a string'),
+        (123, 'code must be a 24 character string'),
     ])
 def test_invite_code_validation_fail(app, client, code, error):
     from pulsar.users.validators import val_invite_code

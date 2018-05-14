@@ -2,14 +2,14 @@ import flask
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
 from pulsar.cache import Cache
-from pulsar.base_model import PulsarModel
+from pulsar.base_model import BaseModel
 from pulsar.serializer import JSONEncoder
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
 
 
-db = SQLAlchemy(model_class=PulsarModel)
+db = SQLAlchemy(model_class=BaseModel)
 cache = Cache()
 
 

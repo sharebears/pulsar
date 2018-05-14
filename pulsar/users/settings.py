@@ -1,17 +1,18 @@
 import flask
-from voluptuous import Schema
-from voluptuous.validators import Match
+from voluptuous import Schema, Match, All, Length
 from . import bp
 from pulsar import db, _401Exception, _403Exception
 from pulsar.models import Session
-from pulsar.utils import PASSWORD_REGEX, choose_user, validate_data, require_permission
+from pulsar.utils import choose_user, validate_data, require_permission
+from pulsar.validators import PASSWORD_REGEX
 
 app = flask.current_app
 
 settings_schema = Schema({
-    'existing_password': str,
+    # Length restrictions inaccurate for legacy databases and testing.
+    'existing_password': All(str, Length(min=4, max=512)),
     'new_password': Match(PASSWORD_REGEX, msg=(
-        'Password must be 12 or more characters and contain at least 1 letter, '
+        'Password must between 12 and 512 characters and contain at least 1 letter, '
         '1 number, and 1 special character.')),
     })
 

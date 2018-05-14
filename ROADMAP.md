@@ -9,11 +9,13 @@
 - [ ] Index
 
 # Issues
-- [ ] Do integer voluptuous validators prevent overflow?
-- [ ] A lot of documentation about model abstractions and column names / types
-- [ ] Add test for expired session / revoked API Key auth
-- [ ] User classes need unique lowercase constraints
+- [x] Add test for expired session / revoked API Key auth
+- [x] User classes need unique lowercase constraints
+- [x] Do integer voluptuous validators prevent overflow? A: Nope!
+- [ ] Documentation about model abstractions and column names / types in BaseModel
 - [ ] Abstract 404 exceptions to model queries
+- [ ] Review tests for model property serialization
+- [ ] Review tests for all schemas, create schematests file for every module?
 
 
 # TODO

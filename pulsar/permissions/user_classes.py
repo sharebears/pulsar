@@ -1,11 +1,10 @@
 import flask
 from copy import copy
-from sqlalchemy import func
-from voluptuous import Schema, Optional
+from voluptuous import Schema, Optional, All, Length
 from . import bp
-from pulsar import db, APIException, _404Exception
+from pulsar import db, APIException
 from pulsar.utils import require_permission, validate_data
-from pulsar.models import User, UserClass, SecondaryClass
+from pulsar.models import UserClass, SecondaryClass
 from pulsar.validators import permissions_list, permissions_dict, bool_get
 
 app = flask.current_app
@@ -62,10 +61,8 @@ def view_user_class(user_class_id, secondary=False):
 
     :statuscode 200: View successful
     """
-    user_class = (SecondaryClass if secondary else UserClass).from_id(user_class_id)
-    if user_class:
-        return flask.jsonify(user_class)
-    raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_id}')
+    return flask.jsonify((SecondaryClass if secondary else UserClass).from_id(
+        user_class_id, _404=f'{"Secondary" if secondary else "User"} class'))
 
 
 @bp.route('/user_classes', methods=['GET'])
@@ -130,16 +127,14 @@ def view_multiple_user_classes(secondary=False):
     :statuscode 200: View successful
     :statuscode 404: User class does not exist
     """
-    user_classes = UserClass.get_all()
-    secondary_classes = SecondaryClass.get_all()
     return flask.jsonify({
-        'user_classes': user_classes,
-        'secondary_classes': secondary_classes,
+        'user_classes': UserClass.get_all(),
+        'secondary_classes': SecondaryClass.get_all(),
         })
 
 
 create_user_class_schema = Schema({
-    'name': str,
+    'name': All(str, Length(max=24)),
     'permissions': permissions_list,
     Optional('secondary', default=False): bool_get,
     }, required=True)
@@ -203,11 +198,7 @@ def create_user_class(name, secondary, permissions):
     :statuscode 200: User class successfully created
     :statuscode 400: User class name taken or invalid permissions
     """
-    class_ = SecondaryClass if secondary else UserClass
-    if class_.from_name(name):
-        raise APIException(f'Another {"secondary" if secondary else "user"} class '
-                           f'is already named {name}.')
-    user_class = class_.new(
+    user_class = (SecondaryClass if secondary else UserClass).new(
         name=name,
         permissions=permissions)
     return flask.jsonify(user_class)
@@ -260,13 +251,11 @@ def delete_user_class(user_class_id):
     request_args = flask.request.args.to_dict()
     secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
 
-    user_class = (SecondaryClass if secondary else UserClass).from_id(user_class_id)
-    if not user_class:
-        raise _404Exception(f'{"Secondary" if secondary else "User"} class {user_class_id}')
-    if db.session.query(User.id).filter(
-            User.user_class_id == user_class_id).limit(1).first():
-        raise APIException(
-            'You cannot delete a user class while users are assigned to it.')
+    user_class = (SecondaryClass if secondary else UserClass).from_id(
+        user_class_id, _404=f'{"Secondary" if secondary else "User"} class')
+    if user_class.has_users():
+        raise APIException(f'You cannot delete a {"secondary" if secondary else "user"} '
+                           'class while users are assigned to it.')
 
     response = f'{"Secondary" if secondary else "User"} class {user_class.name} has been deleted.'
     user_class.clear_cache()
@@ -341,9 +330,9 @@ def modify_user_class(user_class_id, permissions, secondary):
     :statuscode 400: Permissions cannot be applied
     :statuscode 404: Userclass does not exist
     """
-    user_class = (SecondaryClass if secondary else UserClass).from_id(user_class_id)
-    if not user_class:
-        raise _404Exception(f'User class {user_class_id}')
+    c_name = f'{"Secondary" if secondary else "User"} class'
+    user_class = (SecondaryClass if secondary else UserClass).from_id(
+        user_class_id, _404=c_name)
 
     uc_perms = copy(user_class.permissions)
     to_add = {p for p, a in permissions.items() if a is True}
@@ -351,13 +340,11 @@ def modify_user_class(user_class_id, permissions, secondary):
 
     for perm in to_add:
         if perm in uc_perms:
-            raise APIException(f'{"Secondary" if secondary else "User"} class '
-                               f'{user_class.name} already has the permission {perm}.')
+            raise APIException(f'{c_name} {user_class.name} already has the permission {perm}.')
         uc_perms.append(perm)
     for perm in to_delete:
         if perm not in uc_perms:
-            raise APIException(f'{"Secondary" if secondary else "User"} class '
-                               f'{user_class.name} does not have the permission {perm}.')
+            raise APIException(f'{c_name} {user_class.name} does not have the permission {perm}.')
         uc_perms.remove(perm)
 
     # Permissions don't update if list reference doesn't change.

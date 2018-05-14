@@ -4,7 +4,6 @@ import flask
 from datetime import datetime
 from sqlalchemy import func
 from voluptuous import Invalid
-from pulsar.utils import USERNAME_REGEX
 from pulsar.models import User, Invite
 
 app = flask.current_app
@@ -20,6 +19,7 @@ def val_username(username):
     :raises Invalid: If the username does not meet length requirements or is
         already used by another user
     """
+    from pulsar.validators import USERNAME_REGEX
     if (not isinstance(username, str)
             or not re.match(USERNAME_REGEX, username)
             or len(username) > 32
@@ -49,8 +49,8 @@ def val_invite_code(code):
     if not app.config['REQUIRE_INVITE_CODE']:
         return None
 
-    if code is not None and not isinstance(code, str):
-        raise Invalid('code must be a string')
+    if code is not None and (not isinstance(code, str) or len(code) != 24):
+        raise Invalid('code must be a 24 character string')
 
     invite = Invite.from_id(code)
     if invite and not invite.invitee_id:
@@ -61,17 +61,3 @@ def val_invite_code(code):
     if code:
         raise Invalid(f'{code} is not a valid invite code')
     raise Invalid(f'an invite code is required for registration')
-
-
-def ration_bytes(bytes_):
-    """
-    Validate that an input is a positive integer and a valid number of bytes.
-
-    :param int bytes\\_: The input byte count
-
-    :return: The input bytes\\_ (``int``)
-    :raises Invalid: bytes\\_ is not a valid ``int`` byte count
-    """
-    if isinstance(bytes_, int) and bytes_ >= 0 and len(str(bytes_)) <= 20:
-        return bytes_
-    raise Invalid('number must be a valid <20 digit bytes count')

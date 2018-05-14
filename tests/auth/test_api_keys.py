@@ -172,13 +172,13 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     ])
 def test_revoke_api_key(app, authed_client, identifier, message):
     add_permissions(app, 'revoke_api_keys', 'revoke_api_keys_others')
-    response = authed_client.delete('/api_keys', data=json.dumps({'identifier': identifier}))
+    response = authed_client.delete('/api_keys', data=json.dumps({'id': identifier}))
     check_json_response(response, message)
 
 
 def test_revoke_api_key_not_mine(app, authed_client):
     add_permissions(app, 'revoke_api_keys')
-    response = authed_client.delete('/api_keys', data=json.dumps({'identifier': '1234567890'}))
+    response = authed_client.delete('/api_keys', data=json.dumps({'id': '1234567890'}))
     check_json_response(response, 'API Key 1234567890 does not exist.')
 
 

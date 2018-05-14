@@ -98,8 +98,8 @@ class Cache(RedisCache):
         :param Model model: The SQLAlchemy ``Model`` to cache
         :param int timeout: The number of seconds to persist the key for
         """
-        from pulsar import PulsarModel
-        if model and isinstance(model, PulsarModel):
+        from pulsar import BaseModel
+        if model and isinstance(model, BaseModel):
             data = {}
             for attr in model.__table__.columns.keys():
                 data[attr] = getattr(model, attr, None)

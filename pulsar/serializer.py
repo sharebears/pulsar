@@ -6,8 +6,8 @@ from datetime import datetime
 class JSONEncoder(JSONEncoder):
     """
     Custom JSON Encoder class to apply the _to_dict() function to
-    all PulsarModels and turn timestamps into unixtime. This encoder
-    allows ``flask.jsonify`` to receive a ``PulsarModel`` subclass
+    all BaseModels and turn timestamps into unixtime. This encoder
+    allows ``flask.jsonify`` to receive a ``BaseModel`` subclass
     as an argument, which will then be turned into a dictionary
     automatically.
     """
@@ -15,13 +15,13 @@ class JSONEncoder(JSONEncoder):
     def default(self, obj):
         """
         Overridden default method for the JSONEncoder. The JSON encoder will
-        now serialize all timestamps to POSIX time and turn PulsarModels
+        now serialize all timestamps to POSIX time and turn BaseModels
         into dictionaries.
         """
-        from pulsar import PulsarModel
+        from pulsar import BaseModel
         if isinstance(obj, datetime):
             return int(obj.timestamp())
-        elif isinstance(obj, PulsarModel):
+        elif isinstance(obj, BaseModel):
             return self._to_dict(obj)
         else:
             return super().default(obj)
@@ -29,7 +29,7 @@ class JSONEncoder(JSONEncoder):
     def _to_dict(self, model, nested=False):
         """
         Convert the model to a dictionary based on its defined serializable attributes.
-        ``PulsarModel`` objects embedded in the dictionary or lists in the dictionary
+        ``BaseModel`` objects embedded in the dictionary or lists in the dictionary
         will be replaced with the result of their ``_to_dict`` methods.
 
         :param bool detailed: Whether or not to include detailed serializable attributes
@@ -61,7 +61,7 @@ class JSONEncoder(JSONEncoder):
 
         :return: A JSON serializable ``dict``
         """
-        from pulsar import PulsarModel
+        from pulsar import BaseModel
 
         def iter_handler(value):
             if isinstance(value, dict):
@@ -72,7 +72,7 @@ class JSONEncoder(JSONEncoder):
                     if v2 is not None:
                         new_value.append(iter_handler(v2))
                 return new_value
-            elif isinstance(value, PulsarModel):
+            elif isinstance(value, BaseModel):
                 return self._to_dict(value, nested=True)
             elif isinstance(value, datetime):
                 return int(value.timestamp())

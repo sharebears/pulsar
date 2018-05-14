@@ -1,9 +1,8 @@
 import flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
-from sqlalchemy.sql import select
 from sqlalchemy.ext.declarative import declared_attr
-from pulsar import db, cache
+from pulsar import db, cache, APIException
 
 app = flask.current_app
 
@@ -12,7 +11,6 @@ class User(db.Model):
     __tablename__ = 'users'
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_{id}_permissions'
-    __cache_key_secondary_classes__ = 'users_{id}_secondary_classes'
 
     __serialize__ = ('id', 'username', 'enabled', 'user_class', 'secondary_classes',
                      'uploaded', 'downloaded')
@@ -39,8 +37,8 @@ class User(db.Model):
 
     @declared_attr
     def __table_args__(cls):
-        return (db.Index('idx_users_username', func.lower(cls.username), unique=True),
-                db.Index('idx_users_email', func.lower(cls.email)))
+        return (db.Index('ix_users_username', func.lower(cls.username), unique=True),
+                db.Index('ix_users_email', func.lower(cls.email)))
 
     @classmethod
     def from_username(cls, username):
@@ -50,11 +48,13 @@ class User(db.Model):
         return user
 
     @classmethod
-    def register(cls, username, password, email):
+    def new(cls, username, password, email):
         """
         Alternative constructor which generates a password hash and
         lowercases and strips leading and trailing spaces from the email.
         """
+        if cls.from_username(username) is not None:
+            raise APIException('That username has been taken by another user.')
         return super().new(
             username=username,
             passhash=generate_password_hash(password),
@@ -67,18 +67,9 @@ class User(db.Model):
 
     @property
     def secondary_classes(self):
-        return [sc.name for sc in self.secondary_class_models]
-
-    @property
-    def secondary_class_models(self):
-        from pulsar.models import SecondaryClass, secondary_class_assoc_table as sat
-        cache_key = self.__cache_key_secondary_classes__.format(id=self.id)
-        secondary_class_ids = cache.get(cache_key)
-        if not secondary_class_ids:
-            secondary_class_ids = [s[0] for s in db.session.execute(select(
-                    [sat.c.secondary_user_class]).where(sat.c.user_id == self.id))]
-            cache.set(cache_key, secondary_class_ids)
-        return [SecondaryClass.from_id(id) for id in secondary_class_ids]
+        from pulsar.models import SecondaryClass
+        secondary_classes = SecondaryClass.from_user(self.id)
+        return [sc.name for sc in secondary_classes]
 
     @property
     def inviter(self):
@@ -96,7 +87,7 @@ class User(db.Model):
 
     @property
     def permissions(self):
-        from pulsar.models import UserPermission
+        from pulsar.models import UserPermission, SecondaryClass
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
 
@@ -104,20 +95,15 @@ class User(db.Model):
         permissions = cache.get(cache_key)
         if not permissions:
             permissions = self.user_class.permissions or []
-
-            for secondary in self.secondary_class_models:
-                permissions += secondary.permissions or []
+            for class_ in SecondaryClass.from_user(self.id):
+                permissions += class_.permissions or []
             permissions = list(set(permissions))  # De-dupe
 
-            user_permissions = (db.session.query(
-                UserPermission.permission, UserPermission.granted)
-                .filter(UserPermission.user_id == self.id).all())
-
-            for up in user_permissions:
-                if up[1] is False and up[0] in permissions:
-                    permissions.remove(up[0])
-                if up[1] is True and up[0] not in permissions:
-                    permissions.append(up[0])
+            for perm, granted in UserPermission.from_user(self.id).items():
+                if not granted and perm in permissions:
+                    permissions.remove(perm)
+                if granted and perm not in permissions:
+                    permissions.append(perm)
 
             cache.set(cache_key, permissions)
         return permissions

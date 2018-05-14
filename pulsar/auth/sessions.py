@@ -1,7 +1,7 @@
 import flask
-from voluptuous import Schema, Optional
+from voluptuous import Schema, Optional, All, Length
 from . import bp
-from pulsar import db, APIException, _404Exception
+from pulsar import db, APIException
 from pulsar.models import Session
 from pulsar.utils import require_permission, validate_data, choose_user
 from pulsar.validators import bool_get
@@ -59,12 +59,8 @@ def view_session(id):
     :statuscode 200: Successfully viewed session
     :statuscode 404: Session does not exist
     """
-    session = Session.from_id(id, include_dead=True)
-    if session:
-        is_own_sess = session.user_id == flask.g.user.id
-        if is_own_sess or flask.g.user.has_permission('view_sessions_others'):
-            return flask.jsonify(session)
-    raise _404Exception(f'Session {id}')
+    return flask.jsonify(Session.from_id(
+        id, include_dead=True, _404='Session', asrt='view_sessions_others'))
 
 
 view_all_sessions_schema = Schema({
@@ -146,14 +142,14 @@ def view_all_sessions(include_dead, user_id=None):
 
 
 expire_sessions_schema = Schema({
-    'identifier': str,
+    'id': All(str, Length(min=10, max=10)),
     }, required=True)
 
 
 @bp.route('/sessions', methods=['DELETE'])
 @require_permission('expire_sessions')
 @validate_data(expire_sessions_schema)
-def expire_session(identifier):
+def expire_session(id):
     """
     Revoke a user's session. Requires the ``expire_sessions`` permission to expire
     one's own sessions, and the ``expire_sessions_others`` permission to expire
@@ -195,16 +191,13 @@ def expire_session(identifier):
     :statuscode 400: Session is already expired
     :statuscode 404: Session does not exist
     """
-    session = Session.from_id(identifier, include_dead=True)
-    if session:
-        is_own_key = (session.user_id == flask.g.user.id)
-        if is_own_key or flask.g.user.has_permission('expire_sessions_others'):
-            if session.expired:
-                raise APIException(f'Session {identifier} is already expired.')
-            session.expired = True
-            db.session.commit()
-            return flask.jsonify(f'Session {identifier} has been expired.')
-    raise _404Exception(f'Session {identifier}')
+    session = Session.from_id(
+        id, include_dead=True, _404='Session', asrt='expire_sessions_others')
+    if session.expired:
+        raise APIException(f'Session {id} is already expired.')
+    session.expired = True
+    db.session.commit()
+    return flask.jsonify(f'Session {id} has been expired.')
 
 
 @bp.route('/sessions/all', methods=['DELETE'])

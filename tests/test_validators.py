@@ -1,6 +1,7 @@
+import re
 import pytest
 from voluptuous import Invalid
-from pulsar.validators import bool_get
+from pulsar.validators import USERNAME_REGEX, PASSWORD_REGEX, bool_get
 
 
 @pytest.mark.parametrize(
@@ -17,3 +18,25 @@ def test_bool_get_invalid():
     for input_ in [1, 0, 'Yes', 'No', '11']:
         with pytest.raises(Invalid):
             bool_get(input_)
+
+
+@pytest.mark.parametrize(
+    'username, match', [
+        ('abc', True),
+        ('1', True),
+        ('-hello', False),
+        ('hel-lo', True),
+    ])
+def test_username_regex(username, match):
+    assert bool(re.match(USERNAME_REGEX, username)) == match
+
+
+@pytest.mark.parametrize(
+    'password, match', [
+        ('abc45678#01', False),
+        ('abcDEFgHI1342', False),
+        ('183810*7aefj!', True),
+        ('12348539#89131', False),
+    ])
+def test_password_regex(password, match):
+    assert bool(re.match(PASSWORD_REGEX, password)) == match

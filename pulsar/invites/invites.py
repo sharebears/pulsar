@@ -1,9 +1,9 @@
 import flask
 from voluptuous import Schema, Email, Optional
 from . import bp
-from pulsar import db, APIException, _404Exception
+from pulsar import db, APIException
 from pulsar.models import Invite
-from pulsar.utils import validate_data, require_permission, choose_user, assert_user
+from pulsar.utils import validate_data, require_permission, choose_user
 from pulsar.validators import bool_get
 
 app = flask.current_app
@@ -54,10 +54,8 @@ def view_invite(id):
     :statuscode 200: View successful
     :statuscode 404: Invite does not exist or user cannot view invite
     """
-    invite = Invite.from_id(id, include_dead=True)
-    if not invite or not assert_user(invite.inviter_id, 'view_invites_others'):
-        raise _404Exception(f'Invite {id}')
-    return flask.jsonify(invite)
+    return flask.jsonify(Invite.from_id(
+        id, include_dead=True, _404='Invite', asrt='view_invites_others'))
 
 
 view_invites_schema = Schema({
@@ -263,10 +261,7 @@ def revoke_invite(code):
     :statuscode 403: Unauthorized to revoke invites
     :statuscode 404: Invite does not exist or user cannot view invite
     """
-    invite = Invite.from_id(code)
-    if not invite or not assert_user(invite.inviter_id, 'revoke_invites_others'):
-        raise _404Exception(f'Invite {code}')
-
+    invite = Invite.from_id(code, _404='Invite', asrt='revoke_invites_others')
     invite.expired = True
     flask.g.user.invites += 1
     db.session.commit()

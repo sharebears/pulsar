@@ -2,9 +2,9 @@ import flask
 from voluptuous import Schema, Optional
 from voluptuous.validators import Email, Match
 from . import bp
-from pulsar.utils import PASSWORD_REGEX, validate_data
+from pulsar.utils import validate_data
 from pulsar.models import User
-from pulsar.validators import val_username, val_invite_code
+from pulsar.validators import PASSWORD_REGEX, val_username, val_invite_code
 
 app = flask.current_app
 
@@ -73,7 +73,7 @@ def register(username, password, email, code):
     :statuscode 200: registration successful
     :statuscode 400: registration unsuccessful
     """
-    user = User.register(
+    user = User.new(
         username=username,
         password=password,
         email=email)

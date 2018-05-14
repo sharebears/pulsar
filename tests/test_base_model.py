@@ -1,5 +1,5 @@
 import pytest
-from pulsar import PulsarModel
+from pulsar import BaseModel
 from pulsar.models import User
 from pulsar.utils.permissions import get_all_permissions
 
@@ -17,7 +17,7 @@ def test_all_models_permissions_are_valid():
     import pulsar.models as models
     all_permissions = get_all_permissions()
     classes = [cls for _, cls in models.__dict__.items() if
-               isinstance(cls, type) and issubclass(cls, PulsarModel)]
+               isinstance(cls, type) and issubclass(cls, BaseModel)]
     assert len(classes) > 10
     for class_ in classes:
         permissions = (class_.__permission_detailed__, class_.__permission_very_detailed__, )
@@ -28,7 +28,7 @@ def test_all_models_permissions_are_valid():
 def test_all_class_serialization_attributes_valid():
     import pulsar.models as models
     classes = [cls for _, cls in models.__dict__.items() if
-               isinstance(cls, type) and issubclass(cls, PulsarModel)]
+               isinstance(cls, type) and issubclass(cls, BaseModel)]
     for class_ in classes:
         attrs = class_.__dict__.keys()
         serializes = (

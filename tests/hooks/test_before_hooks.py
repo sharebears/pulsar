@@ -3,10 +3,10 @@ import flask
 import pytest
 from collections import namedtuple, defaultdict
 from voluptuous import Schema, Optional
-from conftest import CODE_1, add_permissions, check_json_response
+from conftest import CODE_1, CODE_2, add_permissions, check_json_response
 from pulsar import db, cache, APIException
 from pulsar.models import User, Session
-from pulsar.utils import validate_data
+from pulsar.utils import validate_data, require_permission
 
 
 def cache_num_iter(*args, **kwargs):
@@ -15,6 +15,7 @@ def cache_num_iter(*args, **kwargs):
 
 def test_user_session_auth(app, client):
     @app.route('/test_sess')
+    @require_permission('test_perm')
     def test_session():
         assert flask.g.user_session.id == 'abcdefghij'
         assert flask.g.user_session.user_agent == 'pulsar-test-client'
@@ -23,6 +24,7 @@ def test_user_session_auth(app, client):
         assert not flask.g.api_key
         return flask.jsonify('completed')
 
+    add_permissions(app, 'test_perm')
     with client.session_transaction() as sess:
         sess['user_id'] = 1
         sess['session_id'] = 'abcdefghij'
@@ -36,15 +38,15 @@ def test_user_session_auth(app, client):
 
 
 def test_session_auth_and_ip_override(app, client):
-    add_permissions(app, 'no_ip_history')
-
     @app.route('/test_sess')
+    @require_permission('no_ip_history')
     def test_session():
         assert flask.g.user_session.ip == '0.0.0.0'
         assert flask.g.user.id == 1
         assert not flask.g.api_key
         return flask.jsonify('completed')
 
+    add_permissions(app, 'no_ip_history')
     with client.session_transaction() as sess:
         sess['user_id'] = 1
         sess['session_id'] = 'abcdefghij'
@@ -63,10 +65,30 @@ def test_session_auth_and_ip_override(app, client):
         ('1', 'notarealkey'),
     ])
 def test_user_bad_session(app, client, user_id, session_id):
+    @app.route('/test_sess')
+    @require_permission('test_perm')
+    def test_session():
+        return flask.jsonify('completed')
+
+    add_permissions(app, 'test_perm')
     with client.session_transaction() as sess:
         sess['user_id'] = user_id
         sess['session_id'] = session_id
-    response = client.get('/users/1')
+    response = client.get('/test_sess')
+    check_json_response(response, 'Resource does not exist.')
+
+
+def test_user_expired_session(app, client):
+    @app.route('/test_sess')
+    @require_permission('test_perm')
+    def test_session():
+        return flask.jsonify('completed')
+
+    add_permissions('test_perm')
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['session_id'] = '1234567890'
+    response = client.get('/test_sess')
     check_json_response(response, 'Resource does not exist.')
 
 
@@ -115,6 +137,7 @@ def test_auth_updates(app, client):
         'Token abcdefghij123456789012345678901234',
         'Token 1234567',
         'TokenMalformed',
+        f'Token 1234567890{CODE_2}',
     ])
 def test_user_bad_api_key(app, client, authorization_header):
     response = client.get('/users/1', headers={
