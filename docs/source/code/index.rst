@@ -5,13 +5,12 @@ Code documentation for the pulsar project.
 .. toctree::
    :maxdepth: 2
 
-   style
-   installation
    hacking
+   style
    hooks
    models
    cache
    validators
    serialization
-   exceptions
    utils
+   exceptions

@@ -15,11 +15,12 @@ def test_user_creation(app, client):
 
 
 def test_user_creation_dupe_username(app, client):
-    with pytest.raises(APIException):
+    with pytest.raises(APIException) as e:
         User.new(
             username='ligHts',
             password='13579',
             email='bright@puls.ar')
+    assert str(e.value.message) == 'The username ligHts is already in use.'
 
 
 def test_user_creation_dupe_username_database(app, client):

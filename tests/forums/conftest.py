@@ -45,9 +45,4 @@ def populate_db(app, client):
         (3, 3, 2, 'Old typo', NOW() - INTERVAL '1 DAY'),
         (4, 3, 2, 'New typo', NOW() - INTERVAL '1 HOUR'),
         (2, 2, 1, 'Why the shit is Pizzelle in GPG?', NOW() - INTERVAL '12 HOURS')""")
-    yield
-    db.engine.execute("DELETE FROM forums_posts_edit_history")
-    db.engine.execute("DELETE FROM forums_posts")
-    db.engine.execute("DELETE FROM forums_threads")
-    db.engine.execute("DELETE FROM forums")
-    db.engine.execute("DELETE FROM forums_categories")
+    db.engine.execute("ALTER SEQUENCE forums_posts_edit_history_id_seq RESTART WITH 5")

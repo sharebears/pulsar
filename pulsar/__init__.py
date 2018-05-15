@@ -1,4 +1,5 @@
 import flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
 from pulsar.cache import Cache
@@ -11,6 +12,7 @@ from pulsar.exceptions import (  # noqa
 
 db = SQLAlchemy(model_class=BaseModel)
 cache = Cache()
+migrate = Migrate()
 
 
 def create_app(config):
@@ -21,6 +23,7 @@ def create_app(config):
     global cache
     db.init_app(app)
     cache.init_app(app)
+    migrate.init_app(app, db)
 
     with app.app_context():
         register_blueprints(app)

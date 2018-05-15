@@ -3,6 +3,7 @@
 - [x] Rate Limiting
 - [x] Caching
 - [x] Permissioned Serialization
+- [ ] Boilerplate Refactors & Typing (Issues)
 - [-] Forums
 - [ ] Rules
 - [ ] News Posts
@@ -12,10 +13,18 @@
 - [x] Add test for expired session / revoked API Key auth
 - [x] User classes need unique lowercase constraints
 - [x] Do integer voluptuous validators prevent overflow? A: Nope!
+- [x] Abstract 404 exceptions to model queries
 - [ ] Documentation about model abstractions and column names / types in BaseModel
-- [ ] Abstract 404 exceptions to model queries
+- [ ] Static typing with annotations and mypy
+- [ ] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
+- [ ] Use ``flask.request.user_agent`` and check for flask convenience attrs
+- [ ] Set up pipenv dependencies
+
+## Refactor and re-organize testing suite
+* [ ] Classify integration tests vs unit tests (request tests = integration)
 - [ ] Review tests for model property serialization
 - [ ] Review tests for all schemas, create schematests file for every module?
+- [ ] Hypothesis property tests where possible
 
 
 # TODO

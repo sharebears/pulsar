@@ -5,7 +5,7 @@ class APIException(Exception):
         self.message = message
         self.status_code = status_code
 
-    def __str__(self):
+    def __repr__(self):
         return f'<APIException (Code: {self.status_code}) [Message: {self.message}]>'
 
 

@@ -1,3 +1,5 @@
+import os
+import sys
 import flask
 import pytest
 from collections import defaultdict
@@ -23,6 +25,10 @@ HASHED_CODE_2 = ('pbkdf2:sha256:50000$CH2S6Ojr$71fdc1e523d2e6d063780392c83a'
                  '6b6accbe0ea22bfe44c271e730001181f737')
 HASHED_CODE_3 = ('pbkdf2:sha256:50000$DgIO3cu1$cdc9e2d1060c5f339e1cc7cf247d'
                  'f32f49a8f94b4de45b2e149f4c00068ece00')
+
+
+# Add root project dir to sys.path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 def check_json_response(response, expected, list_=False, strict=False):
@@ -138,6 +144,11 @@ def populate_db():
 
 def unpopulate_db():
     "Unpopulate the database with test user information."
+    db.engine.execute("DELETE FROM forums_posts_edit_history")
+    db.engine.execute("DELETE FROM forums_posts")
+    db.engine.execute("DELETE FROM forums_threads")
+    db.engine.execute("DELETE FROM forums")
+    db.engine.execute("DELETE FROM forums_categories")
     db.engine.execute("DELETE FROM secondary_class_assoc")
     db.engine.execute("DELETE FROM users_permissions")
     db.engine.execute("DELETE FROM sessions")

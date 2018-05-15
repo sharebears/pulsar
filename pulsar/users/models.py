@@ -54,7 +54,7 @@ class User(db.Model):
         lowercases and strips leading and trailing spaces from the email.
         """
         if cls.from_username(username) is not None:
-            raise APIException('That username has been taken by another user.')
+            raise APIException(f'The username {username} is already in use.')
         return super().new(
             username=username,
             passhash=generate_password_hash(password),

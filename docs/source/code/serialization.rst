@@ -1,7 +1,7 @@
-JSON Encoder
-============
+JSON Serialization
+==================
 
-.. automodule:: pulsar.json_encoder
+.. automodule:: pulsar.serializer
     :members:
     :undoc-members:
     :private-members:

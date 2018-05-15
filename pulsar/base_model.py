@@ -83,8 +83,9 @@ class BaseModel(Model):
         :param bool include_dead: Whether or not to return deleted/revoked/expired objects
         :param _404: Whether or not to raise a _404Exception with the value of _404 and
             the given ID as the resource name if a model is not found
-        :param asrt: Whether or not to check for ownership of the model or a permission,
-            otherwise raising a ``_404Exception``
+        :param asrt: Whether or not to check for ownership of the model or a permission.
+            Can be a boolean to purely check for ownership, or a permission string which
+            can override ownership and access the model anyways.
 
         :return: A ``BaseModel`` model or ``None``
         :raises _404Exception: If ``_404`` is passed and a model is not found, or
@@ -99,8 +100,7 @@ class BaseModel(Model):
                     getattr(model, 'deleted', False)
                     or getattr(model, 'revoked', False)
                     or getattr(model, 'expired', False)):
-                if not asrt or not _404 or (
-                        model.belongs_to_user() or flask.g.user.has_permission(asrt)):
+                if not asrt or model.belongs_to_user() or flask.g.user.has_permission(asrt):
                     return model
         if _404:
             raise _404Exception(f'{_404} {id}')
