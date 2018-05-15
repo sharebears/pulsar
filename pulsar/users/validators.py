@@ -4,6 +4,7 @@ import flask
 from datetime import datetime
 from sqlalchemy import func
 from voluptuous import Invalid
+from pulsar import USERNAME_REGEX
 from pulsar.models import User, Invite
 
 app = flask.current_app
@@ -19,7 +20,6 @@ def val_username(username):
     :raises Invalid: If the username does not meet length requirements or is
         already used by another user
     """
-    from pulsar.validators import USERNAME_REGEX
     if (not isinstance(username, str)
             or not re.match(USERNAME_REGEX, username)
             or len(username) > 32

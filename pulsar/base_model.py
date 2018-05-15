@@ -173,7 +173,7 @@ class BaseModel(Model):
         key, and query for those IDs if the key does not exist. If the query
         needs to be ran, a list will be created from the first element in
         every returned tuple result, like so:
-            ``[x[0] for x in cls.query.all()]``
+        ``[x[0] for x in cls.query.all()]``
 
         That list will be converted into models, using the keyword arguments to
         modify which elements are included and which aren't. Pagination is optional
@@ -184,13 +184,12 @@ class BaseModel(Model):
         :param order: A SQLAlchemy order_by expression to be applied to the query
         :param required_properties: Properties required to validate to ``True``
             for a retrieved item to be included in the returned list
-        :param bool include_dead: Whether or not to include deleted/revoked/expired
-            models
+        :param bool include_dead: Whether or not to include deleted/revoked/expired models
         :param int page: The page number of results to return
         :param int limit: The limit of results to return, defaults to 50 if page
             is set, otherwise infinite
-        :param expr_override: If passed, this will override filter and order, and
-            be called verbatim in a ``db.session.execute`` if the cache key does not exist
+        :param expr_override: If passed, this will override filter and order, and be
+            called verbatim in a ``db.session.execute`` if the cache key does not exist
 
         :return: A ``list`` of objects belonging to the class this method was called from
         """
@@ -209,7 +208,6 @@ class BaseModel(Model):
             ids = ids[(page - 1) * limit:]
 
         models = []
-        num_models = 0
         for id in ids:
             model = cls.from_id(id, include_dead=include_dead)
             if model:
@@ -218,8 +216,7 @@ class BaseModel(Model):
                         break
                 else:
                     models.append(model)
-                    num_models += 1
-                    if limit and num_models >= limit:
+                    if limit and len(models) >= limit:
                         break
         return models
 

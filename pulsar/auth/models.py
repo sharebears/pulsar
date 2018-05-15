@@ -1,5 +1,7 @@
+import pytz
 import flask
 import secrets
+from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import INET, ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -71,6 +73,18 @@ class Session(db.Model):
 
     def belongs_to_user(self):
         return flask.g.user and self.user_id == flask.g.user.id
+
+    def is_expired(self):
+        if self.expired:
+            return True
+        elif not self.persistent:
+            delta = datetime.utcnow().replace(tzinfo=pytz.utc) - self.last_used
+            if delta.total_seconds() > 60 * 30:  # 30 minutes
+                self.expired = True
+                db.session.commit()
+                self.clear_cache()
+                return True
+        return False
 
     @staticmethod
     def expire_all_of_user(user_id):

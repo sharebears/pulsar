@@ -30,5 +30,8 @@ pulsar utilizes Alembic for its DB migrations. Alembic is built to work with SQL
 and has the ability to auto-generate migration (revision) files. If you are utilizing
 Alembic's auto-generation function, please read
 `Alembic's documentation <http://alembic.zzzcomputing.com/en/latest/autogenerate.html>`_.
-**Do not automigrate changes in table or column names. You will lose data; write those
-migrations by hand.**
+
+.. warning ::
+
+   Do not auto-migrate changes in table or column names. You will lose data; write those
+   migrations by hand.

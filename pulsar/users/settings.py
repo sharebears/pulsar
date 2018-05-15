@@ -1,10 +1,9 @@
 import flask
 from voluptuous import Schema, Match, All, Length
 from . import bp
-from pulsar import db, _401Exception, _403Exception
+from pulsar import db, PASSWORD_REGEX, _401Exception, _403Exception
 from pulsar.models import Session
 from pulsar.utils import choose_user, validate_data, require_permission
-from pulsar.validators import PASSWORD_REGEX
 
 app = flask.current_app
 

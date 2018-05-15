@@ -1,7 +1,8 @@
 import re
 import pytest
 from voluptuous import Invalid
-from pulsar.validators import USERNAME_REGEX, PASSWORD_REGEX, bool_get
+from pulsar import USERNAME_REGEX, PASSWORD_REGEX
+from pulsar.validators import bool_get
 
 
 @pytest.mark.parametrize(

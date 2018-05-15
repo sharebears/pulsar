@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+alembic = "*"
+blinker = "*"
+flask = "*"
+flask-migrate = "*"
+flask-sqlalchemy = "*"
+"psycopg2-binary" = "*"
+redis = "*"
+sqlalchemy = "*"
+voluptuous = "*"
+
+[dev-packages]
+coverage = "*"
+sphinx = "*"
+mock = "*"
+pyflakes = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-flakes = "*"
+sphinxcontrib-httpdomain = "*"
+sphinx-rtd-theme = "*"
+
+[requires]
+python_version = "3.6"

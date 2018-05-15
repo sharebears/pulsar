@@ -118,7 +118,7 @@ class SecondaryClass(db.Model):
     def has_users(self):
         return db.session.execute(
             select([secondary_class_assoc_table.c.user_id]).where(
-               secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1))
+                secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1))
 
     @classmethod
     def new(cls, name, permissions=None):

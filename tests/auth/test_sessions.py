@@ -88,6 +88,17 @@ def test_session_expire_all_cached(app, client):
     assert cache.ttl(cache_key) > 61
 
 
+def test_session_is_expired(app, client):
+    db.session.execute(
+        "UPDATE sessions SET last_used = NOW() - INTERVAL '31 MINUTES', persistent = 'f'")
+    db.session.commit()
+    session = Session.from_id('abcdefghij')
+    assert not session.expired
+    assert session.is_expired()
+    session = Session.from_id('abcdefghij', include_dead=True)
+    assert session.expired
+
+
 @pytest.mark.parametrize(
     'input_', ['1', 'true', False])
 def test_view_all_sessions_schema(input_):

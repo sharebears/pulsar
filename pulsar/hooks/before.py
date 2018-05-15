@@ -45,7 +45,7 @@ def check_user_session():
     id = flask.session.get('session_id')
     if user_id and id:
         session = Session.from_id(id)  # Implied active_only
-        if session and session.user_id == user_id and not session.expired:
+        if session and session.user_id == user_id and not session.is_expired():
             flask.g.user = User.from_id(session.user_id)
             flask.g.user_session = session
             flask.g.csrf_token = session.csrf_token

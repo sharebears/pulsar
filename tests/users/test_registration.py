@@ -2,7 +2,6 @@ import json
 import pytest
 from voluptuous import Invalid
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response
-from pulsar import db
 
 
 @pytest.mark.parametrize(
