@@ -2,9 +2,8 @@ import flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
-from pulsar.cache import Cache
-from pulsar.base_model import BaseModel
-from pulsar.serializer import JSONEncoder
+from pulsar.cache import BaseModel, Cache  # type: ignore # hacky way to avoid circular imports
+from pulsar.serializer import NewJSONEncoder
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
@@ -21,7 +20,7 @@ migrate = Migrate()
 def create_app(config):
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile(config)
-    app.json_encoder = JSONEncoder
+    app.json_encoder = NewJSONEncoder
 
     global cache
     db.init_app(app)

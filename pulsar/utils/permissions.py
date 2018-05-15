@@ -1,7 +1,9 @@
-import flask
 from functools import wraps
+
+import flask
 from werkzeug import find_modules, import_string
-from pulsar import _404Exception, _403Exception
+
+from pulsar import _403Exception, _404Exception
 from pulsar.models import User
 
 app = flask.current_app

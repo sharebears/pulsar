@@ -1,11 +1,13 @@
 import re
-import pytz
-import flask
 from datetime import datetime
+
+import flask
+import pytz
 from sqlalchemy import func
 from voluptuous import Invalid
+
 from pulsar import USERNAME_REGEX
-from pulsar.models import User, Invite
+from pulsar.models import Invite, User
 
 app = flask.current_app
 
@@ -47,7 +49,7 @@ def val_invite_code(code):
     :raises Invalid: The invite code cannot be used
     """
     if not app.config['REQUIRE_INVITE_CODE']:
-        return None
+        return
 
     if code is not None and (not isinstance(code, str) or len(code) != 24):
         raise Invalid('code must be a 24 character string')

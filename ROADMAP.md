@@ -14,14 +14,13 @@
 - [x] User classes need unique lowercase constraints
 - [x] Do integer voluptuous validators prevent overflow? A: Nope!
 - [x] Abstract 404 exceptions to model queries
-- [ ] Documentation about model abstractions and column names / types in BaseModel
+- [x] Set up pipenv dependencies
 - [ ] Static typing with annotations and mypy
 - [ ] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
-- [ ] Use ``flask.request.user_agent`` and check for flask convenience attrs
-- [ ] Set up pipenv dependencies
 - [ ] Simplify ``check_permissions`` permissions/ validator complexity
 - [ ] Use pylint and set up a configuration
 - [ ] Change schema names to ALL_CAPS, exclude global app from pylint
+- [ ] Documentation about model abstractions and column names / types in BaseModel
 
 ## Refactor and re-organize testing suite
 * [ ] Classify integration tests vs unit tests (request tests = integration)

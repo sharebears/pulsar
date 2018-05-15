@@ -1,7 +1,9 @@
 import flask
-from . import bp
+
 from pulsar.models import User
 from pulsar.utils import require_permission
+
+from . import bp
 
 app = flask.current_app
 

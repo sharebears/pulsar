@@ -1,10 +1,12 @@
 import flask
-from voluptuous import Schema, Email, Optional
-from . import bp
-from pulsar import db, APIException
+from voluptuous import Email, Optional, Schema
+
+from pulsar import APIException, db
 from pulsar.models import Invite
-from pulsar.utils import validate_data, require_permission, choose_user
+from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import bool_get
+
+from . import bp
 
 app = flask.current_app
 

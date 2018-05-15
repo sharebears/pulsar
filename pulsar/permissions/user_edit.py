@@ -1,10 +1,12 @@
 import flask
-from . import bp
-from pulsar.validators import permissions_dict, check_permissions
 from voluptuous import Schema
-from pulsar import db, cache, APIException
+
+from pulsar import APIException, cache, db
 from pulsar.models import User, UserPermission
-from pulsar.utils import require_permission, get_all_permissions, validate_data
+from pulsar.utils import get_all_permissions, require_permission, validate_data
+from pulsar.validators import check_permissions, permissions_dict
+
+from . import bp
 
 app = flask.current_app
 

@@ -1,8 +1,10 @@
-import flask
 import secrets
-from sqlalchemy import func, and_
+
+import flask
+from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import INET
-from pulsar import db, cache
+
+from pulsar import cache, db
 
 
 class Invite(db.Model):

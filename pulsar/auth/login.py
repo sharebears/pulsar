@@ -1,9 +1,11 @@
 import flask
-from voluptuous import Schema, Optional, All, Length
-from . import bp
+from voluptuous import All, Length, Optional, Schema
+
 from pulsar import _401Exception
+from pulsar.models import Session, User
 from pulsar.utils import validate_data
-from pulsar.models import User, Session
+
+from . import bp
 
 app = flask.current_app
 

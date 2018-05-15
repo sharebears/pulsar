@@ -1,8 +1,9 @@
-from sqlalchemy import func, and_
-from sqlalchemy.sql import select
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import ARRAY
-from pulsar import db, APIException
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.sql import select
+
+from pulsar import APIException, db
 
 
 class UserPermission(db.Model):

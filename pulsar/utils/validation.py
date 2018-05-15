@@ -1,7 +1,9 @@
 import json
-import flask
 from functools import wraps
+
+import flask
 from voluptuous import Invalid
+
 from pulsar import APIException
 
 

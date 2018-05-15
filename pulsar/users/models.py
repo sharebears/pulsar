@@ -1,8 +1,9 @@
 import flask
-from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
-from pulsar import db, cache, APIException
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from pulsar import APIException, cache, db
 
 app = flask.current_app
 

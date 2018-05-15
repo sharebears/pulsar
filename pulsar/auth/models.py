@@ -1,11 +1,13 @@
-import pytz
-import flask
 import secrets
 from datetime import datetime
+
+import flask
+import pytz
 from sqlalchemy import func
-from sqlalchemy.dialects.postgresql import INET, ARRAY
-from werkzeug.security import generate_password_hash, check_password_hash
-from pulsar import db, cache
+from sqlalchemy.dialects.postgresql import ARRAY, INET
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from pulsar import cache, db
 
 
 class Session(db.Model):

@@ -24,6 +24,8 @@ pytest-cov = "*"
 pytest-flakes = "*"
 sphinxcontrib-httpdomain = "*"
 sphinx-rtd-theme = "*"
+mypy = "*"
+isort = "*"
 
 [requires]
 python_version = "3.6"

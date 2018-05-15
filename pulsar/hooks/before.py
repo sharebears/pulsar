@@ -1,11 +1,14 @@
 import json
-import pytz
-import flask
-from . import bp
-from datetime import datetime
 from collections import defaultdict
-from pulsar import db, cache, APIException, _403Exception, _312Exception
-from pulsar.models import User, Session, APIKey
+from datetime import datetime
+
+import flask
+import pytz
+
+from pulsar import APIException, _312Exception, _403Exception, cache, db
+from pulsar.models import APIKey, Session, User
+
+from . import bp
 
 app = flask.current_app
 
@@ -108,7 +111,7 @@ def parse_key(headers):
         parts = auth.split()
         if len(parts) == 2 and parts[0] == 'Token':
             return parts[1]
-    return None
+    return
 
 
 def check_rate_limit():

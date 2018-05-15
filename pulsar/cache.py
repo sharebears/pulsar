@@ -1,5 +1,12 @@
+from typing import Union
+
 import flask
 from werkzeug.contrib.cache import RedisCache
+
+from pulsar.base_model import BaseModel
+
+if False:
+    from redis import Redis  # noqa
 
 
 class Cache(RedisCache):
@@ -11,15 +18,18 @@ class Cache(RedisCache):
     debugging purposes.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Override the RedisCache params we don't need.
-        pass
+        self._client: 'Redis'
 
-    def init_app(self, app):
+    def init_app(self, app: flask.Flask) -> None:
         # Required flask extension method.
         super().__init__(**app.config['REDIS_PARAMS'])
 
-    def inc(self, key, delta=1, timeout=None):
+    def inc(self,
+            key: str,
+            delta: int = 1,
+            timeout: Union[int, None] = None) -> Union[int, None]:
         """
         Increment a cache key if it exists, otherwise create it
         and optionally set a timeout.
@@ -36,7 +46,7 @@ class Cache(RedisCache):
         flask.g.cache_keys['inc'].add(key)
         return value
 
-    def get(self, key):
+    def get(self, key: str) -> Union[int, str, list, dict]:
         """
         Look up key in the cache and return the value for it. Key is
         automatically lower-cased.
@@ -50,15 +60,18 @@ class Cache(RedisCache):
             flask.g.cache_keys['get'].add(key)
         return value
 
-    def set(self, key, value, timeout=None):
+    def set(self,
+            key: str,
+            value: Union[int, str, list, dict],
+            timeout: int = None) -> bool:
         """
         Add a new key/value to the cache (overwrites value,
         if key already exists in the cache). Keys are automatically
         lower-cased.
 
-        :param str key: The key to set
+        :param key: The key to set
         :param value: The value for the key
-        :param int timeout: The cache timeout for the key in seconds
+        :param timeout: The cache timeout for the key in seconds
             (if not specified, it uses the default timeout).
             A timeout of 0 indicates that the cache never expires.
 
@@ -70,11 +83,11 @@ class Cache(RedisCache):
         flask.g.cache_keys['set'].add(key)
         return super().set(key, value, timeout)
 
-    def delete(self, key):
+    def delete(self, key: str) -> bool:
         """
         Delete key from the cache.
 
-        :param str key: The key to delete
+        :param key: The key to delete
         :return: A ``bool`` for whether the key existed and has been deleted
         """
         key = key.lower()
@@ -83,7 +96,7 @@ class Cache(RedisCache):
             flask.g.cache_keys['delete'].add(key)
         return result
 
-    def ttl(self, key):
+    def ttl(self, key: str) -> int:
         """
         Return the time to live (time until expiry) for a cache key.
 
@@ -91,17 +104,21 @@ class Cache(RedisCache):
         """
         return self._client.ttl((self.key_prefix + key).lower())
 
-    def cache_model(self, model, timeout=None):
+    def cache_model(self,
+                    model: BaseModel,
+                    timeout: int = None) -> Union[str, None]:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
 
         :param Model model: The SQLAlchemy ``Model`` to cache
         :param int timeout: The number of seconds to persist the key for
+
+        :return: The cache key of the model
         """
-        from pulsar import BaseModel
         if model and isinstance(model, BaseModel):
             data = {}
             for attr in model.__table__.columns.keys():
                 data[attr] = getattr(model, attr, None)
             self.set(model.cache_key, data, timeout or self.default_timeout)
             return model.cache_key
+        return None

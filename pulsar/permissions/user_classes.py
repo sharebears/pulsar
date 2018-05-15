@@ -1,11 +1,14 @@
-import flask
 from copy import copy
-from voluptuous import Schema, Optional, All, Length
-from . import bp
-from pulsar import db, APIException
+
+import flask
+from voluptuous import All, Length, Optional, Schema
+
+from pulsar import APIException, db
+from pulsar.models import SecondaryClass, UserClass
 from pulsar.utils import require_permission, validate_data
-from pulsar.models import UserClass, SecondaryClass
-from pulsar.validators import permissions_list, permissions_dict, bool_get
+from pulsar.validators import bool_get, permissions_dict, permissions_list
+
+from . import bp
 
 app = flask.current_app
 

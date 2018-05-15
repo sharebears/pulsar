@@ -1,9 +1,10 @@
-import flask
-from flask.json import JSONEncoder
 from datetime import datetime
 
+import flask
+from flask.json import JSONEncoder
 
-class JSONEncoder(JSONEncoder):
+
+class NewJSONEncoder(JSONEncoder):
     """
     Custom JSON Encoder class to apply the _to_dict() function to
     all BaseModels and turn timestamps into unixtime. This encoder

@@ -1,10 +1,12 @@
 import flask
-from voluptuous import Schema, Email, All, Range
+from voluptuous import All, Email, Range, Schema
 from voluptuous.validators import Match
-from . import bp
-from pulsar import db, PASSWORD_REGEX
+
+from pulsar import PASSWORD_REGEX, db
 from pulsar.models import User
-from pulsar.utils import validate_data, require_permission
+from pulsar.utils import require_permission, validate_data
+
+from . import bp
 
 app = flask.current_app
 

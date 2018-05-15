@@ -1,7 +1,13 @@
+from typing import Union
+
 import flask
 from flask_sqlalchemy import Model
 from sqlalchemy import func
 from sqlalchemy.orm.session import make_transient_to_detached
+
+if False:
+    from flask import BaseQuery  # noqa
+    from sqlalchemy.sql import BinaryExpression  # noqa
 
 
 class BaseModel(Model):
@@ -45,20 +51,20 @@ class BaseModel(Model):
 
     # Default values
 
-    __cache_key__ = None
+    __cache_key__ = None  # type: str
 
-    __serialize__ = tuple()
-    __serialize_self__ = tuple()
-    __serialize_detailed__ = tuple()
-    __serialize_very_detailed__ = tuple()
-    __serialize_nested_include__ = tuple()
-    __serialize_nested_exclude__ = tuple()
+    __serialize__ = tuple()  # type: tuple
+    __serialize_self__ = tuple()  # type: tuple
+    __serialize_detailed__ = tuple()  # type: tuple
+    __serialize_very_detailed__ = tuple()  # type: tuple
+    __serialize_nested_include__ = tuple()  # type: tuple
+    __serialize_nested_exclude__ = tuple()  # type: tuple
 
-    __permission_detailed__ = None
-    __permission_very_detailed__ = None
+    __permission_detailed__ = None  # type: str
+    __permission_very_detailed__ = None  # type: str
 
     @property
-    def cache_key(self):
+    def cache_key(self) -> str:
         """
         Default property for cache key which should be overridden if the
         cache key is not formatted with an ID column. If the cache key
@@ -70,7 +76,11 @@ class BaseModel(Model):
         return self.__cache_key__.format(id=self.id)
 
     @classmethod
-    def from_id(cls, id, *, include_dead=False, _404=False, asrt=False):
+    def from_id(cls,
+                id: int, *,
+                include_dead: bool = False,
+                _404: bool = False,
+                asrt: bool = False) -> Union['BaseModel', None]:
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -107,7 +117,9 @@ class BaseModel(Model):
         return None
 
     @classmethod
-    def from_cache(cls, key, *, query=None):
+    def from_cache(cls,
+                   key: str, *,
+                   query: 'BaseQuery' = None) -> Union['BaseModel', None]:
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -116,12 +128,13 @@ class BaseModel(Model):
         returned. Model returns ``None`` if the object doesn't exist.
 
         :param str key: The cache key to get
+        :param query: The SQLAlchemy query
 
         :return: The uncached ``BaseModel`` or ``None``
         """
         from pulsar import db, cache
         data = cache.get(key)
-        if data:
+        if data and isinstance(data, dict):
             if cls._valid_data(data):
                 obj = cls(**data)
                 make_transient_to_detached(obj)
@@ -281,7 +294,9 @@ class BaseModel(Model):
         cache.delete(self.cache_key)
 
     @staticmethod
-    def _construct_query(query, filter=None, order=None):
+    def _construct_query(query: 'BaseQuery',
+                         filter: 'BinaryExpression' = None,
+                         order: 'BinaryExpression' = None) -> 'BaseQuery':
         """
         Convenience function to save code space for query generations.
         Takes filters and orders and applies them to the query if they are present,
@@ -295,6 +310,7 @@ class BaseModel(Model):
         """
         if filter is not None:
             query = query.filter(filter)
+            print(type(filter))
         if order is not None:
             query = query.order_by(order)
         return query

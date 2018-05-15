@@ -1,8 +1,10 @@
 import flask
-from voluptuous import Schema, Optional, Any, All, Length, Range
-from . import bp
+from voluptuous import All, Any, Length, Optional, Range, Schema
+
 from pulsar.models import ForumCategory
 from pulsar.utils import require_permission, validate_data
+
+from . import bp
 
 app = flask.current_app
 

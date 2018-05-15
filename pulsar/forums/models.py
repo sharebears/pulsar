@@ -1,8 +1,9 @@
 import flask
-from sqlalchemy import func, and_
-from sqlalchemy.sql import select
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import and_, func
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql import select
+
 from pulsar import db
 
 app = flask.current_app

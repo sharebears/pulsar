@@ -1,5 +1,7 @@
 import json
+
 import flask
+
 from . import bp
 
 
