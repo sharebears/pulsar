@@ -17,12 +17,12 @@
 - [x] Set up pipenv dependencies
 - [x] Static typing with annotations and mypy (well I did the basics)
 - [x] Abstract model cache clears to the commit function
-- [ ] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
-- [ ] Document development tools
-- [ ] Simplify ``check_permissions`` permissions/ validator complexity
-- [ ] Use pylint and set up a configuration
-- [ ] Change schema names to ALL_CAPS, exclude global app from pylint
+- [-] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
+- [-] Document development tools in Installation & Development
+- [ ] Re-document style guide, include docstring guides, type annotation guides, and lax up on parenthesis
 - [ ] Documentation about model abstractions and column names / types in BaseModel
+- [ ] Simplify ``check_permissions`` permissions/ validator complexity
+- [ ] Fix type annotations for other models in `users.models`
 
 ## Testing & Typing
 * [ ] Classify integration tests vs unit tests (request tests = integration)
@@ -30,6 +30,7 @@
 - [ ] Review tests for all schemas, create schematests file for every module?
 - [ ] Hypothesis property tests where possible
 - [ ] Create stub files for external library interfaces that are used
+- [ ] Change schema names to ALL_CAPS, exclude global app from pylint
 
 
 # TODO

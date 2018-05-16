@@ -1,17 +1,15 @@
 from typing import List, Optional
 
 import flask
-from flask_sqlalchemy import Model
+from flask_sqlalchemy import BaseQuery, Model
 from sqlalchemy import func
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
-
-if False:
-    from flask import BaseQuery  # noqa
-    from sqlalchemy.sql import BinaryExpression  # noqa
-    from sqlalchemy.orm.attributes import InstrumentedAttribute  # noqa
+from sqlalchemy.sql.elements import BinaryExpression
 
 
 class BaseModel(Model):
+    # TODO: Rewrite
     """
     This is a custom model for the pulsar project, which adds caching
     and JSON serialization methods to the base model. Subclasses are
@@ -50,8 +48,6 @@ class BaseModel(Model):
     expected to be utilized wherever possible.
     """
 
-    # Default values
-
     __cache_key__: Optional[str] = None
 
     __serialize__: tuple = ()
@@ -72,11 +68,15 @@ class BaseModel(Model):
         string for the model only takes an {id} param, then this function
         will suffice.
 
-        :return: A ``str`` cache key representing the model
+        :return:           The cache key of the model
+        :raises NameError: If the model does not have a cache key
         """
         if self.__cache_key__:
-            return self.__cache_key__.format(id=self.id)
-        raise NameError('The cache key is undefined in this model.')
+            try:
+                return self.__cache_key__.format(id=self.id)
+            except KeyError:
+                pass
+        raise NameError('The cache key is undefined or improperly defined in this model.')
 
     @classmethod
     def from_id(cls,
@@ -92,17 +92,16 @@ class BaseModel(Model):
         ID parameter, and executes a query if the object isn't cached.
         Can optionally raise a ``_404Exception`` if the object is not queried.
 
-        :param int id: The primary key ID of the object to query for.
-        :param bool include_dead: Whether or not to return deleted/revoked/expired objects
-        :param _404: Whether or not to raise a _404Exception with the value of _404 and
-            the given ID as the resource name if a model is not found
-        :param asrt: Whether or not to check for ownership of the model or a permission.
-            Can be a boolean to purely check for ownership, or a permission string which
-            can override ownership and access the model anyways.
+        :param id:             The primary key ID of the object to query for.
+        :param include_dead:   Whether or not to return deleted/revoked/expired objects
+        :param _404:           Whether or not to raise a _404Exception with the value of
+                               _404 and the given ID as the resource name if a model is not found
+        :param asrt:           Whether or not to check for ownership of the model or a permission.
+                               Can be a boolean to purely check for ownership, or a permission
+                               string which can override ownership and access the model anyways.
 
-        :return: A ``BaseModel`` model or ``None``
-        :raises _404Exception: If ``_404`` is passed and a model is not found, or
-            ``asrt`` and ``_404`` are passed and the permission checks fail
+        :return:               The object corresponding to the given ID, if it exists
+        :raises _404Exception: If ``_404`` is passed and a model is not found or accessible
         """
         from pulsar import _404Exception
         if not cls.__cache_key__:
@@ -124,7 +123,7 @@ class BaseModel(Model):
     @classmethod
     def from_cache(cls,
                    key: str, *,
-                   query: Optional['BaseQuery'] = None) -> Optional['BaseModel']:
+                   query: Optional[BaseQuery] = None) -> Optional['BaseModel']:
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -132,10 +131,10 @@ class BaseModel(Model):
         Otherwise, if a query is passed, the query is ran and the result is cached and
         returned. Model returns ``None`` if the object doesn't exist.
 
-        :param str key: The cache key to get
+        :param key:   The cache key to get
         :param query: The SQLAlchemy query
 
-        :return: The uncached ``BaseModel`` or ``None``
+        :return:      An instance of this class, if the cache key or query produced results
         """
         from pulsar import db, cache
         data = cache.get(key)
@@ -156,22 +155,22 @@ class BaseModel(Model):
     @classmethod
     def from_query(cls, *,
                    key: str,
-                   filter: Optional['BinaryExpression'] = None,
-                   order: Optional['BinaryExpression'] = None) -> Optional['BaseModel']:
+                   filter: Optional[BinaryExpression] = None,
+                   order: Optional[BinaryExpression] = None) -> Optional['BaseModel']:
         """
-        Function to get a single object from the database (limit(1), first()).
+        Function to get a single object from the database (via ``limit(1)``, ``query.first()``).
         Getting the object via the provided cache key will be attempted first; if
         it does not exist, then a query will be constructed with the other
         parameters. The resultant object (if exists) will be cached and returned.
 
-        *The queried model must have a primary key column named ``id`` and a
-        ``from_id`` classmethod constructor.*
+        **The queried model must have a primary key column named ``id`` and a
+        ``from_id`` classmethod constructor.**
 
-        :param str key: The cache key to check
+        :param key:    The cache key belonging to the object
         :param filter: A SQLAlchemy expression to filter the query with
-        :param order: A SQLAlchemy expression to order the query by
+        :param order:  A SQLAlchemy expression to order the query by
 
-        :return: A ``BaseModel`` object of the ``model`` class, or ``None``
+        :return:       The queried model, if it exists
         """
         from pulsar import cache
         cls_id = cache.get(key)
@@ -189,37 +188,37 @@ class BaseModel(Model):
     @classmethod
     def get_many(cls, *,
                  key: str,
-                 filter: Optional['BinaryExpression'] = None,
-                 order: Optional['BinaryExpression'] = None,
+                 filter: Optional[BinaryExpression] = None,
+                 order: Optional[BinaryExpression] = None,
                  required_properties: tuple = (),
                  include_dead: bool = False,
                  page: Optional[int] = None,
                  limit: Optional[int] = None,
-                 expr_override: Optional['BinaryExpression'] = None) -> List['BaseModel']:
+                 expr_override: Optional[BinaryExpression] = None) -> List['BaseModel']:
         """
-        Abstraction function to get a list of IDs from the cache with a cache
-        key, and query for those IDs if the key does not exist. If the query
-        needs to be ran, a list will be created from the first element in
-        every returned tuple result, like so:
+        An abstracted function to get a list of IDs from the cache with a cache key,
+        and query for those IDs if the key does not exist. If the query needs to be ran,
+        a list will be created from the first element in every returned tuple result, like so:
         ``[x[0] for x in cls.query.all()]``
 
-        That list will be converted into models, using the keyword arguments to
-        modify which elements are included and which aren't. Pagination is optional
-        and ignored if neither page nor limit is set.
+        That list will be converted into models, using passed keyword arguments to modify
+        which elements are included and which aren't. Pagination occurs here, although it is
+        optional and ignored if neither page nor limit is set.
 
-        :param str key: The cache key to check (and return if present)
-        :param filter: A SQLAlchemy filter expression to be applied to the query
-        :param order: A SQLAlchemy order_by expression to be applied to the query
+        :param key:                 The cache key to check (and return if present)
+        :param filter:              A SQLAlchemy filter expression to be applied to the query
+        :param order:               A SQLAlchemy order_by expression to be applied to the query
         :param required_properties: Properties required to validate to ``True``
-            for a retrieved item to be included in the returned list
-        :param bool include_dead: Whether or not to include deleted/revoked/expired models
-        :param int page: The page number of results to return
-        :param int limit: The limit of results to return, defaults to 50 if page
-            is set, otherwise infinite
-        :param expr_override: If passed, this will override filter and order, and be
-            called verbatim in a ``db.session.execute`` if the cache key does not exist
+                                    for a retrieved item to be included in the returned list
+        :param bool include_dead:   Whether or not to include deleted/revoked/expired models
+        :param int page:            The page number of results to return
+        :param int limit:           The limit of results to return, defaults to 50 if page
+                                    is set, otherwise infinite
+        :param expr_override:       If passed, this will override filter and order, and be
+                                    called verbatim in a ``db.session.execute`` if the cache
+                                    key does not exist
 
-        :return: A ``list`` of objects belonging to the class this method was called from
+        :return:                    A list of objects matching the query specifications
         """
         from pulsar import db, cache
         ids = cache.get(key)
@@ -253,19 +252,17 @@ class BaseModel(Model):
         Validate the data returned from the cache by ensuring that it is a dictionary
         and that the returned values match the columns of the object.
 
-        :param dict data: The stored object data to validate
-
-        :return: ``True`` if valid or ``False`` if invalid
+        :param data: The stored object data from the cache to validate
+        :return:     Whether or not the data is valid
         """
         return isinstance(data, dict) and set(data.keys()) == set(cls.__table__.columns.keys())
 
     @classmethod
     def new(cls, **kwargs: dict) -> 'BaseModel':
         """
-        Create a new instance of the model, add it to the instance, cache it,
-        and return it.
+        Create a new instance of the model, add it to the instance, cache it, and return it.
 
-        :param kwargs: The new attributes of the model.
+        :param kwargs: The new attributes of the model
         """
         from pulsar import db, cache
         model = cls(**kwargs)
@@ -276,16 +273,18 @@ class BaseModel(Model):
 
     def count(self, *,
               key: str,
-              attribute: 'InstrumentedAttribute',
-              filter: 'BinaryExpression' = None) -> int:
+              attribute: InstrumentedAttribute,
+              filter: BinaryExpression = None) -> int:
         """
-        Abstraction function for counting a number of elements. If the
-        cache key exists, its value will be returned; otherwise, the
-        query will be ran and the resultant count cached and returned.
+        An abstracted function for counting a number of elements matching a query. If the
+        passed cache key exists, its value will be returned; otherwise, the passed query
+        will be ran and the resultant count cached and returned.
 
-        :param str key: The cache key to check
+        :param key:       The cache key to check
         :param attribute: The attribute to count; a model's column
-        :param filter: The SQLAlchemy filter expression
+        :param filter:    The SQLAlchemy filter expression
+
+        :return: The number of rows matching the query element
         """
         from pulsar import db, cache
         count = cache.get(key)
@@ -297,28 +296,30 @@ class BaseModel(Model):
 
     def belongs_to_user(self) -> bool:
         """
-        Function to determine whether or not the model "belongs" to a user
-        by comparing against flask.g.user This is meant to be overridden
-        by subclasses, and returns False by default (if not overridden).
+        Function to determine whether or not the model "belongs" to a user by comparing
+        against flask.g.user This is meant to be overridden by subclasses, although, by default,
+        if the model has a ``user_id`` column, it compares ``flask.g.user`` with that column.
+        If that column does not exist, ``False`` will be returned by default.
 
-        :return: ``True`` if "belongs to user", else ``False``
+        :return: Whether or not the object "belongs" to the user.
         """
-        return False
+        return (flask.g.user
+                and flask.g.user.id
+                and flask.g.user.id == getattr(self, 'user_id', None))
 
     @staticmethod
-    def _construct_query(query: 'BaseQuery',
-                         filter: Optional['BinaryExpression'] = None,
-                         order: Optional['BinaryExpression'] = None) -> 'BaseQuery':
+    def _construct_query(query: BaseQuery,
+                         filter: Optional[BinaryExpression] = None,
+                         order: Optional[BinaryExpression] = None) -> BaseQuery:
         """
-        Convenience function to save code space for query generations.
-        Takes filters and orders and applies them to the query if they are present,
-        returning a query ready to be ran.
+        A convenience function to save code space for query generations. Takes filters
+        and order_bys and applies them to the query, returning a query ready to be ran.
 
-        :param BaseQuery query: A query that can be built upon
+        :param query:  A query that can be built upon
         :param filter: A SQLAlchemy query filter expression
-        :param order: A SQLAlchemy query order_by expression
+        :param order:  A SQLAlchemy query order_by expression
 
-        :return: A Flask-SQLAlchemy ``BaseQuery``
+        :return:       A Flask-SQLAlchemy ``BaseQuery``
         """
         if filter is not None:
             query = query.filter(filter)

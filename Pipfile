@@ -26,6 +26,7 @@ sphinxcontrib-httpdomain = "*"
 sphinx-rtd-theme = "*"
 mypy = "*"
 isort = "*"
+sphinx-autodoc-typehints = "*"
 
 [requires]
 python_version = "3.6"

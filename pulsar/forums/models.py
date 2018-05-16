@@ -5,12 +5,10 @@ from sqlalchemy import and_, func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
+from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import db
 from pulsar.models import User
-
-if False:
-    from sqlalchemy.sql import BinaryExpression  # noqa
 
 app = flask.current_app
 
@@ -223,7 +221,7 @@ class ForumThread(db.Model):
             order=ForumPost.id.desc())
 
     @hybrid_property
-    def last_updated(cls) -> 'BinaryExpression':
+    def last_updated(cls) -> BinaryExpression:
         return select([func.max(ForumPost.time)]).where(ForumPost.thread_id == cls.id).as_scalar()
 
     @property
@@ -231,7 +229,7 @@ class ForumThread(db.Model):
         return Forum.from_id(self.forum_id)
 
     @property
-    def poster(self) -> 'User':
+    def poster(self) -> User:
         return User.from_id(self.poster_id)
 
     @property
@@ -312,11 +310,11 @@ class ForumPost(db.Model):
             contents=contents)
 
     @property
-    def poster(self) -> 'User':
+    def poster(self) -> User:
         return User.from_id(self.poster_id)
 
     @property
-    def editor(self) -> Optional['User']:
+    def editor(self) -> Optional[User]:
         return User.from_id(self.edited_user_id)
 
     @property
@@ -358,5 +356,5 @@ class ForumPostEditHistory(db.Model):
         return ForumPost.from_id(self.post_id)
 
     @property
-    def editor(self) -> 'User':
+    def editor(self) -> User:
         return User.from_id(self.editor_id)

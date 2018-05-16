@@ -5,11 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from pulsar import APIException, cache, db
-
-if False:
-    from pulsar.models import (  # noqa
-        Session as Session_, APIKey as APIKey_, UserClass as UserClass_)
+from pulsar import APIException, BaseModel, cache, db
 
 
 app = flask.current_app
@@ -89,7 +85,7 @@ class User(db.Model):
             email=email.lower().strip())
 
     @property
-    def user_class(self) -> 'UserClass_':
+    def user_class(self) -> BaseModel:
         from pulsar.permissions.models import UserClass
         return UserClass.from_id(self.user_class_id)
 
@@ -104,12 +100,12 @@ class User(db.Model):
         return User.from_id(self.inviter_id) if self.inviter_id else None
 
     @property
-    def api_keys(self) -> List['APIKey_']:
+    def api_keys(self) -> List[BaseModel]:
         from pulsar.auth.models import APIKey
         return APIKey.from_user(self.id)
 
     @property
-    def sessions(self) -> List['Session_']:
+    def sessions(self) -> List[BaseModel]:
         from pulsar.auth.models import Session
         return Session.from_user(self.id)
 

@@ -37,10 +37,10 @@ class NewJSONEncoder(JSONEncoder):
         ``BaseModel`` objects embedded in the dictionary or lists in the dictionary
         will be replaced with the result of their ``_to_dict`` methods.
 
-        :param bool detailed: Whether or not to include detailed serializable attributes
-        :param bool very_detailed: Whether or not to include very detailed serializable attributes
+        :param detailed:      Whether or not to include detailed serializable attributes
+        :param very_detailed: Whether or not to include very detailed serializable attributes
 
-        :return: The ``dict`` of serialized attributes
+        :return: A dictionary containing the serialized object attributes
         """
         attrs = model.__serialize__
         if model.belongs_to_user():
@@ -61,10 +61,13 @@ class NewJSONEncoder(JSONEncoder):
         Iterate through all values inside a dictionary and "fix" a dictionary to be
         JSON serializable by applying the _to_dict() function to all embedded models.
         All datetime objects are converted to a POSIX timestamp (seconds since epoch).
+        This function only supports converting ``dict``s, ``list``s, ``BaseModel``s,
+        and ``datetimes``. If the value was originally serializable, it will remain
+        serializable. Keys are not modified, so they must be JSON serializable.
+        If your serialization needs are more complex, feel free to add to the function.
 
-        :param dict dict_: The dictionary to iterate over and make JSON serializable
-
-        :return: A JSON serializable ``dict``
+        :param dict_: The dictionary to iterate over and make JSON serializable
+        :return:      A JSON serializable dict of all the elements inside the original dict
         """
 
         def iter_handler(value):

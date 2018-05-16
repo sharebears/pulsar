@@ -1,5 +1,5 @@
 class APIException(Exception):
-    "General exception thrown by an API view, contains a message for the JSON response."
+    """General exception thrown by an API view, contains a message for the JSON response."""
     message: str
     status_code: int
 

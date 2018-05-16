@@ -38,9 +38,11 @@ merge requests!
 
 Development commands and database migrations can be accessed through flask's
 click cli interface. `flask run` runs the development server and `flask db` runs
-the `flask-migrate` database management script. More detail about these commands
-and the development environment will be located in the `Installation & Development`
-section of the docs.
+the `flask-migrate` database management script. In order to run in debug mode,
+run `FLASK_DEBUG=True flask run`. The development server is not meant for production
+use; Gunicorn or uWSGI are built for that. More detail about these commands and the
+development environment will be located in the `Installation & Development` section
+of the docs.
 
 
 ## Links of Interest

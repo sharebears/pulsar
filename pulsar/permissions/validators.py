@@ -5,11 +5,8 @@ import flask
 from voluptuous import Invalid
 
 from pulsar import APIException
-from pulsar.models import UserPermission
+from pulsar.models import User, UserPermission
 from pulsar.utils import get_all_permissions
-
-if False:
-    from pulsar.models import User  # noqa
 
 
 def permissions_list(perm_list: List[str]) -> List[str]:
@@ -76,7 +73,7 @@ def permissions_dict(dict_: dict) -> dict:
     return dict_
 
 
-def check_permissions(user: 'User',
+def check_permissions(user: User,
                       permissions: Dict[str, bool]) -> Tuple[List[str], List[str], List[str]]:
     """
     Validates that the provided permissions can be applied to the user.

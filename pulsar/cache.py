@@ -1,35 +1,25 @@
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import flask
 from werkzeug.contrib.cache import RedisCache
+from redis import Redis  # noqa
+from flask_sqlalchemy import SignallingSession  # noqa
 
 from pulsar.base_model import BaseModel
-
-if False:
-    from redis import Redis  # noqa
-    from sqlalchemy.orm.session import SignallingSession  # noqa
-
-
-def clear_cache_dirty(session: 'SignallingSession') -> None:
-    """Clear the cache key of every dirty/deleted object before DB commit."""
-    from pulsar import cache
-    for obj in session.dirty.union(session.deleted):
-        if obj.__cache_key__:
-            cache.delete(obj.cache_key)
 
 
 class Cache(RedisCache):
     """
-    A custom implementation of werkzeug's RedisCache.
-    This modifies and adds a few functions to RedisCache.
-
-    All cache key get/set/inc/del are logged in a global variable for
-    debugging purposes.
+    A custom implementation of werkzeug's RedisCache.  This modifies and adds
+    a few functions to RedisCache. All keys are automatically lowercased. Cache
+    key get/set/inc/del accesses are logged in a global variable for debugging
+    purposes.
     """
+    _client: Redis
 
     def __init__(self) -> None:
         # Override the RedisCache params we don't need.
-        self._client: 'Redis'
+        pass
 
     def init_app(self, app: flask.Flask) -> None:
         # Required flask extension method.
@@ -38,15 +28,18 @@ class Cache(RedisCache):
     def inc(self,
             key: str,
             delta: int = 1,
-            timeout: Union[int, None] = None) -> Union[int, None]:
+            timeout: Optional[int] = None) -> Optional[int]:
         """
         Increment a cache key if it exists, otherwise create it
         and optionally set a timeout.
 
-        :param str key: The cache key to increment
-        :param int delta: How much to increment the cache key by
-        :param int timeout: If the cache key is newly created,
-            how long to persist the key for
+        :param key:     The cache key to increment
+        :param delta:   How much to increment the cache key by
+        :param timeout: If the cache key is created in this request, it will be
+                        persisted for this many seconds
+
+        :return: The new value of the key, or ``None`` in the event of a
+            backend error
         """
         key = key.lower()
         value = super().inc(key, delta)
@@ -60,8 +53,8 @@ class Cache(RedisCache):
         Look up key in the cache and return the value for it. Key is
         automatically lower-cased.
 
-        :param key: the key to be looked up.
-        :returns: The value if it exists and is readable, else ``None``.
+        :param key: The key to be looked up
+        :returns:   The value if it exists and is readable, else ``None``
         """
         key = key.lower()
         value = super().get(key)
@@ -78,15 +71,15 @@ class Cache(RedisCache):
         if key already exists in the cache). Keys are automatically
         lower-cased.
 
-        :param key: The key to set
-        :param value: The value for the key
+        :param key:     The key to set
+        :param value:   The value for the key
         :param timeout: The cache timeout for the key in seconds
-            (if not specified, it uses the default timeout).
-            A timeout of 0 indicates that the cache never expires.
+                        (if not specified, it uses the default timeout).
+                        A timeout of 0 indicates that the cache never expires.
 
-        :return: ``True`` if key has been updated, ``False`` for backend
-            errors. Pickling errors, however, will raise a subclass of
-            pickle.PickleError.
+        :return:        True if key has been updated, ``False`` for backend
+                        errors. Pickling errors, however, will raise a subclass of
+                        pickle.PickleError.
         """
         key = key.lower()
         flask.g.cache_keys['set'].add(key)
@@ -97,7 +90,7 @@ class Cache(RedisCache):
         Delete key from the cache.
 
         :param key: The key to delete
-        :return: A ``bool`` for whether the key existed and has been deleted
+        :return:    Whether or not the key existed and has been deleted
         """
         key = key.lower()
         result = super().delete(key)
@@ -107,9 +100,10 @@ class Cache(RedisCache):
 
     def ttl(self, key: str) -> int:
         """
-        Return the time to live (time until expiry) for a cache key.
+        Return the time to live (time until expiry) for a cache key
 
-        :return: The seconds left until a key expires (``int``)
+        :param key: The cache key to check for expiry
+        :return:    The seconds left until a key expires
         """
         return self._client.ttl((self.key_prefix + key).lower())
 
@@ -119,8 +113,8 @@ class Cache(RedisCache):
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
 
-        :param Model model: The SQLAlchemy ``Model`` to cache
-        :param int timeout: The number of seconds to persist the key for
+        :param model:   The model we want to cache
+        :param timeout: The number of seconds to persist the cached value for
 
         :return: The cache key of the model
         """
@@ -131,3 +125,15 @@ class Cache(RedisCache):
             self.set(model.cache_key, data, timeout or self.default_timeout)
             return model.cache_key
         return None
+
+
+def clear_cache_dirty(session: 'SignallingSession') -> None:
+    """
+    Clear the cache key of every dirty/deleted object before DB commit.
+
+    :param session: The database session about to be committed
+    """
+    from pulsar import cache
+    for obj in session.dirty.union(session.deleted):
+        if obj.__cache_key__:
+            cache.delete(obj.cache_key)
