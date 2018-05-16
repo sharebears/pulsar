@@ -23,6 +23,8 @@
 - [ ] Documentation about model abstractions and column names / types in BaseModel
 - [ ] Simplify ``check_permissions`` permissions/ validator complexity
 - [ ] Fix type annotations for other models in `users.models`
+- [ ] Re-create a ``serializers.py`` file for each module, and create a permission attrs mixin subclassed
+      from a permission shell class -- split the long permission tuples from the meat of the model
 
 ## Testing & Typing
 * [ ] Classify integration tests vs unit tests (request tests = integration)
@@ -44,6 +46,10 @@
 - [x] Schema Completion
 - [x] Registration
 - [x] Invites
+- [ ] User Stats model, see Issues
+- [ ] User Settings -- Define constant defaults and save user overrides of those defaults,
+      creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2)
+      user settings
 
 ## Permissions
 - [x] Primary User Classes

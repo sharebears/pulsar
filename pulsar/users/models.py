@@ -1,12 +1,15 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import flask
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from pulsar import APIException, BaseModel, cache, db
+from pulsar import APIException, cache, db
 
+if TYPE_CHECKING:
+    from pulsar.auth.models import APIKey as APIKey_, Session as Session_
+    from pulsar.permissions.models import UserClass as UserClass_
 
 app = flask.current_app
 
@@ -85,7 +88,7 @@ class User(db.Model):
             email=email.lower().strip())
 
     @property
-    def user_class(self) -> BaseModel:
+    def user_class(self) -> 'UserClass_':
         from pulsar.permissions.models import UserClass
         return UserClass.from_id(self.user_class_id)
 
@@ -100,12 +103,12 @@ class User(db.Model):
         return User.from_id(self.inviter_id) if self.inviter_id else None
 
     @property
-    def api_keys(self) -> List[BaseModel]:
+    def api_keys(self) -> List['APIKey_']:
         from pulsar.auth.models import APIKey
         return APIKey.from_user(self.id)
 
     @property
-    def sessions(self) -> List[BaseModel]:
+    def sessions(self) -> List['Session_']:
         from pulsar.auth.models import Session
         return Session.from_user(self.id)
 
