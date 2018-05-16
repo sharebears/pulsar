@@ -135,11 +135,9 @@ class User(db.Model):
             cache.set(cache_key, permissions)
         return permissions
 
-    def belongs_to_user(self) -> bool:
-        """
-        :raises NotImplementedError: This should never be called.
-        """
-        raise NotImplementedError
+    def belongs_to_user(self):
+        """Check whether or not the requesting user matches this user."""
+        return flask.g.user == self
 
     def set_password(self, password: str) -> None:
         self.passhash = generate_password_hash(password)

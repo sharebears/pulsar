@@ -60,12 +60,12 @@ def permissions_dict(permissions: dict) -> dict:
     :return:         The input value
     :raises Invalid: A permission name is invalid or a value isn't a bool
     """
-    permissions = get_all_permissions()
+    all_permissions = get_all_permissions()
     if isinstance(permissions, dict):
         for perm_name, action in permissions.items():
             if not isinstance(action, bool):
                 raise Invalid('permission actions must be booleans')
-            elif perm_name not in permissions and action is True:
+            elif perm_name not in all_permissions and action is True:
                 # Do not disallow removal of non-existent permissions.
                 raise Invalid(f'{perm_name} is not a valid permission')
     else:
@@ -73,7 +73,7 @@ def permissions_dict(permissions: dict) -> dict:
     return permissions
 
 
-def check_permissions(user: User,
+def check_permissions(user: User,  # noqa: C901
                       permissions: Dict[str, bool]) -> Tuple[List[str], List[str], List[str]]:
     """
     Validates that the provided permissions can be applied to the user.
@@ -89,10 +89,13 @@ def check_permissions(user: User,
     :raises APIException: If the user already has a to-add permission or
                           lacks a to-delete permission
     """
-    add, ungrant, delete = [], [], []
-    errors: defaultdict = defaultdict(list)
-    uc_permissions = user.user_class.permissions
-    user_permissions = UserPermission.from_user(user.id)
+    add: List[str] = []
+    ungrant: List[str] = []
+    delete: List[str] = []
+    errors: Dict[str, List[str]] = defaultdict(list)
+
+    uc_permissions: List[str] = user.user_class.permissions
+    user_permissions: Dict[str, bool] = UserPermission.from_user(user.id)
 
     for perm, active in permissions.items():
         if active is True:
@@ -100,23 +103,16 @@ def check_permissions(user: User,
                 if user_permissions[perm] is False:
                     delete.append(perm)
                     add.append(perm)
-                else:
-                    errors['add'].append(perm)
             elif perm not in uc_permissions:
                 add.append(perm)
-            else:
+            if perm not in add + delete:
                 errors['add'].append(perm)
         else:
-            if perm in user_permissions:
-                if user_permissions[perm] is True:
-                    delete.append(perm)
-                    if perm in uc_permissions:
-                        ungrant.append(perm)
-                else:
-                    errors['delete'].append(perm)
-            elif perm in uc_permissions:
+            if perm in user_permissions and user_permissions[perm] is True:
+                delete.append(perm)
+            if perm in uc_permissions:
                 ungrant.append(perm)
-            else:
+            if perm not in delete + ungrant:
                 errors['delete'].append(perm)
 
     if errors:

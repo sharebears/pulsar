@@ -18,13 +18,13 @@
 - [x] Static typing with annotations and mypy (well I did the basics)
 - [x] Abstract model cache clears to the commit function
 - [x] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
-- [-] Document development tools in Installation & Development
-- [ ] Re-document style guide, include docstring guides, type annotation guides, and lax up on parenthesis
-- [ ] Documentation about model abstractions and column names / types in BaseModel
+- [x] Document development tools in Installation & Development
+- [x] Re-document style guide, include docstring guides, type annotation guides, and lax up on parenthesis
+- [x] Fix type annotations for other models in `users.models`
 - [ ] Simplify ``check_permissions`` permissions/ validator complexity
-- [ ] Fix type annotations for other models in `users.models`
 - [ ] Re-create a ``serializers.py`` file for each module, and create a permission attrs mixin subclassed
       from a permission shell class -- split the long permission tuples from the meat of the model
+- [ ] Documentation about model abstractions and column names / types in BaseModel
 
 ## Testing & Typing
 * [ ] Classify integration tests vs unit tests (request tests = integration)

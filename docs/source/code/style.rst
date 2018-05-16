@@ -3,9 +3,8 @@ Style Guide
 
 * PEP8, with a max line length of ~90 (hard max at 100) (4 space indents)
 * Split multiple kwargs or lists with multiple elements onto new lines, unless they
-  compactly fit into one line. Closing brackets* should be indented on new lines.
-  Multi-line dicts/lists/kwargs should have a comma after the last element, unless
-  they are the last line before a line break or end of function.
+  fit compactly into one line. Hang the closing brackets or leave them on the same
+  line as the last line in the statement.
 
   .. code::
 
@@ -19,7 +18,6 @@ Style Guide
         'email': 'lights@puls.ar',
         'userclass_id': 12,
         })
-    another_function_call(...)
 
     good_test_example = client.get('/test_api_key', environ_base={
             'HTTP_USER_AGENT': 'pulsar-test-client',
@@ -34,17 +32,11 @@ Style Guide
             'Authorization': f'Token a-long-token',
         })
 
-
     good_function_call(a_long_variable_name, a_kwarg={
         'active': True,
         'email': 'bright@puls.ar',
         'enabled': 'most-definitely',
         }, final_kwarg=True) 
-
-    # Function calls split over two lines do not need the
-    # closing bracket to be on a new line.
-    a_long_function_name(
-         'You have permission to do things with this codebase.')
 
 * Use kwargs to reduce argument confusion.
 
@@ -60,26 +52,23 @@ Style Guide
         esoteric_arg5=efe,
         )
 
-* Surround assignments of boolean statements with parentheses.
+* Multi-line docstrings should begin on new lines. Sphinx input/output
+  documentation should be indented to match the longest parameter.
+  If a :thing: is abnormally long, feel free to disregard this.
 
   .. code::
 
-      bad_bool = a == b and c is d
-
-      good_bool = (a == b and c is d)
-
-* For single line docstrings, use single quotes. For multi-line docstrings, use triple quotes
-  and start the body of the docstring after a newline.
- 
-  .. code::
-   
-    a_function():
-         "A single-line docstring."
-         pass
-
-    another_function():
+     def a_function(self, arg1, argument2):
          """
-         A multi-line docstring with more content.
-         Lauren impson.
-         """
-         pass
+         A pretty long docstring.
+
+         :param arg1:      Blah blah blah!
+         :param argument2: Blah blah blah!
+         :return:          Blah blah blah!
+
+* Annotate code with python 3 style typing
+
+   .. code::
+
+      def a_function(self, arg1: int, arg2: bool) -> str:
+          ...

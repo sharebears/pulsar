@@ -84,3 +84,7 @@ class Invite(db.Model):
             filter=filter,
             order=cls.time_sent.desc(),
             include_dead=include_dead or used)
+
+    def belongs_to_user(self) -> bool:
+        """Returns whether or not the requesting user matches the inviter."""
+        return flask.g.user and self.inviter_id == flask.g.user.id
