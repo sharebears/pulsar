@@ -21,16 +21,15 @@
 - [x] Document development tools in Installation & Development
 - [x] Re-document style guide, include docstring guides, type annotation guides, and lax up on parenthesis
 - [x] Fix type annotations for other models in `users.models`
-- [ ] Simplify ``check_permissions`` permissions/ validator complexity
-- [ ] Re-create a ``serializers.py`` file for each module, and create a permission attrs mixin subclassed
-      from a permission shell class -- split the long permission tuples from the meat of the model
-- [ ] Documentation about model abstractions and column names / types in BaseModel
+- [x] Simplify ``check_permissions`` permissions/ validator complexity | gave up, exceptioned it
+- [x] Documentation about model abstractions and column names / types in BaseModel
 
 ## Testing & Typing
 * [ ] Classify integration tests vs unit tests (request tests = integration)
 - [ ] Review tests for model property serialization
 - [ ] Review tests for all schemas, create schematests file for every module?
 - [ ] Hypothesis property tests where possible
+- [ ] Figure out how to fuzz test with hypothesis? (Assert all 400, no 500)
 - [ ] Create stub files for external library interfaces that are used
 - [ ] Change schema names to ALL_CAPS, exclude global app from pylint
 
@@ -46,7 +45,7 @@
 - [x] Schema Completion
 - [x] Registration
 - [x] Invites
-- [ ] User Stats model, see Issues
+- [ ] User Stats model
 - [ ] User Settings -- Define constant defaults and save user overrides of those defaults,
       creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2)
       user settings

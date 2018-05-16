@@ -9,10 +9,9 @@ from sqlalchemy.sql.elements import BinaryExpression
 
 
 class BaseModel(Model):
-    # TODO: Rewrite
     """
     This is a custom model for the pulsar project, which adds caching
-    and JSON serialization methods to the base model. Subclasses are
+    and JSON serialization functionality to the base model. Subclasses are
     expected to define their serializable attributes, permission restrictions,
     and cache key template with the following class attributes. They are required
     if one wants to cache or serialize data for a model. By default, all "serialize"
@@ -28,24 +27,33 @@ class BaseModel(Model):
     * ``__permission_detailed__`` (``str``)
     * ``__permission_very_detailed__`` (``str``)
 
-    When a model is serialized, the permissions assigned to a user and the
-    permissions listed in the above attributes will determine which properties
-    of the model are returned. ``__serialize__`` is viewable to anyone with permission
-    to see the resource, ``__serialize_self__`` is viewable by anyone who passes the
-    ``belongs_to_user`` function. ``__serialize_detailed__`` and
-    ``__serialize_very_detailed__`` are viewable by users with the permission ``str``s
-    stored as ``__permission_detailed__`` and ``__permission_very_detailed__``,
-    respectively.
+    When a model is serialized in an API response, the permissions assigned to a user
+    and the permissions listed in the above attributes will determine which properties
+    of the model are returned. Attributes in ``__serialize__`` are viewable to anyone
+    with permission to access the resource, attributes in ``__serialize_self__`` are
+    viewable by anyone who passes the ``belongs_to_user`` function. Attributes in
+    ``__serialize_detailed__`` and ``__serialize_very_detailed__`` are viewable by users
+    with the permissions defined in ``__permission_detailed__`` and
+    ``__permission_very_detailed__``, respectively.
+
+    Other models or values built off from column values can be serialized into JSON by
+    taking advantage of the @property decorator. Property names can be included in the
+    serialization tuples, and their functions can return (multiple) other models.
 
     Nested model properties will also be serialized if they are the value of a ``dict``
     or in a ``list``. When nested models are serialized, all attributes listed in
     ``__serialize_nested_exclude__`` will be excluded, while all attributes in
-    ``__serialize_nested_include__`` will be included.
+    ``__serialize_nested_include__`` will be included. For example, when embedding a user
+    in the forum post JSON response, the nested list of APIKey models can be excluded.
 
     Due to how models are cached, writing out the logic to obtain from cache and,
-    if the model wasn't cached, execute a query for every model is tedious and repetitive.
-    Generalized functions to abstract those are included in this class, and are
-    expected to be utilized wherever possible.
+    if the cache call returned nothing, execute a query for every model is tedious
+    and repetitive. Generalized functions to abstract those are included in this class,
+    and are expected to be utilized wherever possible.
+
+    Some of those functions may need to be overridden by the subclass. The base cache
+    key property and ``from_id`` classmethod assume that an ``id`` property exists and
+    that the cache key only accepts an ID kwarg.
     """
 
     __cache_key__: Optional[str] = None
@@ -71,12 +79,7 @@ class BaseModel(Model):
         :return:           The cache key of the model
         :raises NameError: If the model does not have a cache key
         """
-        if self.__cache_key__:
-            try:
-                return self.__cache_key__.format(id=self.id)
-            except KeyError:
-                pass
-        raise NameError('The cache key is undefined or improperly defined in this model.')
+        return self._create_cache_key(id=self.id)
 
     @classmethod
     def from_id(cls,
@@ -104,10 +107,8 @@ class BaseModel(Model):
         :raises _404Exception: If ``_404`` is passed and a model is not found or accessible
         """
         from pulsar import _404Exception
-        if not cls.__cache_key__:
-            raise NameError('The cache key is undefined in this model.')
         model = cls.from_cache(
-            key=cls.__cache_key__.format(id=id),
+            key=cls._create_cache_key(id=id),
             query=cls.query.filter(cls.id == id))
         if model:
             if include_dead or not (
@@ -256,6 +257,23 @@ class BaseModel(Model):
         :return:     Whether or not the data is valid
         """
         return isinstance(data, dict) and set(data.keys()) == set(cls.__table__.columns.keys())
+
+    @classmethod
+    def _create_cache_key(cls, **kwargs) -> str:
+        """
+        Populate the ``__cache_key__`` class attribute with the kwargs.
+
+        :param kwargs:     The keywords that will be fed into the ``str.format`` function
+
+        :return:           The cache key
+        :raises NameError: If the cache key is undefined or improperly defined
+        """
+        if cls.__cache_key__:
+            try:
+                return cls.__cache_key__.format(**kwargs)
+            except KeyError:
+                pass
+        raise NameError('The cache key is undefined or improperly defined in this model.')
 
     @classmethod
     def new(cls, **kwargs: dict) -> 'BaseModel':
