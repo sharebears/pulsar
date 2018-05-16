@@ -1,3 +1,5 @@
+from typing import Dict, List, Tuple
+
 from collections import defaultdict
 
 import flask
@@ -7,8 +9,11 @@ from pulsar import APIException
 from pulsar.models import UserPermission
 from pulsar.utils import get_all_permissions
 
+if False:
+    from pulsar.models import User  # noqa
 
-def permissions_list(perm_list):
+
+def permissions_list(perm_list: List[str]) -> List[str]:
     """
     Validates that every permission in the list is a valid permission.
 
@@ -30,7 +35,7 @@ def permissions_list(perm_list):
     return perm_list
 
 
-def permissions_list_of_user(perm_list):
+def permissions_list_of_user(perm_list: List[str]) -> List[str]:
     """
     Takes a list of items and asserts that all of them are in the permissions list of
     a user.
@@ -49,19 +54,19 @@ def permissions_list_of_user(perm_list):
     raise Invalid('permissions must be in the user\'s permissions list')
 
 
-def permissions_dict(val):
+def permissions_dict(dict_: dict) -> dict:
     """
     Validates that a dictionary contains valid permission name keys
     and has boolean values.
 
-    :param dict val: Dictionary of permissions and booleans
+    :param dict dict_: Dictionary of permissions and booleans
 
-    :return: Input ``val``
+    :return: Input ``dict``
     :raises Invalid: A permission name is invalid or a value isn't a bool
     """
     permissions = get_all_permissions()
-    if isinstance(val, dict):
-        for perm_name, action in val.items():
+    if isinstance(dict_, dict):
+        for perm_name, action in dict_.items():
             if not isinstance(action, bool):
                 raise Invalid('permission actions must be booleans')
             elif perm_name not in permissions and action is True:
@@ -69,10 +74,11 @@ def permissions_dict(val):
                 raise Invalid(f'{perm_name} is not a valid permission')
     else:
         raise Invalid('input value must be a dictionary')
-    return val
+    return dict_
 
 
-def check_permissions(user, permissions):
+def check_permissions(user: 'User',
+                      permissions: Dict[str, bool]) -> Tuple[List[str], List[str], List[str]]:
     """
     Validates that the provided permissions can be applied to the user.
     Permissions can be added if they were previously taken away or aren't
@@ -88,7 +94,8 @@ def check_permissions(user, permissions):
     :raises APIException: If the user already has a to-add permission or
         lacks a to-delete permission.
     """
-    add, ungrant, delete, errors = [], [], [], defaultdict(list)
+    add, ungrant, delete = [], [], []
+    errors: defaultdict = defaultdict(list)
     uc_permissions = user.user_class.permissions
     user_permissions = UserPermission.from_user(user.id)
 

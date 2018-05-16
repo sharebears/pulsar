@@ -1,3 +1,5 @@
+from typing import List, Optional as TOptional
+
 import flask
 from voluptuous import All, Length, Optional, Schema
 
@@ -13,7 +15,7 @@ app = flask.current_app
 
 @bp.route('/api_keys/<id>', methods=['GET'])
 @require_permission('view_api_keys')
-def view_api_key(id):
+def view_api_key(id: str) -> 'flask.Response':
     """
     View info of an API key. Requires the ``view_api_keys`` permission to view
     one's own API keys, and the ``view_api_keys_others`` permission to view
@@ -75,7 +77,8 @@ view_all_api_keys_schema = Schema({
 @bp.route('/api_keys/user/<int:user_id>', methods=['GET'])
 @require_permission('view_api_keys')
 @validate_data(view_all_api_keys_schema)
-def view_all_api_keys(include_dead, user_id=None):
+def view_all_api_keys(include_dead: bool,
+                      user_id: TOptional[int] = None) -> 'flask.Response':
     """
     View all API keys of a user. Requires the ``view_api_keys`` permission to view
     one's own API keys, and the ``view_api_keys_others`` permission to view
@@ -144,7 +147,7 @@ create_api_key_schema = Schema({
 @bp.route('/api_keys', methods=['POST'])
 @require_permission('create_api_keys')
 @validate_data(create_api_key_schema)
-def create_api_key(permissions):
+def create_api_key(permissions: List[str]) -> 'flask.Response':
     """
     Creates an API key for use. Requires the ``create_api_keys`` permission to
     create new API keys. Keys are unrecoverable after generation; if a key is lost,
@@ -207,7 +210,7 @@ revoke_api_key_schema = Schema({
 @bp.route('/api_keys', methods=['DELETE'])
 @require_permission('revoke_api_keys')
 @validate_data(revoke_api_key_schema)
-def revoke_api_key(id):
+def revoke_api_key(id: int) -> 'flask.Response':
     """
     Revokes an API key currently in use by the user. Requires the
     ``revoke_api_keys`` permission to revoke one's own API keys, and the
@@ -264,7 +267,7 @@ def revoke_api_key(id):
 @bp.route('/api_keys/all', methods=['DELETE'])
 @bp.route('/api_keys/all/user/<int:user_id>', methods=['DELETE'])
 @require_permission('revoke_api_keys')
-def revoke_all_api_keys(user_id=None):
+def revoke_all_api_keys(user_id: TOptional[int] = None) -> 'flask.Response':
     """
     Revokes all API keys currently in use by the user. Requires the
     ``revoke_api_keys`` permission to revoke one's own API keys, and the

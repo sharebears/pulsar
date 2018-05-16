@@ -1,9 +1,12 @@
+from typing import Dict, List, Optional
+
 from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import select
 
 from pulsar import APIException, db
+from pulsar.users.models import User
 
 
 class UserPermission(db.Model):
@@ -14,14 +17,16 @@ class UserPermission(db.Model):
     granted = db.Column(db.Boolean, nullable=False, server_default='t')
 
     @classmethod
-    def from_attrs(cls, user_id, permission):
+    def from_attrs(cls,
+                   user_id: int,
+                   permission: str) -> Optional['UserPermission']:
         return cls.query.filter(and_(
             (cls.user_id == user_id),
             (cls.permission == permission),
             )).one_or_none()
 
     @classmethod
-    def from_user(cls, user_id):
+    def from_user(cls, user_id: int) -> Dict[str, int]:
         """
         Gets a dict of all custom permissions assigned to a user.
 
@@ -42,8 +47,11 @@ class UserClass(db.Model):
     __cache_key__ = 'user_class_{id}'
     __cache_key_all__ = 'user_classes'
 
-    __serialize__ = ('id', 'name', )
-    __serialize_detailed__ = ('permissions', )
+    __serialize__ = (
+        'id',
+        'name')
+    __serialize_detailed__ = (
+        'permissions', )
 
     __permission_detailed__ = 'modify_user_classes'
 
@@ -56,16 +64,14 @@ class UserClass(db.Model):
         return (db.Index('ix_user_classes_name', func.lower(cls.name), unique=True), )
 
     @classmethod
-    def from_name(cls, name):
+    def from_name(cls, name: str) -> Optional['UserClass']:
         name = name.lower()
         return cls.query.filter(func.lower(cls.name) == name).first()
 
-    def has_users(self):
-        from pulsar.models import User
-        return User.query.filter(User.user_class_id == self.id).limit(1).first()
-
     @classmethod
-    def new(cls, name, permissions=None):
+    def new(cls,
+            name: str,
+            permissions: Optional[List[str]] = None) -> 'UserClass':
         if cls.from_name(name):
             raise APIException(f'Another user class already has the name {name}.')
         return super().new(
@@ -73,8 +79,11 @@ class UserClass(db.Model):
             permissions=permissions)
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls) -> List['UserClass']:
         return cls.get_many(key=cls.__cache_key_all__)
+
+    def has_users(self) -> bool:
+        return bool(User.query.filter(User.user_class_id == self.id).limit(1).first())
 
 
 secondary_class_assoc_table = db.Table(
@@ -104,25 +113,27 @@ class SecondaryClass(db.Model):
         return (db.Index('ix_secondary_classes_name', func.lower(cls.name), unique=True), )
 
     @classmethod
-    def from_name(cls, name):
+    def from_name(cls, name: str) -> Optional['SecondaryClass']:
         name = name.lower()
         return cls.query.filter(func.lower(cls.name) == name).first()
 
     @classmethod
-    def from_user(cls, user_id):
+    def from_user(cls, user_id: int) -> List['SecondaryClass']:
         return cls.get_many(
             key=cls.__cache_key_of_user__.format(id=user_id),
             expr_override=select(
                 [secondary_class_assoc_table.c.secondary_class_id]).where(
                     secondary_class_assoc_table.c.user_id == user_id))
 
-    def has_users(self):
-        return db.session.execute(
+    def has_users(self) -> bool:
+        return bool(db.session.execute(
             select([secondary_class_assoc_table.c.user_id]).where(
-                secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1))
+                secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1)))
 
     @classmethod
-    def new(cls, name, permissions=None):
+    def new(cls,
+            name: str,
+            permissions: Optional[List[str]] = None) -> 'SecondaryClass':
         if cls.from_name(name):
             raise APIException(f'Another secondary class already has the name {name}.')
         return super().new(
@@ -130,5 +141,5 @@ class SecondaryClass(db.Model):
             permissions=permissions)
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls) -> List['SecondaryClass']:
         return cls.get_many(key=cls.__cache_key_all__)

@@ -15,18 +15,20 @@
 - [x] Do integer voluptuous validators prevent overflow? A: Nope!
 - [x] Abstract 404 exceptions to model queries
 - [x] Set up pipenv dependencies
-- [ ] Static typing with annotations and mypy
+- [x] Static typing with annotations and mypy (well I did the basics)
 - [ ] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
+- [ ] Document development tools
 - [ ] Simplify ``check_permissions`` permissions/ validator complexity
 - [ ] Use pylint and set up a configuration
 - [ ] Change schema names to ALL_CAPS, exclude global app from pylint
 - [ ] Documentation about model abstractions and column names / types in BaseModel
 
-## Refactor and re-organize testing suite
+## Testing & Typing
 * [ ] Classify integration tests vs unit tests (request tests = integration)
 - [ ] Review tests for model property serialization
 - [ ] Review tests for all schemas, create schematests file for every module?
 - [ ] Hypothesis property tests where possible
+- [ ] Create stub files for external library interfaces that are used
 
 
 # TODO

@@ -1,5 +1,6 @@
 import secrets
 from datetime import datetime
+from typing import List, Optional, Tuple, Union
 
 import flask
 import pytz
@@ -8,6 +9,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, INET
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import cache, db
+from pulsar.users.models import User
 
 
 class Session(db.Model):
@@ -16,7 +18,13 @@ class Session(db.Model):
     __cache_key_of_user__ = 'sessions_user_{user_id}'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'id', 'user_id', 'persistent', 'last_used', 'ip', 'user_agent', 'expired')
+        'id',
+        'user_id',
+        'persistent',
+        'last_used',
+        'ip',
+        'user_agent',
+        'expired')
 
     __permission_detailed__ = 'view_sessions_others'
 
@@ -31,7 +39,11 @@ class Session(db.Model):
     expired = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
 
     @classmethod
-    def new(cls, user_id, ip, user_agent, persistent=False):
+    def new(cls,
+            user_id: int,
+            ip: str,
+            user_agent: str,
+            persistent: bool = False) -> 'Session':
         """
         Create a new session with randomly generated secret keys and the
         user details passed in as params.
@@ -58,7 +70,9 @@ class Session(db.Model):
             persistent=persistent)
 
     @classmethod
-    def from_user(cls, user_id, include_dead=False):
+    def from_user(cls,
+                  user_id: int,
+                  include_dead: bool = False) -> List['Session']:
         """
         Get all sessions owned by a user.
 
@@ -73,10 +87,10 @@ class Session(db.Model):
             filter=cls.user_id == user_id,
             include_dead=include_dead)
 
-    def belongs_to_user(self):
+    def belongs_to_user(self) -> bool:
         return flask.g.user and self.user_id == flask.g.user.id
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         if self.expired:
             return True
         elif not self.persistent:
@@ -89,7 +103,7 @@ class Session(db.Model):
         return False
 
     @staticmethod
-    def expire_all_of_user(user_id):
+    def expire_all_of_user(user_id) -> None:
         """
         Expire all active sessions that belong to a user.
 
@@ -110,7 +124,13 @@ class APIKey(db.Model):
     __cache_key_of_user__ = 'api_keys_user_{user_id}'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'id', 'user_id', 'last_used', 'ip', 'user_agent', 'revoked', 'permissions')
+        'id',
+        'user_id',
+        'last_used',
+        'ip',
+        'user_agent',
+        'revoked',
+        'permissions')
 
     __permission_detailed__ = 'view_api_keys_others'
 
@@ -125,7 +145,11 @@ class APIKey(db.Model):
     permissions = db.Column(ARRAY(db.String(32)))
 
     @classmethod
-    def new(cls, user_id, ip, user_agent, permissions=[]):
+    def new(cls,
+            user_id: int,
+            ip: str,
+            user_agent: str,
+            permissions: Optional[List[str]] = None) -> Tuple[str, 'APIKey']:
         """
         Create a new API Key with randomly generated secret keys and the
         user details passed in as params.
@@ -148,11 +172,13 @@ class APIKey(db.Model):
             keyhashsalt=generate_password_hash(key),
             ip=ip,
             user_agent=user_agent,
-            permissions=permissions)
+            permissions=permissions or [])
         return (id + key, api_key)
 
     @classmethod
-    def from_user(cls, user_id, include_dead=False):
+    def from_user(cls,
+                  user_id: int,
+                  include_dead: bool = False) -> List['APIKey']:
         """
         Get all API keys owned by a user.
 
@@ -167,10 +193,10 @@ class APIKey(db.Model):
             filter=cls.user_id == user_id,
             include_dead=include_dead)
 
-    def belongs_to_user(self):
+    def belongs_to_user(self) -> bool:
         return flask.g.user and self.user_id == flask.g.user.id
 
-    def check_key(self, key):
+    def check_key(self, key: str) -> bool:
         """
         Validates the authenticity of an API key against its stored id.
 
@@ -179,7 +205,7 @@ class APIKey(db.Model):
         """
         return check_password_hash(self.keyhashsalt, key)
 
-    def has_permission(self, permission):
+    def has_permission(self, permission: str) -> bool:
         """
         Checks if the API key is assigned a permission. If the API key
         is not assigned any permissions, it checks against the user's
@@ -191,12 +217,11 @@ class APIKey(db.Model):
         if self.permissions:
             return permission in self.permissions
 
-        from pulsar.models import User
         user = User.from_id(self.user_id)
         return permission in user.permissions
 
     @staticmethod
-    def revoke_all_of_user(user_id):
+    def revoke_all_of_user(user_id: int) -> None:
         """
         Revokes all active API keys of a user.
 

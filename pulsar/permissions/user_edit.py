@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 import flask
 from voluptuous import Schema
 
@@ -13,7 +15,8 @@ app = flask.current_app
 
 @bp.route('/permissions', methods=['GET'])
 @require_permission('modify_permissions')
-def view_permissions(user_id=None, all=False):
+def view_permissions(user_id: Optional[int] = None,
+                     all: bool = False) -> 'flask.Response':
     """
     View all permissions available. Requires the ``modify_permissions`` permission.
 
@@ -60,7 +63,8 @@ change_permissions_schema = Schema({
 @bp.route('/permissions/user/<int:user_id>', methods=['PUT'])
 @require_permission('modify_permissions')
 @validate_data(change_permissions_schema)
-def change_permissions(user_id, permissions):
+def change_permissions(user_id: int,
+                       permissions: Dict[str, bool]) -> 'flask.Response':
     """
     Manually change the permissions assignments of a user.
     Requires the ``modify_permissions`` permission.
@@ -120,8 +124,8 @@ def change_permissions(user_id, permissions):
             raise APIException(f'{p} is not a valid permission.')
 
     for permission in to_delete:
-        permission = UserPermission.from_attrs(user.id, permission)
-        db.session.delete(permission)
+        permission_model = UserPermission.from_attrs(user.id, permission)
+        db.session.delete(permission_model)
     db.session.commit()
     for perm_name in to_add:
         db.session.add(UserPermission(

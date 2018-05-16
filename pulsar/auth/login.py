@@ -18,7 +18,7 @@ login_schema = Schema({
 
 @bp.route('/login', methods=['POST'])
 @validate_data(login_schema)
-def login(username, password, persistent):
+def login(username: str, password: str, persistent: bool) -> 'flask.Response':
     """
     Login endpoint - generate a session and get a cookie. Yum!
 

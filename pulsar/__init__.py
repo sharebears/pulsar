@@ -2,7 +2,9 @@ import flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug import find_modules, import_string
-from pulsar.cache import BaseModel, Cache  # type: ignore # hacky way to avoid circular imports
+
+from pulsar.base_model import BaseModel
+from pulsar.cache import Cache
 from pulsar.serializer import NewJSONEncoder
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
@@ -17,7 +19,7 @@ cache = Cache()
 migrate = Migrate()
 
 
-def create_app(config):
+def create_app(config: str) -> 'flask.Flask':
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile(config)
     app.json_encoder = NewJSONEncoder
@@ -34,7 +36,7 @@ def create_app(config):
     return app
 
 
-def register_blueprints(app):
+def register_blueprints(app: 'flask.Flask') -> None:
     # Every sub-view needs to be imported to populate the blueprint.
     # If this is not done, we will have empty blueprints.
     # If we register every module with the ``bp`` attribute normally,
@@ -53,7 +55,7 @@ def register_blueprints(app):
     # print(app.url_map)  # debug
 
 
-def register_error_handlers(app):
+def register_error_handlers(app: 'flask.Flask') -> None:
     app.register_error_handler(APIException, lambda err: (
         flask.jsonify(err.message), err.status_code))
     app.register_error_handler(404, _404_handler)
@@ -61,13 +63,13 @@ def register_error_handlers(app):
     app.register_error_handler(500, _500_handler)
 
 
-def _404_handler(_):
+def _404_handler(_) -> flask.Response:
     return flask.jsonify(_404Exception().message), 404
 
 
-def _405_handler(_):
+def _405_handler(_) -> 'flask.Response':
     return flask.jsonify(_405Exception().message), 405
 
 
-def _500_handler(_):
+def _500_handler(_) -> 'flask.Response':
     return flask.jsonify(_500Exception().message), 500

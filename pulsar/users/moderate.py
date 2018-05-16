@@ -1,3 +1,5 @@
+from typing import Optional
+
 import flask
 from voluptuous import All, Email, Range, Schema
 from voluptuous.validators import Match
@@ -24,8 +26,12 @@ moderate_user_schema = Schema({
 @bp.route('/users/<int:user_id>/moderate', methods=['PUT'])
 @require_permission('moderate_users')
 @validate_data(moderate_user_schema)
-def moderate_user(user_id, email=None, password=None, uploaded=None, downloaded=None,
-                  invites=None):
+def moderate_user(user_id: int,
+                  email: Optional[str] = None,
+                  password: Optional[str] = None,
+                  uploaded: Optional[int] = None,
+                  downloaded: Optional[int] = None,
+                  invites: Optional[int] = None) -> 'flask.Response':
     """
     Moderate a user - change password for them, alter stats, modify basic permissions,
     etc.

@@ -11,7 +11,7 @@ def hook(response):
     return response
 
 
-def wrap_response(response):
+def wrap_response(response: 'flask.Response') -> 'flask.Response':
     """
     Wrap response with the homogenized response dictionary, containing
     a ``status`` key and, if the request came with session-based

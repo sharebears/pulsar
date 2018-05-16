@@ -1,3 +1,5 @@
+from typing import Callable, List, Optional
+
 from functools import wraps
 
 import flask
@@ -9,7 +11,8 @@ from pulsar.models import User
 app = flask.current_app
 
 
-def require_permission(permission, masquerade=False):
+def require_permission(permission: str,
+                       masquerade: bool = False) -> Callable:
     """
     Requires a user to have the specified permission to access the view function.
 
@@ -23,9 +26,9 @@ def require_permission(permission, masquerade=False):
     :raises _403Exception: If an API Key is used and does not have enough permissions to
         access the resource.
     """
-    def wrapper(func):
+    def wrapper(func: Callable) -> Callable:
         @wraps(func)
-        def new_function(*args, **kwargs):
+        def new_function(*args, **kwargs) -> Callable:
             if not flask.g.user:
                 raise _403Exception(masquerade=True)
 
@@ -42,14 +45,14 @@ def require_permission(permission, masquerade=False):
     return wrapper
 
 
-def get_all_permissions():
+def get_all_permissions() -> List[str]:
     """
     Aggregate all the permissions listed in module __init__ files by iterating
     through them and adding their PERMISSIONS attr to a list.
     Restrict all uses of this function to users with the "get_all_permissions" permission.
     Returns the list of aggregated permissions.
     """
-    permissions = []
+    permissions: List[str] = []
     for name in find_modules('pulsar', include_packages=True):
         mod = import_string(name)
         if hasattr(mod, 'PERMISSIONS') and isinstance(mod.PERMISSIONS, list):
@@ -57,7 +60,8 @@ def get_all_permissions():
     return permissions
 
 
-def choose_user(user_id, permission):
+def choose_user(user_id: Optional[int],
+                permission: str) -> 'User':
     """
     Takes a user_id and a permission. If the user_id is specified, the user with that
     user id is fetched and then returned if the requesting user has the given permission.
@@ -80,7 +84,8 @@ def choose_user(user_id, permission):
     return flask.g.user
 
 
-def assert_user(user_id, permission=None):
+def assert_user(user_id: int,
+                permission: Optional[str] = None) -> bool:
     """
     Assert that a user_id belongs to the requesting user, or that
     the requesting user has a given permission.
@@ -88,7 +93,10 @@ def assert_user(user_id, permission=None):
     return (flask.g.user.id == user_id or flask.g.user.has_permission(permission))
 
 
-def assert_permission(permission, masquerade=False):
+def assert_permission(permission: str,
+                      masquerade: bool = False) -> None:
     "Assert that the requesting user has a permission, raise a 403 if they do not."
     if not flask.g.user.has_permission(permission):
-        raise _403Exception if not masquerade else _404Exception
+        if masquerade:
+            raise _404Exception
+        raise _403Exception

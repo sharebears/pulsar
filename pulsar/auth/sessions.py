@@ -1,3 +1,5 @@
+from typing import Optional as TOptional
+
 import flask
 from voluptuous import All, Length, Optional, Schema
 
@@ -13,7 +15,7 @@ app = flask.current_app
 
 @bp.route('/sessions/<id>', methods=['GET'])
 @require_permission('view_sessions')
-def view_session(id):
+def view_session(id: int) -> 'flask.Response':
     """
     View info related to a user session. Requires the ``view_sessions`` permission
     to view one's own sessions, and the ``view_sessions_others`` permission to view
@@ -74,7 +76,8 @@ view_all_sessions_schema = Schema({
 @bp.route('/sessions/user/<int:user_id>', methods=['GET'])
 @require_permission('view_sessions')
 @validate_data(view_all_sessions_schema)
-def view_all_sessions(include_dead, user_id=None):
+def view_all_sessions(include_dead: bool,
+                      user_id: TOptional[int] = None) -> 'flask.Response':
     """
     View all sessions of a user. Requires the ``view_sessions`` permission
     to view one's own sessions, and the ``view_sessions_others`` permission to view
@@ -151,7 +154,7 @@ expire_sessions_schema = Schema({
 @bp.route('/sessions', methods=['DELETE'])
 @require_permission('expire_sessions')
 @validate_data(expire_sessions_schema)
-def expire_session(id):
+def expire_session(id: int) -> 'flask.Response':
     """
     Revoke a user's session. Requires the ``expire_sessions`` permission to expire
     one's own sessions, and the ``expire_sessions_others`` permission to expire
@@ -205,7 +208,7 @@ def expire_session(id):
 @bp.route('/sessions/all', methods=['DELETE'])
 @bp.route('/sessions/all/user/<int:user_id>', methods=['DELETE'])
 @require_permission('expire_sessions')
-def expire_all_sessions(user_id=None):
+def expire_all_sessions(user_id: TOptional[int] = None) -> 'flask.Response':
     """
     Revoke all sessions of a user. Requires the ``expire_sessions`` permission to
     expire one's own sessions, and the ``expire_sessions_others`` permission to expire

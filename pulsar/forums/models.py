@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import flask
 from sqlalchemy import and_, func
 from sqlalchemy.ext.declarative import declared_attr
@@ -5,6 +7,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
 
 from pulsar import db
+from pulsar.models import User
+
+if False:
+    from sqlalchemy.sql import BinaryExpression  # noqa
 
 app = flask.current_app
 
@@ -14,9 +20,16 @@ class ForumCategory(db.Model):
     __cache_key__ = 'forums_categories_{id}'
     __cache_key_all__ = 'forums_categories_all'
 
-    __serialize__ = ('id', 'name', 'description', 'position', 'forums', )
-    __serialize_detailed__ = ('deleted', )
-    __serialize_nested_exclude__ = ('forums', )
+    __serialize__ = (
+        'id',
+        'name',
+        'description',
+        'position',
+        'forums')
+    __serialize_detailed__ = (
+        'deleted', )
+    __serialize_nested_exclude__ = (
+        'forums', )
 
     __permission_detailed__ = 'modify_forums'
 
@@ -27,25 +40,24 @@ class ForumCategory(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
-    def get_all(cls, include_dead=False):
+    def get_all(cls, include_dead: bool = False) -> List['ForumCategory']:
         return cls.get_many(
             key=cls.__cache_key_all__,
             order=cls.position.asc(),
             required_properties=('forums', ))
 
     @classmethod
-    def new(cls, name, description, position):
+    def new(cls,
+            name: str,
+            description: str,
+            position: int) -> 'ForumCategory':
         return super().new(
             name=name,
             description=description,
             position=position)
 
     @property
-    def cache_key(self):
-        return self.__cache_key__.format(id=self.id)
-
-    @property
-    def forums(self):
+    def forums(self) -> List['Forum']:
         return Forum.from_category(self.id)
 
 
@@ -56,13 +68,25 @@ class Forum(db.Model):
     __cache_key_thread_count__ = 'forums_{id}_thread_count'
     __cache_key_of_category__ = 'forums_forums_categories_{id}'
 
-    __serialize__ = ('id', 'name', 'description', 'category', 'position',
-                     'thread_count', 'threads', )
-    __serialize_very_detailed__ = ('deleted', )
-    __serialize_nested_include = ('last_updated_thread', )
-    __serialize_nested_exclude__ = ('category', 'threads', )
+    __serialize__ = (
+        'id',
+        'name',
+        'description',
+        'category',
+        'position',
+        'thread_count',
+        'threads')
+    __serialize_very_detailed__ = (
+        'deleted', )
+    __serialize_nested_include = (
+        'last_updated_thread', )
+    __serialize_nested_exclude__ = (
+        'category',
+        'threads')
 
     __permission_very_detailed__ = 'modify_forum_threads_advanced'
+
+    _threads: List['ForumThread']
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
@@ -73,14 +97,18 @@ class Forum(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
-    def from_category(cls, category_id):
+    def from_category(cls, category_id: int) -> List['Forum']:
         return cls.get_many(
             key=cls.__cache_key_of_category__.format(id=category_id),
             filter=cls.category_id == category_id,
             order=cls.position.asc())
 
     @classmethod
-    def new(cls, name, description, category_id, position):
+    def new(cls,
+            name: str,
+            description: str,
+            category_id: int,
+            position: int) -> Optional['Forum']:
         category = ForumCategory.from_id(category_id)
         if not category or category.deleted:
             return None
@@ -91,34 +119,33 @@ class Forum(db.Model):
             position=position)
 
     @property
-    def cache_key(self):
-        return self.__cache_key__.format(id=self.id)
-
-    @property
-    def category(self):
+    def category(self) -> 'ForumCategory':
         return ForumCategory.from_id(self.category_id)
 
     @property
-    def thread_count(self):
+    def thread_count(self) -> 'int':
         return self.count(
             key=self.__cache_key_thread_count__.format(id=self.id),
             attribute=ForumThread.id,
             filter=and_(ForumThread.forum_id == self.id, ForumThread.deleted == 'f'))
 
     @property
-    def last_updated_thread(self):
+    def last_updated_thread(self) -> 'ForumThread':
         return ForumThread.from_query(
             key=self.__cache_key_last_updated__.format(id=self.id),
             filter=(ForumThread.forum_id == self.id),
             order=ForumThread.last_updated.desc())
 
     @property
-    def threads(self):
+    def threads(self) -> List['ForumThread']:
         if hasattr(self, '_threads'):
             return self._threads
         return ForumThread.from_forum(self.id, 1, limit=50)
 
-    def set_threads(self, page, limit, include_dead=False):
+    def set_threads(self,
+                    page: int,
+                    limit: int,
+                    include_dead: bool = False) -> None:
         self._threads = ForumThread.from_forum(self.id, page, limit, include_dead)
 
 
@@ -130,12 +157,25 @@ class ForumThread(db.Model):
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
 
-    __serialize__ = ('id', 'topic', 'forum', 'poster', 'locked',
-                     'sticky', 'last_updated', 'post_count', 'posts')
-    __serialize_very_detailed__ = ('deleted', )
-    __serialize_nested_exclude__ = ('forum', 'posts')
+    __serialize__ = (
+        'id',
+        'topic',
+        'forum',
+        'poster',
+        'locked',
+        'sticky',
+        'last_updated',
+        'post_count',
+        'posts')
+    __serialize_very_detailed__ = (
+        'deleted', )
+    __serialize_nested_exclude__ = (
+        'forum',
+        'posts')
 
     __permission_very_detailed__ = 'modify_forum_threads_advanced'
+
+    _posts: List['ForumPost']
 
     id = db.Column(db.Integer, primary_key=True)
     topic = db.Column(db.String(255), nullable=False)
@@ -150,7 +190,11 @@ class ForumThread(db.Model):
         return (db.Index('ix_forums_threads_topic', func.lower(cls.topic), unique=True),)
 
     @classmethod
-    def from_forum(cls, forum_id, page=1, limit=50, include_dead=False):
+    def from_forum(cls,
+                   forum_id: int,
+                   page: int = 1,
+                   limit: int = 50,
+                   include_dead: bool = False) -> List['ForumThread']:
         return cls.get_many(
             key=cls.__cache_key_of_forum__.format(id=forum_id),
             filter=(cls.forum_id == forum_id),
@@ -159,8 +203,10 @@ class ForumThread(db.Model):
             limit=limit)
 
     @classmethod
-    def new(cls, topic, forum_id, poster_id):
-        from pulsar.models import User
+    def new(cls,
+            topic: str,
+            forum_id: int,
+            poster_id: int) -> Optional['ForumThread']:
         forum = Forum.from_id(forum_id)
         if not forum or forum.deleted or not User.from_id(poster_id):
             return None
@@ -170,39 +216,41 @@ class ForumThread(db.Model):
             poster_id=poster_id)
 
     @property
-    def last_post(self):
+    def last_post(self) -> 'ForumPost':
         return ForumPost.from_query(
             key=self.__cache_key_last_post__.format(id=self.id),
             filter=(ForumPost.thread_id == self.id),
             order=ForumPost.id.desc())
 
     @hybrid_property
-    def last_updated(cls):
+    def last_updated(cls) -> 'BinaryExpression':
         return select([func.max(ForumPost.time)]).where(ForumPost.thread_id == cls.id).as_scalar()
 
     @property
-    def forum(self):
+    def forum(self) -> 'Forum':
         return Forum.from_id(self.forum_id)
 
     @property
-    def poster(self):
-        from pulsar.models import User
+    def poster(self) -> 'User':
         return User.from_id(self.poster_id)
 
     @property
-    def post_count(self):
+    def post_count(self) -> int:
         return self.count(
             key=self.__cache_key_post_count__.format(id=self.id),
             attribute=ForumPost.id,
             filter=and_(ForumPost.thread_id == self.id, ForumPost.deleted == 'f',))
 
     @property
-    def posts(self):
+    def posts(self) -> List['ForumPost']:
         if hasattr(self, '_posts'):
             return self._posts
         return ForumPost.from_thread(self.id, 1, limit=50)
 
-    def set_posts(self, page=1, limit=50, include_dead=False):
+    def set_posts(self,
+                  page: int = 1,
+                  limit: int = 50,
+                  include_dead: bool = False) -> None:
         self._posts = ForumPost.from_thread(self.id, page, limit, include_dead)
 
 
@@ -211,9 +259,19 @@ class ForumPost(db.Model):
     __cache_key__ = 'forums_posts_{id}'
     __cache_key_of_thread__ = 'forums_posts_threads_{id}'
 
-    __serialize__ = ('id', 'thread_id', 'poster', 'contents', 'time', 'sticky', 'editor', )
-    __serialize_very_detailed__ = ('deleted', 'edit_history', )
-    __serialize_nested_exclude__ = ('thread_id', )
+    __serialize__ = (
+        'id',
+        'thread_id',
+        'poster',
+        'contents',
+        'time',
+        'sticky',
+        'editor')
+    __serialize_very_detailed__ = (
+        'deleted',
+        'edit_history')
+    __serialize_nested_exclude__ = (
+        'thread_id', )
 
     __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
@@ -227,7 +285,11 @@ class ForumPost(db.Model):
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
-    def from_thread(cls, thread_id, page=1, limit=50, include_dead=False):
+    def from_thread(cls,
+                    thread_id: int,
+                    page: int = 1,
+                    limit: int = 50,
+                    include_dead: bool = False) -> List['ForumPost']:
         return cls.get_many(
             key=cls.__cache_key_of_thread__.format(id=thread_id),
             filter=cls.thread_id == thread_id,
@@ -236,8 +298,10 @@ class ForumPost(db.Model):
             limit=limit)
 
     @classmethod
-    def new(cls, thread_id, poster_id, contents):
-        from pulsar.models import User
+    def new(cls,
+            thread_id: int,
+            poster_id: int,
+            contents: str) -> Optional['ForumPost']:
         thread = ForumThread.from_id(thread_id)
         poster = User.from_id(poster_id)
         if not thread or thread.deleted or not poster:
@@ -248,17 +312,15 @@ class ForumPost(db.Model):
             contents=contents)
 
     @property
-    def poster(self):
-        from pulsar.models import User
+    def poster(self) -> 'User':
         return User.from_id(self.poster_id)
 
     @property
-    def editor(self):
-        from pulsar.models import User
+    def editor(self) -> Optional['User']:
         return User.from_id(self.edited_user_id)
 
     @property
-    def edit_history(self):
+    def edit_history(self) -> List['ForumPostEditHistory']:
         return ForumPostEditHistory.from_post(self.id)
 
 
@@ -267,8 +329,14 @@ class ForumPostEditHistory(db.Model):
     __cache_key__ = 'forums_posts_edit_history_{id}'
     __cache_key_of_post__ = 'forums_posts_edit_history_posts_{id}'
 
-    __serialize_detailed__ = ('id', 'post', 'editor', 'contents', 'time', )
-    __serialize_nested_exclude__ = ('post', )
+    __serialize_detailed__ = (
+        'id',
+        'post',
+        'editor',
+        'contents',
+        'time')
+    __serialize_nested_exclude__ = (
+        'post', )
 
     __permission_detailed__ = 'modify_forum_posts_advanced'
 
@@ -279,17 +347,16 @@ class ForumPostEditHistory(db.Model):
     time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
 
     @classmethod
-    def from_post(cls, post_id):
+    def from_post(cls, post_id: int) -> List['ForumPostEditHistory']:
         return cls.get_many(
             key=cls.__cache_key_of_post__.format(id=post_id),
             filter=cls.post_id == post_id,
             order=cls.id.desc())
 
     @property
-    def post(self):
+    def post(self) -> 'ForumPost':
         return ForumPost.from_id(self.post_id)
 
     @property
-    def editor(self):
-        from pulsar.models import User
+    def editor(self) -> 'User':
         return User.from_id(self.editor_id)

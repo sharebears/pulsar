@@ -1,10 +1,12 @@
 import secrets
+from typing import List
 
 import flask
 from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import INET
 
 from pulsar import cache, db
+from pulsar.users.models import User
 
 
 class Invite(db.Model):
@@ -12,8 +14,15 @@ class Invite(db.Model):
     __cache_key__ = 'invites_{id}'
     __cache_key_of_user__ = 'invites_user_{user_id}'
 
-    __serialize_self__ = ('id', 'inviter_id', 'email', 'time_sent', 'expired', 'invitee')
-    __serialize_detailed__ = __serialize_self__ + ('from_ip', )
+    __serialize_self__ = (
+        'id',
+        'inviter_id',
+        'email',
+        'time_sent',
+        'expired',
+        'invitee')
+    __serialize_detailed__ = __serialize_self__ + (
+        'from_ip', )
 
     __permission_detailed__ = 'view_invites_others'
 
@@ -27,12 +36,14 @@ class Invite(db.Model):
     expired = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
 
     @property
-    def invitee(self):
-        from pulsar.models import User
+    def invitee(self) -> 'User':
         return User.from_id(self.invitee_id)
 
     @classmethod
-    def generate_invite(cls, inviter_id, email, ip):
+    def generate_invite(cls,
+                        inviter_id: int,
+                        email: str,
+                        ip: int) -> 'Invite':
         """
         Generate a random invite code.
 
@@ -52,7 +63,10 @@ class Invite(db.Model):
             from_ip=ip)
 
     @classmethod
-    def from_inviter(cls, inviter_id, include_dead=False, used=False):
+    def from_inviter(cls,
+                     inviter_id: int,
+                     include_dead: bool = False,
+                     used: bool = False) -> List['Invite']:
         """
         Get all invites sent by a user.
 
@@ -71,5 +85,5 @@ class Invite(db.Model):
             order=cls.time_sent.desc(),
             include_dead=include_dead or used)
 
-    def belongs_to_user(self):
+    def belongs_to_user(self) -> bool:
         return flask.g.user and self.inviter_id == flask.g.user.id

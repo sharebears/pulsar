@@ -31,6 +31,7 @@ def test_all_class_serialization_attributes_valid():
                isinstance(cls, type) and issubclass(cls, BaseModel)]
     for class_ in classes:
         attrs = class_.__dict__.keys()
+        print(class_.__name__)
         serializes = (
             class_.__serialize__
             + class_.__serialize_self__

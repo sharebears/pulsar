@@ -1,4 +1,5 @@
 from copy import copy
+from typing import Any, Dict, List
 
 import flask
 from voluptuous import All, Length, Optional, Schema
@@ -20,7 +21,8 @@ secondary_schema = Schema({
 @bp.route('/user_classes/<int:user_class_id>', methods=['GET'])
 @require_permission('modify_user_classes')
 @validate_data(secondary_schema)
-def view_user_class(user_class_id, secondary=False):
+def view_user_class(user_class_id: int,
+                    secondary: bool = False) -> 'flask.Response':
     """
     View an available user class and its associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -64,14 +66,15 @@ def view_user_class(user_class_id, secondary=False):
 
     :statuscode 200: View successful
     """
-    return flask.jsonify((SecondaryClass if secondary else UserClass).from_id(
+    u_class: Any = SecondaryClass if secondary else UserClass
+    return flask.jsonify(u_class.from_id(
         user_class_id, _404=f'{"Secondary" if secondary else "User"} class'))
 
 
 @bp.route('/user_classes', methods=['GET'])
 @require_permission('list_user_classes')
 @validate_data(secondary_schema)
-def view_multiple_user_classes(secondary=False):
+def view_multiple_user_classes(secondary: bool = False) -> 'flask.Response':
     """
     View all available user classes and their associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -130,7 +133,7 @@ def view_multiple_user_classes(secondary=False):
     :statuscode 200: View successful
     :statuscode 404: User class does not exist
     """
-    return flask.jsonify({
+    return flask.jsonify({  # type: ignore
         'user_classes': UserClass.get_all(),
         'secondary_classes': SecondaryClass.get_all(),
         })
@@ -146,7 +149,9 @@ create_user_class_schema = Schema({
 @bp.route('/user_classes', methods=['POST'])
 @require_permission('modify_user_classes')
 @validate_data(create_user_class_schema)
-def create_user_class(name, secondary, permissions):
+def create_user_class(name: str,
+                      secondary: bool,
+                      permissions: List[str]) -> 'flask.Response':
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
@@ -201,15 +206,15 @@ def create_user_class(name, secondary, permissions):
     :statuscode 200: User class successfully created
     :statuscode 400: User class name taken or invalid permissions
     """
-    user_class = (SecondaryClass if secondary else UserClass).new(
+    u_class: Any = SecondaryClass if secondary else UserClass
+    return flask.jsonify(u_class.new(
         name=name,
-        permissions=permissions)
-    return flask.jsonify(user_class)
+        permissions=permissions))
 
 
 @bp.route('/user_classes/<int:user_class_id>', methods=['DELETE'])
 @require_permission('modify_user_classes')
-def delete_user_class(user_class_id):
+def delete_user_class(user_class_id: int) -> 'flask.Response':
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
@@ -251,10 +256,11 @@ def delete_user_class(user_class_id):
     :statuscode 404: Userclass does not exist
     """
     # Determine secondary here because it's a query arg
-    request_args = flask.request.args.to_dict()
-    secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
+    request_args: dict = flask.request.args.to_dict()
+    secondary: bool = bool_get(request_args['secondary']) if 'secondary' in request_args else False
+    u_class: Any = SecondaryClass if secondary else UserClass
 
-    user_class = (SecondaryClass if secondary else UserClass).from_id(
+    user_class = u_class.from_id(
         user_class_id, _404=f'{"Secondary" if secondary else "User"} class')
     if user_class.has_users():
         raise APIException(f'You cannot delete a {"secondary" if secondary else "user"} '
@@ -273,10 +279,12 @@ modify_user_class_schema = Schema({
     }, required=True)
 
 
-@bp.route('/user_classes/<user_class_id>', methods=['PUT'])
+@bp.route('/user_classes/<int:user_class_id>', methods=['PUT'])
 @require_permission('modify_user_classes')
 @validate_data(modify_user_class_schema)
-def modify_user_class(user_class_id, permissions, secondary):
+def modify_user_class(user_class_id: int,
+                      permissions: Dict[str, bool],
+                      secondary: bool) -> 'flask.Response':
     """
     Modifies permissions for an existing user class.
     Requires the ``modify_user_classes`` permission.
@@ -333,9 +341,9 @@ def modify_user_class(user_class_id, permissions, secondary):
     :statuscode 400: Permissions cannot be applied
     :statuscode 404: Userclass does not exist
     """
-    c_name = f'{"Secondary" if secondary else "User"} class'
-    user_class = (SecondaryClass if secondary else UserClass).from_id(
-        user_class_id, _404=c_name)
+    c_name: str = f'{"Secondary" if secondary else "User"} class'
+    u_class: Any = SecondaryClass if secondary else UserClass
+    user_class: 'UserClass' = u_class.from_id(user_class_id, _404=c_name)
 
     uc_perms = copy(user_class.permissions)
     to_add = {p for p, a in permissions.items() if a is True}

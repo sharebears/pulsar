@@ -1,9 +1,16 @@
+from typing import List, Optional
+
 import flask
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import APIException, cache, db
+
+if False:
+    from pulsar.models import (  # noqa
+        Session as Session_, APIKey as APIKey_, UserClass as UserClass_)
+
 
 app = flask.current_app
 
@@ -13,11 +20,31 @@ class User(db.Model):
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_{id}_permissions'
 
-    __serialize__ = ('id', 'username', 'enabled', 'user_class', 'secondary_classes',
-                     'uploaded', 'downloaded')
-    __serialize_self__ = ('email', 'locked', 'invites', 'sessions', 'api_keys')
-    __serialize_detailed__ = ('email', 'locked', 'invites', 'inviter', 'sessions', 'api_keys')
-    __serialize_nested_exclude__ = ('inviter', 'sessions', 'api_keys')
+    __serialize__ = (
+        'id',
+        'username',
+        'enabled',
+        'user_class',
+        'secondary_classes',
+        'uploaded',
+        'downloaded')
+    __serialize_self__ = (
+        'email',
+        'locked',
+        'invites',
+        'sessions',
+        'api_keys')
+    __serialize_detailed__ = (
+        'email',
+        'locked',
+        'invites',
+        'inviter',
+        'sessions',
+        'api_keys')
+    __serialize_nested_exclude__ = (
+        'inviter',
+        'sessions',
+        'api_keys')
 
     __permission_detailed__ = 'moderate_users'
     __permission_very_detailed__ = 'moderate_users_advanced'
@@ -42,14 +69,14 @@ class User(db.Model):
                 db.Index('ix_users_email', func.lower(cls.email)))
 
     @classmethod
-    def from_username(cls, username):
+    def from_username(cls, username: str) -> 'User':
         username = username.lower()
         user = cls.query.filter(func.lower(cls.username) == username).first()
         cache.cache_model(user)
         return user
 
     @classmethod
-    def new(cls, username, password, email):
+    def new(cls, username: str, password: str, email: str) -> 'User':
         """
         Alternative constructor which generates a password hash and
         lowercases and strips leading and trailing spaces from the email.
@@ -62,36 +89,36 @@ class User(db.Model):
             email=email.lower().strip())
 
     @property
-    def user_class(self):
-        from pulsar.models import UserClass
+    def user_class(self) -> 'UserClass_':
+        from pulsar.permissions.models import UserClass
         return UserClass.from_id(self.user_class_id)
 
     @property
-    def secondary_classes(self):
-        from pulsar.models import SecondaryClass
+    def secondary_classes(self) -> List[str]:
+        from pulsar.permissions.models import SecondaryClass
         secondary_classes = SecondaryClass.from_user(self.id)
         return [sc.name for sc in secondary_classes]
 
     @property
-    def inviter(self):
+    def inviter(self) -> Optional['User']:
         return User.from_id(self.inviter_id) if self.inviter_id else None
 
     @property
-    def api_keys(self):
-        from pulsar.models import APIKey
+    def api_keys(self) -> List['APIKey_']:
+        from pulsar.auth.models import APIKey
         return APIKey.from_user(self.id)
 
     @property
-    def sessions(self):
-        from pulsar.models import Session
+    def sessions(self) -> List['Session_']:
+        from pulsar.auth.models import Session
         return Session.from_user(self.id)
 
     @property
-    def permissions(self):
-        from pulsar.models import UserPermission, SecondaryClass
+    def permissions(self) -> List[str]:
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
 
+        from pulsar.permissions.models import SecondaryClass, UserPermission
         cache_key = self.__cache_key_permissions__.format(id=self.id)
         permissions = cache.get(cache_key)
         if not permissions:
@@ -109,14 +136,14 @@ class User(db.Model):
             cache.set(cache_key, permissions)
         return permissions
 
-    def belongs_to_user(self):
+    def belongs_to_user(self) -> bool:
         return flask.g.user and self.id == flask.g.user.id
 
-    def set_password(self, password):
+    def set_password(self, password: str) -> None:
         self.passhash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str) -> bool:
         return check_password_hash(self.passhash, password)
 
-    def has_permission(self, permission):
-        return permission and permission in self.permissions
+    def has_permission(self, permission: Optional[str]) -> bool:
+        return permission is not None and permission in self.permissions

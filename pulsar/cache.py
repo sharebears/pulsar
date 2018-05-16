@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Any, Union
 
 import flask
 from werkzeug.contrib.cache import RedisCache
@@ -46,7 +46,7 @@ class Cache(RedisCache):
         flask.g.cache_keys['inc'].add(key)
         return value
 
-    def get(self, key: str) -> Union[int, str, list, dict]:
+    def get(self, key: str) -> Any:
         """
         Look up key in the cache and return the value for it. Key is
         automatically lower-cased.

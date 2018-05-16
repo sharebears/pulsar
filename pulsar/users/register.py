@@ -1,3 +1,5 @@
+from typing import Optional as TOptional
+
 import flask
 from voluptuous import Optional, Schema
 from voluptuous.validators import Email, Match
@@ -17,13 +19,16 @@ registration_schema = Schema({
         'Password must be 12 or more characters and contain at least 1 letter, '
         '1 number, and 1 special character.')),
     'email': Email(),
-    Optional('code', default=None): val_invite_code,
+    Optional('code', default=None): str,
 }, required=True)
 
 
 @bp.route('/register', methods=['POST'])
 @validate_data(registration_schema)
-def register(username, password, email, code):
+def register(username: str,
+             password: str,
+             email: str,
+             code: TOptional[str]) -> 'flask.Response':
     """
     Creates a user account with the provided credentials.
     An invite code may be required for registration.
@@ -76,6 +81,7 @@ def register(username, password, email, code):
     :statuscode 200: registration successful
     :statuscode 400: registration unsuccessful
     """
+    val_invite_code(code)
     user = User.new(
         username=username,
         password=password,

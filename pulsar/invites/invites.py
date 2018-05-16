@@ -13,7 +13,7 @@ app = flask.current_app
 
 @bp.route('/invites/<id>', methods=['GET'])
 @require_permission('view_invites')
-def view_invite(id):
+def view_invite(id: int) -> 'flask.Response':
     """
     View the details of an invite. Requires the ``view_invites`` permission.
     Requires the ``view_invites_others`` permission to view another user's invites.
@@ -70,7 +70,9 @@ view_invites_schema = Schema({
 @bp.route('/invites/user/<int:user_id>', methods=['GET'])
 @require_permission('view_invites')
 @validate_data(view_invites_schema)
-def view_invites(used, include_dead, user_id=None):
+def view_invites(used: bool,
+                 include_dead: bool,
+                 user_id: int = None) -> 'flask.Response':
     """
     View sent invites. If a user_id is specified, only invites sent by that user
     will be returned, otherwise only your invites are returned. If requester has
@@ -146,7 +148,7 @@ user_invite_schema = Schema({
 @bp.route('/invites', methods=['POST'])
 @require_permission('send_invites')
 @validate_data(user_invite_schema)
-def invite_user(email):
+def invite_user(email: str):
     """
     Sends an invite to the provided email address. Requires the ``send_invites``
     permission. If the site is open registration, this endpoint will raise a
@@ -217,7 +219,7 @@ def invite_user(email):
 
 @bp.route('/invites/<code>', methods=['DELETE'])
 @require_permission('revoke_invites')
-def revoke_invite(code):
+def revoke_invite(code: str) -> 'flask.Response':
     """
     Revokes an active invite code, preventing it from being used. The
     invite is returned to the user's account. Requires the

@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Optional
 
 import flask
 import pytz
@@ -12,7 +13,7 @@ from pulsar.models import Invite, User
 app = flask.current_app
 
 
-def val_username(username):
+def val_username(username: str) -> str:
     """
     Ensures that a username is not taken by comparing it with existing DB results.
 
@@ -38,7 +39,7 @@ def val_username(username):
     return username
 
 
-def val_invite_code(code):
+def val_invite_code(code: Optional[str]) -> None:
     """
     Check an invite code against existing invite codes;
     Raises an APIException if the code isn't valid.
@@ -58,7 +59,7 @@ def val_invite_code(code):
     if invite and not invite.invitee_id:
         time_since_usage = datetime.utcnow().replace(tzinfo=pytz.utc) - invite.time_sent
         if time_since_usage.total_seconds() < app.config['INVITE_LIFETIME']:
-            return code
+            return
 
     if code:
         raise Invalid(f'{code} is not a valid invite code')

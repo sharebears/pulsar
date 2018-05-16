@@ -1,13 +1,14 @@
 import json
 from functools import wraps
+from typing import Any, Callable, Dict
 
 import flask
-from voluptuous import Invalid
+from voluptuous import Schema, Invalid  # noqa
 
 from pulsar import APIException
 
 
-def validate_data(schema):
+def validate_data(schema: 'Schema') -> Callable:
     """
     Compare a request's form data to a provided Voluptuous schema.
     If the request data is invalid, an APIException is raised.
@@ -29,7 +30,7 @@ def validate_data(schema):
     return wrapper
 
 
-def get_request_data():
+def get_request_data() -> Dict[Any, Any]:
     """
     Turn the incoming json data into a dictionary and remove the CSRF key if present.
 

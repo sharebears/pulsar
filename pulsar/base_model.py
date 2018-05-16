@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Optional
 
 import flask
 from flask_sqlalchemy import Model
@@ -8,6 +8,7 @@ from sqlalchemy.orm.session import make_transient_to_detached
 if False:
     from flask import BaseQuery  # noqa
     from sqlalchemy.sql import BinaryExpression  # noqa
+    from sqlalchemy.orm.attributes import InstrumentedAttribute  # noqa
 
 
 class BaseModel(Model):
@@ -51,17 +52,17 @@ class BaseModel(Model):
 
     # Default values
 
-    __cache_key__ = None  # type: str
+    __cache_key__: Optional[str] = None
 
-    __serialize__ = tuple()  # type: tuple
-    __serialize_self__ = tuple()  # type: tuple
-    __serialize_detailed__ = tuple()  # type: tuple
-    __serialize_very_detailed__ = tuple()  # type: tuple
-    __serialize_nested_include__ = tuple()  # type: tuple
-    __serialize_nested_exclude__ = tuple()  # type: tuple
+    __serialize__: tuple = ()
+    __serialize_self__: tuple = ()
+    __serialize_detailed__: tuple = ()
+    __serialize_very_detailed__: tuple = ()
+    __serialize_nested_include__: tuple = ()
+    __serialize_nested_exclude__: tuple = ()
 
-    __permission_detailed__ = None  # type: str
-    __permission_very_detailed__ = None  # type: str
+    __permission_detailed__: Optional[str] = None
+    __permission_very_detailed__: Optional[str] = None
 
     @property
     def cache_key(self) -> str:
@@ -73,14 +74,16 @@ class BaseModel(Model):
 
         :return: A ``str`` cache key representing the model
         """
-        return self.__cache_key__.format(id=self.id)
+        if self.__cache_key__:
+            return self.__cache_key__.format(id=self.id)
+        raise NameError('The cache key is undefined in this model.')
 
     @classmethod
     def from_id(cls,
                 id: int, *,
                 include_dead: bool = False,
                 _404: bool = False,
-                asrt: bool = False) -> Union['BaseModel', None]:
+                asrt: bool = False) -> Optional['BaseModel']:
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -102,6 +105,8 @@ class BaseModel(Model):
             ``asrt`` and ``_404`` are passed and the permission checks fail
         """
         from pulsar import _404Exception
+        if not cls.__cache_key__:
+            raise NameError('The cache key is undefined in this model.')
         model = cls.from_cache(
             key=cls.__cache_key__.format(id=id),
             query=cls.query.filter(cls.id == id))
@@ -119,7 +124,7 @@ class BaseModel(Model):
     @classmethod
     def from_cache(cls,
                    key: str, *,
-                   query: 'BaseQuery' = None) -> Union['BaseModel', None]:
+                   query: Optional['BaseQuery'] = None) -> Optional['BaseModel']:
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -149,7 +154,10 @@ class BaseModel(Model):
         return None
 
     @classmethod
-    def from_query(cls, *, key, filter=None, order=None):
+    def from_query(cls, *,
+                   key: str,
+                   filter: Optional['BinaryExpression'] = None,
+                   order: Optional['BinaryExpression'] = None) -> Optional['BaseModel']:
         """
         Function to get a single object from the database (limit(1), first()).
         Getting the object via the provided cache key will be attempted first; if
@@ -167,7 +175,7 @@ class BaseModel(Model):
         """
         from pulsar import cache
         cls_id = cache.get(key)
-        if not cls_id:
+        if not cls_id or not isinstance(cls_id, int):
             query = cls._construct_query(cls.query, filter, order)
             model = query.limit(1).first()
             if model:
@@ -179,8 +187,15 @@ class BaseModel(Model):
         return cls.from_id(cls_id)
 
     @classmethod
-    def get_many(cls, *, key, filter=None, order=None, required_properties=tuple(),
-                 include_dead=False, page=None, limit=None, expr_override=None):
+    def get_many(cls, *,
+                 key: str,
+                 filter: Optional['BinaryExpression'] = None,
+                 order: Optional['BinaryExpression'] = None,
+                 required_properties: tuple = (),
+                 include_dead: bool = False,
+                 page: Optional[int] = None,
+                 limit: Optional[int] = None,
+                 expr_override: Optional['BinaryExpression'] = None) -> List['BaseModel']:
         """
         Abstraction function to get a list of IDs from the cache with a cache
         key, and query for those IDs if the key does not exist. If the query
@@ -208,7 +223,7 @@ class BaseModel(Model):
         """
         from pulsar import db, cache
         ids = cache.get(key)
-        if not ids:
+        if not ids or not isinstance(ids, list):
             if expr_override is not None:
                 ids = [x[0] for x in db.session.execute(expr_override)]
             else:
@@ -216,9 +231,8 @@ class BaseModel(Model):
                 ids = [x[0] for x in query.all()]
             cache.set(key, ids)
 
-        if page is not None:
+        if page is not None and isinstance(ids, list):
             limit = limit or 50
-            ids = ids[(page - 1) * limit:]
 
         models = []
         for id in ids:
@@ -234,7 +248,7 @@ class BaseModel(Model):
         return models
 
     @classmethod
-    def _valid_data(cls, data):
+    def _valid_data(cls, data: dict) -> bool:
         """
         Validate the data returned from the cache by ensuring that it is a dictionary
         and that the returned values match the columns of the object.
@@ -246,7 +260,7 @@ class BaseModel(Model):
         return isinstance(data, dict) and set(data.keys()) == set(cls.__table__.columns.keys())
 
     @classmethod
-    def new(cls, **kwargs):
+    def new(cls, **kwargs: dict) -> 'BaseModel':
         """
         Create a new instance of the model, add it to the instance, cache it,
         and return it.
@@ -260,7 +274,10 @@ class BaseModel(Model):
         cache.cache_model(model)
         return model
 
-    def count(self, *, key, attribute, filter=None):
+    def count(self, *,
+              key: str,
+              attribute: 'InstrumentedAttribute',
+              filter: 'BinaryExpression' = None) -> int:
         """
         Abstraction function for counting a number of elements. If the
         cache key exists, its value will be returned; otherwise, the
@@ -272,13 +289,13 @@ class BaseModel(Model):
         """
         from pulsar import db, cache
         count = cache.get(key)
-        if not count:
+        if not isinstance(count, int):
             query = self._construct_query(db.session.query(func.count(attribute)), filter)
             count = query.first()[0]
             cache.set(key, count)
         return count
 
-    def belongs_to_user(self):
+    def belongs_to_user(self) -> bool:
         """
         Function to determine whether or not the model "belongs" to a user
         by comparing against flask.g.user This is meant to be overridden
@@ -288,15 +305,15 @@ class BaseModel(Model):
         """
         return False
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear the cache key for this model instance."""
         from pulsar import cache
         cache.delete(self.cache_key)
 
     @staticmethod
     def _construct_query(query: 'BaseQuery',
-                         filter: 'BinaryExpression' = None,
-                         order: 'BinaryExpression' = None) -> 'BaseQuery':
+                         filter: Optional['BinaryExpression'] = None,
+                         order: Optional['BinaryExpression'] = None) -> 'BaseQuery':
         """
         Convenience function to save code space for query generations.
         Takes filters and orders and applies them to the query if they are present,
@@ -310,7 +327,6 @@ class BaseModel(Model):
         """
         if filter is not None:
             query = query.filter(filter)
-            print(type(filter))
         if order is not None:
             query = query.order_by(order)
         return query

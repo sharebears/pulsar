@@ -1,6 +1,7 @@
 import json
 from collections import defaultdict
 from datetime import datetime
+from typing import Optional
 
 import flask
 import pytz
@@ -14,7 +15,7 @@ app = flask.current_app
 
 
 @bp.before_app_request
-def hook():
+def hook() -> None:
     flask.g.user = None
     flask.g.api_key = None
     flask.g.user_session = None
@@ -37,7 +38,7 @@ def hook():
             check_csrf()
 
 
-def check_user_session():
+def check_user_session() -> bool:
     """
     Checks to see if the request contains a valid signed session.
     If it exists, set the flask.g.user and flask.g.api_key context globals.
@@ -59,7 +60,7 @@ def check_user_session():
     return False
 
 
-def check_api_key():
+def check_api_key() -> None:
     """
     Checks the request header for an authorization key and, if the key matches
     an active API key, sets the flask.g.user and flask.g.api_key context globals.
@@ -78,7 +79,7 @@ def check_api_key():
             update_session_or_key(api_key)
 
 
-def update_session_or_key(session_key):
+def update_session_or_key(session_key) -> None:
     """
     Update the provided session or api key's last seen times,
     user agent, and IP fields.
@@ -98,7 +99,7 @@ def update_session_or_key(session_key):
         cache.set(cache_key, 1, timeout=60 * 2)  # 2 minute wait before next update
 
 
-def parse_key(headers):
+def parse_key(headers) -> Optional[str]:
     """
     Parses the header for an API key, and returns it if found.
     The authorization header must be in the following format: ``Token <api key>``.
@@ -111,10 +112,10 @@ def parse_key(headers):
         parts = auth.split()
         if len(parts) == 2 and parts[0] == 'Token':
             return parts[1]
-    return
+    return None
 
 
-def check_rate_limit():
+def check_rate_limit() -> None:
     """
     Check whether or not a user has exceeded the rate limits specified in the
     config. Rate limits per API key or session and per user are recorded.
@@ -146,7 +147,7 @@ def check_rate_limit():
                            f'{time_left} seconds until lock expires.')
 
 
-def check_csrf():
+def check_csrf() -> None:
     """
     Checks the CSRF token in a HTTP request, and compares it to the authorization key
     of the session/api key used in the request. This function will run and potentially

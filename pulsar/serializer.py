@@ -3,6 +3,8 @@ from datetime import datetime
 import flask
 from flask.json import JSONEncoder
 
+from pulsar.base_model import BaseModel
+
 
 class NewJSONEncoder(JSONEncoder):
     """
@@ -27,7 +29,9 @@ class NewJSONEncoder(JSONEncoder):
         else:
             return super().default(obj)
 
-    def _to_dict(self, model, nested=False):
+    def _to_dict(self,
+                 model: 'BaseModel',
+                 nested: bool = False) -> dict:
         """
         Convert the model to a dictionary based on its defined serializable attributes.
         ``BaseModel`` objects embedded in the dictionary or lists in the dictionary
@@ -47,12 +51,12 @@ class NewJSONEncoder(JSONEncoder):
             attrs += model.__serialize_very_detailed__
         if nested:
             attrs += model.__serialize_nested_include__
-            attrs = [a for a in attrs if a not in model.__serialize_nested_exclude__]
+            attrs = tuple(a for a in attrs if a not in model.__serialize_nested_exclude__)
 
         return self._objects_to_dict(
             {attr: getattr(model, attr, None) for attr in list(set(attrs))})
 
-    def _objects_to_dict(self, dict_):
+    def _objects_to_dict(self, dict_: dict) -> dict:
         """
         Iterate through all values inside a dictionary and "fix" a dictionary to be
         JSON serializable by applying the _to_dict() function to all embedded models.
@@ -62,7 +66,6 @@ class NewJSONEncoder(JSONEncoder):
 
         :return: A JSON serializable ``dict``
         """
-        from pulsar import BaseModel
 
         def iter_handler(value):
             if isinstance(value, dict):

@@ -1,10 +1,12 @@
+from typing import Union
+
 from voluptuous import Invalid
 
 from pulsar.permissions.validators import *  # noqa
 from pulsar.users.validators import *  # noqa
 
 
-def bool_get(val):
+def bool_get(val: Union[bool, str, None]):
     """
     Takes a string value and returns a boolean based on the input, since GET requests
     always come as strings. '1' and 'true' return True, while '0' and 'false'

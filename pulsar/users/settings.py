@@ -1,3 +1,5 @@
+from typing import Optional
+
 import flask
 from voluptuous import All, Length, Match, Schema
 
@@ -22,7 +24,9 @@ settings_schema = Schema({
 @bp.route('/users/<int:user_id>/settings', methods=['PUT'])
 @require_permission('edit_settings')
 @validate_data(settings_schema)
-def edit_settings(user_id=None, existing_password=None, new_password=None):
+def edit_settings(user_id: int =None,
+                  existing_password: Optional[str] =None,
+                  new_password: Optional[str] =None) -> 'flask.Response':
     # TODO: Fix documentation
     """
     Change a user's password. Requires the ``change_password`` permission.
@@ -74,7 +78,7 @@ def edit_settings(user_id=None, existing_password=None, new_password=None):
         if not flask.g.user.has_permission('change_password'):
             raise _403Exception(
                 message='You do not have permission to change this password.')
-        if not user.check_password(existing_password):
+        if not existing_password or not user.check_password(existing_password):
             raise _401Exception(message='Invalid existing password.')
         user.set_password(new_password)
         Session.expire_all_of_user(user.id)
