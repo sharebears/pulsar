@@ -1,4 +1,5 @@
 import pytest
+
 from pulsar import BaseModel
 from pulsar.models import User
 from pulsar.utils.permissions import get_all_permissions

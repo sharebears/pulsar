@@ -1,8 +1,11 @@
 import json
+
 import flask
 import pytest
-from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
-from pulsar import db, cache
+
+from conftest import (CODE_1, CODE_2, CODE_3, add_permissions,
+                      check_json_response)
+from pulsar import cache, db
 from pulsar.models import APIKey
 from pulsar.utils import require_permission
 

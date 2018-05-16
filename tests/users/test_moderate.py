@@ -1,7 +1,9 @@
 import json
+
 import pytest
 from voluptuous import MultipleInvalid
-from conftest import check_json_response, add_permissions
+
+from conftest import add_permissions, check_json_response
 from pulsar import db
 from pulsar.models import User
 from pulsar.users.moderate import moderate_user_schema

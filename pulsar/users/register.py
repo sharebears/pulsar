@@ -1,7 +1,7 @@
 from typing import Optional as TOptional
 
 import flask
-from voluptuous import Optional, Schema
+from voluptuous import Any, Optional, Schema
 from voluptuous.validators import Email, Match
 
 from pulsar import PASSWORD_REGEX
@@ -19,7 +19,7 @@ registration_schema = Schema({
         'Password must be 12 or more characters and contain at least 1 letter, '
         '1 number, and 1 special character.')),
     'email': Email(),
-    Optional('code', default=None): str,
+    Optional('code', default=None): Any(str, None),
 }, required=True)
 
 

@@ -1,10 +1,12 @@
 import json
+
 import pytest
-from voluptuous import Invalid
 from sqlalchemy.exc import IntegrityError
+from voluptuous import Invalid
+
 from conftest import check_json_response
-from pulsar import db, cache, APIException
-from pulsar.models import UserClass, SecondaryClass
+from pulsar import APIException, cache, db
+from pulsar.models import SecondaryClass, UserClass
 
 
 @pytest.mark.parametrize(

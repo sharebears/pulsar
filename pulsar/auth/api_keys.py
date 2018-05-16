@@ -1,4 +1,5 @@
-from typing import List, Optional as TOptional
+from typing import List
+from typing import Optional as TOptional
 
 import flask
 from voluptuous import All, Length, Optional, Schema

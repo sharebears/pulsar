@@ -1,10 +1,10 @@
 import flask
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, event
 from werkzeug import find_modules, import_string
 
 from pulsar.base_model import BaseModel
-from pulsar.cache import Cache
+from pulsar.cache import Cache, clear_cache_dirty
 from pulsar.serializer import NewJSONEncoder
 from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
@@ -17,6 +17,8 @@ PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&]).{12,512}$'
 db = SQLAlchemy(model_class=BaseModel)
 cache = Cache()
 migrate = Migrate()
+
+event.listen(db.session, 'before_commit', clear_cache_dirty)
 
 
 def create_app(config: str) -> 'flask.Flask':

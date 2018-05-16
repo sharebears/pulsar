@@ -1,4 +1,5 @@
 import pytest
+
 from conftest import add_permissions
 from pulsar import db
 

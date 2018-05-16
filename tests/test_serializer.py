@@ -1,8 +1,10 @@
-import pytz
-import pytest
 from datetime import datetime
+
+import pytest
+import pytz
+
 from conftest import add_permissions
-from pulsar import cache, NewJSONEncoder
+from pulsar import NewJSONEncoder, cache
 from pulsar.models import User
 
 

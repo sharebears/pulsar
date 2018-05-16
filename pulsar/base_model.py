@@ -305,11 +305,6 @@ class BaseModel(Model):
         """
         return False
 
-    def clear_cache(self) -> None:
-        """Clear the cache key for this model instance."""
-        from pulsar import cache
-        cache.delete(self.cache_key)
-
     @staticmethod
     def _construct_query(query: 'BaseQuery',
                          filter: Optional['BinaryExpression'] = None,

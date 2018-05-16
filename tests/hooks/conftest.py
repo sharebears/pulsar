@@ -1,4 +1,5 @@
 import pytest
+
 from conftest import CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_2
 from pulsar import db
 

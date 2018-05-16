@@ -1,8 +1,11 @@
 import json
+
 import pytest
-from conftest import check_json_response, add_permissions, CODE_1, CODE_2, CODE_3
-from pulsar import db, cache
-from pulsar.models import User, Invite
+
+from conftest import (CODE_1, CODE_2, CODE_3, add_permissions,
+                      check_json_response)
+from pulsar import cache, db
+from pulsar.models import Invite, User
 
 
 def hex_generator(_):

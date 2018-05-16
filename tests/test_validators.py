@@ -1,7 +1,9 @@
 import re
+
 import pytest
 from voluptuous import Invalid
-from pulsar import USERNAME_REGEX, PASSWORD_REGEX
+
+from pulsar import PASSWORD_REGEX, USERNAME_REGEX
 from pulsar.validators import bool_get
 
 

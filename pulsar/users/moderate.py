@@ -90,5 +90,4 @@ def moderate_user(user_id: int,
         user.invites = invites
 
     db.session.commit()
-    user.clear_cache()
     return flask.jsonify(user)

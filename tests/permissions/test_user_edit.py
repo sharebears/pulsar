@@ -1,5 +1,7 @@
 import json
+
 import pytest
+
 from conftest import add_permissions, check_json_response
 from pulsar import db
 from pulsar.models import User, UserPermission

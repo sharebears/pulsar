@@ -1,6 +1,8 @@
 import json
+
 import flask
 from voluptuous import Schema
+
 from conftest import check_json_response
 from pulsar.utils import validate_data
 

@@ -1,12 +1,14 @@
 import json
+from collections import defaultdict, namedtuple
+
 import flask
 import pytest
-from collections import namedtuple, defaultdict
-from voluptuous import Schema, Optional
+from voluptuous import Optional, Schema
+
 from conftest import CODE_1, CODE_2, add_permissions, check_json_response
-from pulsar import db, cache, APIException
-from pulsar.models import User, Session
-from pulsar.utils import validate_data, require_permission
+from pulsar import APIException, cache, db
+from pulsar.models import Session, User
+from pulsar.utils import require_permission, validate_data
 
 
 def cache_num_iter(*args, **kwargs):

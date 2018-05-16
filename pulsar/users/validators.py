@@ -7,7 +7,7 @@ import pytz
 from sqlalchemy import func
 from voluptuous import Invalid
 
-from pulsar import USERNAME_REGEX
+from pulsar import USERNAME_REGEX, APIException
 from pulsar.models import Invite, User
 
 app = flask.current_app
@@ -53,7 +53,7 @@ def val_invite_code(code: Optional[str]) -> None:
         return
 
     if code is not None and (not isinstance(code, str) or len(code) != 24):
-        raise Invalid('code must be a 24 character string')
+        raise APIException('Invite code must be a 24 character string.')
 
     invite = Invite.from_id(code)
     if invite and not invite.invitee_id:
@@ -62,5 +62,5 @@ def val_invite_code(code: Optional[str]) -> None:
             return
 
     if code:
-        raise Invalid(f'{code} is not a valid invite code')
-    raise Invalid(f'an invite code is required for registration')
+        raise APIException(f'{code} is not a valid invite code.')
+    raise APIException('An invite code is required for registration.')

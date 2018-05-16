@@ -84,5 +84,4 @@ def edit_settings(user_id: int =None,
         Session.expire_all_of_user(user.id)
 
     db.session.commit()
-    user.clear_cache()
     return flask.jsonify('Settings updated.')

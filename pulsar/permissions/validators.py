@@ -1,6 +1,5 @@
-from typing import Dict, List, Tuple
-
 from collections import defaultdict
+from typing import Dict, List, Tuple
 
 import flask
 from voluptuous import Invalid

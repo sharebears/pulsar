@@ -1,9 +1,11 @@
 import os
 import sys
-import flask
-import pytest
 from collections import defaultdict
 from contextlib import contextmanager
+
+import flask
+import pytest
+
 import pulsar
 from pulsar import create_app, db
 from pulsar.users.models import User

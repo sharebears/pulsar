@@ -267,7 +267,6 @@ def delete_user_class(user_class_id: int) -> 'flask.Response':
                            'class while users are assigned to it.')
 
     response = f'{"Secondary" if secondary else "User"} class {user_class.name} has been deleted.'
-    user_class.clear_cache()
     db.session.delete(user_class)
     db.session.commit()
     return flask.jsonify(response)
@@ -362,5 +361,4 @@ def modify_user_class(user_class_id: int,
     # (This is also why uc_perms was copied from user_class.permissions)
     user_class.permissions = uc_perms
     db.session.commit()
-    user_class.clear_cache()
     return flask.jsonify(user_class)

@@ -4,7 +4,8 @@ Installation & Development
 Config
 ------
 An explanation of configuration options is available in ``config.py.example``. All
-configurations should be placed in ``instance/``. A unique secret key with high entropy can be generated with ``os.urandom``.
+configurations should be placed in ``instance/``. A unique secret key with high
+entropy can be generated with ``os.urandom``. 
 
 Initial DB values
 -----------------
@@ -18,7 +19,8 @@ only useful for development.
 
 Development
 -----------
-pulsar runs on the Flask micro-framework. It has great documentation. Read it.
+pulsar runs on the Flask micro-framework. It has great documentation, which can answer
+most or all of your questions about the underlying framework objects used by pulsar.
 
 * All permission checks should be abstracted to a utility function, such as
   ``require_permission``, ``require_auth``, or ``choose_user``; or to the user model

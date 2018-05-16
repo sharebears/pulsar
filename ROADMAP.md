@@ -16,6 +16,7 @@
 - [x] Abstract 404 exceptions to model queries
 - [x] Set up pipenv dependencies
 - [x] Static typing with annotations and mypy (well I did the basics)
+- [x] Abstract model cache clears to the commit function
 - [ ] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
 - [ ] Document development tools
 - [ ] Simplify ``check_permissions`` permissions/ validator complexity

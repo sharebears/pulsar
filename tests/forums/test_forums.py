@@ -1,4 +1,5 @@
 import pytest
+
 from pulsar import cache
 from pulsar.models import Forum
 

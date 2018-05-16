@@ -7,6 +7,15 @@ from pulsar.base_model import BaseModel
 
 if False:
     from redis import Redis  # noqa
+    from sqlalchemy.orm.session import SignallingSession  # noqa
+
+
+def clear_cache_dirty(session: 'SignallingSession') -> None:
+    """Clear the cache key of every dirty/deleted object before DB commit."""
+    from pulsar import cache
+    for obj in session.dirty.union(session.deleted):
+        if obj.__cache_key__:
+            cache.delete(obj.cache_key)
 
 
 class Cache(RedisCache):

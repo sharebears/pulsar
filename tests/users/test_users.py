@@ -1,8 +1,10 @@
 import json
+
 import pytest
 from sqlalchemy.exc import IntegrityError
-from conftest import check_json_response, add_permissions
-from pulsar import db, cache, APIException
+
+from conftest import add_permissions, check_json_response
+from pulsar import APIException, cache, db
 from pulsar.models import User
 
 

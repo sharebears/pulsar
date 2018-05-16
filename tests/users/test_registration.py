@@ -1,16 +1,18 @@
 import json
+
 import pytest
 from voluptuous import Invalid
+
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response
+from pulsar import APIException
 
 
 @pytest.mark.parametrize(
     'code, status_code, expected', [
         (CODE_1, 200, {'username': 'bright'}),
-        (None, 400, 'Invalid data: an invite code is required for '
-                    'registration (key "code")'),
-        (CODE_2, 400, f'Invalid data: {CODE_2} is not a valid invite code (key "code")'),
-        (CODE_3, 400, f'Invalid data: {CODE_3} is not a valid invite code (key "code")'),
+        (None, 400, 'An invite code is required for registration.'),
+        (CODE_2, 400, f'{CODE_2} is not a valid invite code.'),
+        (CODE_3, 400, f'{CODE_3} is not a valid invite code.'),
     ])
 def test_register_with_code(app, client, code, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = True
@@ -41,6 +43,16 @@ def test_registration(app, client, username, status_code, expected):
     assert response.status_code == status_code
 
 
+def test_registration_no_code(app, client):
+    app.config['REQUIRE_INVITE_CODE'] = True
+    response = client.post('/register', data=json.dumps({
+        'username': 'abiejfaiwof',
+        'password': 'abcdEF123123%',
+        'email': 'bright@puls.ar'}))
+    check_json_response(response, 'An invite code is required for registration.')
+    assert response.status_code == 400
+
+
 @pytest.mark.parametrize(
     'username', [
         123, '1234567890abcdefghijklmnoqrstuvwxyzabcdef', None
@@ -55,13 +67,9 @@ def test_username_validation_fail(app, client, username):
         '32 characters or less')
 
 
-@pytest.mark.parametrize(
-    'code, error', [
-        (123, 'code must be a 24 character string'),
-    ])
-def test_invite_code_validation_fail(app, client, code, error):
+def test_invite_code_validation_fail(app, client):
     from pulsar.users.validators import val_invite_code
     app.config['REQUIRE_INVITE_CODE'] = True
-    with pytest.raises(Invalid) as e:
-        val_invite_code(code)
-    assert str(e.value) == error
+    with pytest.raises(APIException) as e:
+        val_invite_code(123)
+    assert e.value.message == 'Invite code must be a 24 character string.'

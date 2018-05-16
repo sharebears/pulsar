@@ -1,8 +1,9 @@
 import flask
 import pytest
+
 from conftest import add_permissions, check_json_response
 from pulsar import db
-from pulsar.utils import assert_user, assert_permission, choose_user
+from pulsar.utils import assert_permission, assert_user, choose_user
 
 
 @pytest.fixture(autouse=True)

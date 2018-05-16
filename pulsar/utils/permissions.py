@@ -1,6 +1,5 @@
-from typing import Callable, List, Optional
-
 from functools import wraps
+from typing import Callable, List, Optional
 
 import flask
 from werkzeug import find_modules, import_string

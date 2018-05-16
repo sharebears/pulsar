@@ -1,6 +1,6 @@
 import secrets
 from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import flask
 import pytz
@@ -98,7 +98,6 @@ class Session(db.Model):
             if delta.total_seconds() > 60 * 30:  # 30 minutes
                 self.expired = True
                 db.session.commit()
-                self.clear_cache()
                 return True
         return False
 

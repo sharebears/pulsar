@@ -1,6 +1,8 @@
 import pytest
+
+from conftest import (CODE_1, CODE_2, HASHED_CODE_1, HASHED_CODE_2,
+                      HASHED_CODE_3)
 from pulsar import db
-from conftest import CODE_1, CODE_2, HASHED_CODE_1, HASHED_CODE_2, HASHED_CODE_3
 
 
 @pytest.fixture(autouse=True)

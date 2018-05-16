@@ -1,5 +1,5 @@
 from conftest import add_permissions, check_json_response
-from pulsar import cache
+from pulsar import cache, db
 from pulsar.models import User
 
 
@@ -57,16 +57,6 @@ def test_cache_model_when_none(app, client, monkeypatch):
     assert cache.cache_model(None, timeout=60) is None
 
 
-def test_model_clear_cache(app, authed_client):
-    user = User.from_id(1)
-    cache.cache_model(user, timeout=60)
-    user_data = cache.get('users_1')
-    assert user_data['id'] == 1
-
-    user.clear_cache()
-    assert not cache.get('users_1')
-
-
 def test_from_cache(app, authed_client):
     user = User.from_id(1)
     cache.cache_model(user, timeout=60)
@@ -81,3 +71,33 @@ def test_from_cache_bad(app, client):
     cache.set('users_1', {'id': 2, 'username': 'not-all-the-keys'}, timeout=60)
     assert not User.from_cache('users_1')
     assert not cache.get('users_1')
+
+
+def test_cache_autoclear_dirty(app, client):
+    user = User.from_id(1)
+    user.set_password('testing')
+    assert cache.has('users_1')
+    db.session.commit()
+    assert not cache.has('users_1')
+
+
+def test_cache_autoclear_deleted(app, client):
+    user = User.from_id(3)
+    db.session.delete(user)
+    assert cache.has('users_3')
+    db.session.commit()
+    assert not cache.has('users_3')
+    assert not User.from_id(3)
+
+
+def test_cache_autoclear_dirty_and_deleted(app, client):
+    user = User.from_id(1)
+    user_2 = User.from_id(3)
+    user.set_password('testing')
+    db.session.delete(user_2)
+    assert cache.has('users_1')
+    assert cache.has('users_3')
+    db.session.commit()
+    assert not cache.has('users_1')
+    assert not cache.has('users_3')
+    assert not User.from_id(3)

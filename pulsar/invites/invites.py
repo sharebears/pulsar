@@ -213,7 +213,6 @@ def invite_user(email: str):
     flask.g.user.invites -= 1
     db.session.add(invite)
     db.session.commit()
-    flask.g.user.clear_cache()
     return flask.jsonify(invite)
 
 
@@ -269,6 +268,4 @@ def revoke_invite(code: str) -> 'flask.Response':
     invite.expired = True
     flask.g.user.invites += 1
     db.session.commit()
-    flask.g.user.clear_cache()
-    invite.clear_cache()
     return flask.jsonify(invite)

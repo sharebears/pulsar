@@ -3,7 +3,7 @@ from functools import wraps
 from typing import Any, Callable, Dict
 
 import flask
-from voluptuous import Schema, Invalid  # noqa
+from voluptuous import Invalid, Schema  # noqa
 
 from pulsar import APIException
 
