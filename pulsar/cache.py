@@ -1,9 +1,9 @@
 from typing import Any, Optional, Union
 
 import flask
-from werkzeug.contrib.cache import RedisCache
-from redis import Redis  # noqa
 from flask_sqlalchemy import SignallingSession  # noqa
+from redis import Redis  # noqa
+from werkzeug.contrib.cache import RedisCache
 
 from pulsar.base_model import BaseModel
 

@@ -17,11 +17,11 @@ def val_username(username: str) -> str:
     """
     Ensures that a username is not taken by comparing it with existing DB results.
 
-    :param str username: Username to check and verify
+    :param username: Username to check and verify
 
-    :return: An unused username, same as input (``str``)
+    :return:         An unused username, same as input
     :raises Invalid: If the username does not meet length requirements or is
-        already used by another user
+                     already used by another user
     """
     if (not isinstance(username, str)
             or not re.match(USERNAME_REGEX, username)
@@ -34,7 +34,7 @@ def val_username(username: str) -> str:
                       'or less')
 
     username = username.lower()
-    if (User.query.filter(func.lower(User.username) == username).one_or_none()):
+    if User.query.filter(func.lower(User.username) == username).one_or_none():
         raise Invalid(f'another user already has the username {username}')
     return username
 
@@ -44,10 +44,10 @@ def val_invite_code(code: Optional[str]) -> None:
     Check an invite code against existing invite codes;
     Raises an APIException if the code isn't valid.
 
-    :param str code: Invite code to check and verify
+    :param code:          Invite code to check and verify
 
-    :return: An invite code (``str``) or, if site is open registration, ``None``
-    :raises Invalid: The invite code cannot be used
+    :return:              An invite code or, if site is open registration, ``None``
+    :raises APIException: The invite code cannot be used
     """
     if not app.config['REQUIRE_INVITE_CODE']:
         return

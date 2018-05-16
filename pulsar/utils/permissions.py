@@ -15,15 +15,14 @@ def require_permission(permission: str,
     """
     Requires a user to have the specified permission to access the view function.
 
-    :param str permission: The permission required to access the API endpoint.
-    :param bool masquerade: Whether or not to disguise the failed view attempt as
-        a 404.
+    :param permission:     The permission required to access the API endpoint
+    :param masquerade:     Whether or not to disguise the failed view attempt as a 404
 
     :raises _403Exception: If the user does not exist or does not have enough
-        permission to view the resource. Locked accounts are given a different message.
-        This can be masqueraded as a 404.
+                           permission to view the resource. Locked accounts are
+                           given a different message. This can be masqueraded as a 404
     :raises _403Exception: If an API Key is used and does not have enough permissions to
-        access the resource.
+                           access the resource
     """
     def wrapper(func: Callable) -> Callable:
         @wraps(func)
@@ -49,7 +48,9 @@ def get_all_permissions() -> List[str]:
     Aggregate all the permissions listed in module __init__ files by iterating
     through them and adding their PERMISSIONS attr to a list.
     Restrict all uses of this function to users with the "get_all_permissions" permission.
-    Returns the list of aggregated permissions.
+    Returns the list of aggregated permissions
+
+    :return: The list of permissions
     """
     permissions: List[str] = []
     for name in find_modules('pulsar', include_packages=True):
@@ -67,11 +68,12 @@ def choose_user(user_id: Optional[int],
     Otherwise, the requester's user is returned. This function needs to be behind a
     ``@require_permission`` decorated view.
 
-    :param int user_id: The user_id of the requested user.
-    :param str permission: The permission needed to get the other user's user object.
+    :param user_id:        The user_id of the requested user.
+    :param permission:     The permission needed to get the other user's user object.
 
-    :raises _403Exception: The requesting user does not have the specified permission.
-    :raises _404Exception: The requested user does not exist.
+    :return:               The chosen user
+    :raises _403Exception: The requesting user does not have the specified permission
+    :raises _404Exception: The requested user does not exist
     """
     if user_id and flask.g.user.id != user_id:
         if flask.g.user.has_permission(permission):

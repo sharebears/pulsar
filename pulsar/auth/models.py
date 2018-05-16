@@ -2,7 +2,6 @@ import secrets
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-import flask
 import pytz
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import ARRAY, INET
@@ -48,12 +47,12 @@ class Session(db.Model):
         Create a new session with randomly generated secret keys and the
         user details passed in as params.
 
-        :param int user_id: Session will belong to this user
-        :param str ip: IP the session was created with
-        :param str user_agent: User Agent the session was created with
-        :param bool persistent: Whether or not to persist the session
+        :param user_id:    Session will belong to this user
+        :param ip:         IP the session was created with
+        :param user_agent: User Agent the session was created with
+        :param persistent: Whether or not to persist the session
 
-        :return: A ``Session`` object
+        :return:           The new Session
         """
         while True:
             id = secrets.token_hex(5)
@@ -76,21 +75,18 @@ class Session(db.Model):
         """
         Get all sessions owned by a user.
 
-        :param int user_id: The User ID of the owner.
-        :param bool include_dead: (Default ``False``) Whether or not to
-            include dead API keys in the search
+        :param user_id:      The User ID of the owner
+        :param include_dead: Whether or not to include dead API keys in the search
 
-        :return: A ``list`` of ``APIKey`` objects
+        :return:             A list of APIKey objects owned by the user
         """
         return cls.get_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id,
             include_dead=include_dead)
 
-    def belongs_to_user(self) -> bool:
-        return flask.g.user and self.user_id == flask.g.user.id
-
     def is_expired(self) -> bool:
+        """Checks whether or not the session is expired."""
         if self.expired:
             return True
         elif not self.persistent:
@@ -106,7 +102,7 @@ class Session(db.Model):
         """
         Expire all active sessions that belong to a user.
 
-        :param int user_id: The expired sessions belong to this user
+        :param user_id: The User ID of the user whose sessions will be expired
         """
         ids = db.session.query(Session.id).filter(Session.expired == 'f').all()
         for id in ids:
@@ -151,13 +147,14 @@ class APIKey(db.Model):
             permissions: Optional[List[str]] = None) -> Tuple[str, 'APIKey']:
         """
         Create a new API Key with randomly generated secret keys and the
-        user details passed in as params.
+        user details passed in as params. Generated keys are hashed and
+        salted for storage in the database.
 
-        :param int user_id: Session will belong to this user
-        :param str ip: IP the session was created with
-        :param str user_agent: User Agent the session was created with
+        :param user_id:    Session will belong to this user
+        :param ip: IP      The IP that this session was created with
+        :param user_agent: User Agent the session was created with
 
-        :return: An ``APIKey`` object
+        :return:           A tuple containing the identifier and the new API Key
         """
         while True:
             id = secrets.token_hex(5)
@@ -181,26 +178,22 @@ class APIKey(db.Model):
         """
         Get all API keys owned by a user.
 
-        :param int user_id: The User ID of the owner.
-        :param bool include_dead: (Default ``False``) Whether or not to include dead
-            API keys in the search
+        :param user_id:      The User ID of the owner
+        :param include_dead: Whether or not to include dead API keys in the search
 
-        :return: A ``list`` of ``APIKey`` objects
+        :return:             A list of API keys owned by the user
         """
         return cls.get_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id,
             include_dead=include_dead)
 
-    def belongs_to_user(self) -> bool:
-        return flask.g.user and self.user_id == flask.g.user.id
-
     def check_key(self, key: str) -> bool:
         """
         Validates the authenticity of an API key against its stored id.
 
-        :param str key: The key to check against the id
-        :return: ``True`` if it matches, ``False`` if it doesn't
+        :param key: The key to check against the keyhashsalt
+        :return:    Whether or not the key matches the keyhashsalt
         """
         return check_password_hash(self.keyhashsalt, key)
 
@@ -210,8 +203,8 @@ class APIKey(db.Model):
         is not assigned any permissions, it checks against the user's
         permissions instead.
 
-        :param str permission: Permission to search for
-        :return: ``True`` if permission is present, ``False`` if not
+        :param permission: Permission to search for
+        :return:           Whether or not the API Key has the permission
         """
         if self.permissions:
             return permission in self.permissions
@@ -224,7 +217,7 @@ class APIKey(db.Model):
         """
         Revokes all active API keys of a user.
 
-        :param int user_id: API keys of this user will be revoked
+        :param user_id: The User ID of the user whose API keys will be revoked
         """
         ids = db.session.query(APIKey.id).filter(APIKey.revoked == 'f').all()
         for id in ids:

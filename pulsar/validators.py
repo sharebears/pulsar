@@ -12,7 +12,7 @@ def bool_get(val: Union[bool, str, None]):
     always come as strings. '1' and 'true' return True, while '0' and 'false'
     return False. Any other input raises an Invalid exception.
 
-    :param str val: The value to evaluate.
+    :param val: The value to evaluate.
     """
     if isinstance(val, bool):
         return val

@@ -11,13 +11,13 @@ def hook(response):
     return response
 
 
-def wrap_response(response: 'flask.Response') -> 'flask.Response':
+def wrap_response(response: flask.Response) -> None:
     """
     Wrap response with the homogenized response dictionary, containing
     a ``status`` key and, if the request came with session-based
     authentication, a ``csrf_token`` key.
 
-    :param Response response: The flask response en route to user
+    :param response: The flask response en route to user
     """
     try:
         data = json.loads(response.get_data())

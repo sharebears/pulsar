@@ -26,14 +26,14 @@ class UserPermission(db.Model):
             )).one_or_none()
 
     @classmethod
-    def from_user(cls, user_id: int) -> Dict[str, int]:
+    def from_user(cls, user_id: int) -> Dict[str, bool]:
         """
         Gets a dict of all custom permissions assigned to a user.
 
-        :param int user_id: User ID the permissions belong to
+        :param user_id: User ID the permissions belong to
 
-        :return: A ``dict`` of permissions with a permission ``str`` as the key
-            and a granted ``boolean`` as the value.
+        :return:        Dict of permissions with the name as the
+                        key and the ``granted`` value as the value
         """
         permissions = cls.query.filter(cls.user_id == user_id).all()
         response = {}
@@ -61,7 +61,7 @@ class UserClass(db.Model):
 
     @declared_attr
     def __table_args__(cls):
-        return (db.Index('ix_user_classes_name', func.lower(cls.name), unique=True), )
+        return db.Index('ix_user_classes_name', func.lower(cls.name), unique=True),
 
     @classmethod
     def from_name(cls, name: str) -> Optional['UserClass']:
@@ -110,7 +110,7 @@ class SecondaryClass(db.Model):
 
     @declared_attr
     def __table_args__(cls):
-        return (db.Index('ix_secondary_classes_name', func.lower(cls.name), unique=True), )
+        return db.Index('ix_secondary_classes_name', func.lower(cls.name), unique=True),
 
     @classmethod
     def from_name(cls, name: str) -> Optional['SecondaryClass']:

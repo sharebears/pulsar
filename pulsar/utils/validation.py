@@ -13,7 +13,7 @@ def validate_data(schema: 'Schema') -> Callable:
     Compare a request's form data to a provided Voluptuous schema.
     If the request data is invalid, an APIException is raised.
 
-    :param Schema schema: A voluptuous ``Schema`` object.
+    :param schema: A voluptuous Schema object.
     """
     def wrapper(func):
         @wraps(func)
@@ -34,7 +34,7 @@ def get_request_data() -> Dict[Any, Any]:
     """
     Turn the incoming json data into a dictionary and remove the CSRF key if present.
 
-    :return: The unserialized ``dict`` sent by the requester.
+    :return:              The unserialized dict sent by the requester.
 
     :raises APIException: If the sent data cannot be decoded from JSON.
     """

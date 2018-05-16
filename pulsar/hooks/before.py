@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 import flask
 import pytz
@@ -43,7 +43,7 @@ def check_user_session() -> bool:
     Checks to see if the request contains a valid signed session.
     If it exists, set the flask.g.user and flask.g.api_key context globals.
 
-    :return: ``True`` or ``False``, depending on whether or not a session was obtained.
+    :return: Whether or not a session matches the session included in the request
     """
     user_id = flask.session.get('user_id')
     id = flask.session.get('session_id')
@@ -79,12 +79,12 @@ def check_api_key() -> None:
             update_session_or_key(api_key)
 
 
-def update_session_or_key(session_key) -> None:
+def update_session_or_key(session_key: Union[Session, APIKey]) -> None:
     """
     Update the provided session or api key's last seen times,
     user agent, and IP fields.
 
-    :param Session/APIKey session_key: The session or API key to update.
+    :param session_key: The session or API key to update
     """
     cache_key = f'{session_key.cache_key}_updated'
     if (not cache.get(cache_key)
@@ -104,8 +104,8 @@ def parse_key(headers) -> Optional[str]:
     Parses the header for an API key, and returns it if found.
     The authorization header must be in the following format: ``Token <api key>``.
 
-    :param dict headers: A dictionary of request headers.
-    :return: If present, the API Key ``str`` parsed from header, otherwise ``None``.
+    :param headers: A dictionary of request headers
+    :return:        If present, the key parsed from header
     """
     auth = headers.get('Authorization')
     if auth:

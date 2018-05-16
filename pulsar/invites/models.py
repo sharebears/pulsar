@@ -47,9 +47,9 @@ class Invite(db.Model):
         """
         Generate a random invite code.
 
-        :param int inviter_id: User ID of the inviter
-        :param str email: E-mail to send the invite to
-        :param str ip: IP address the invite was sent from
+        :param inviter_id: User ID of the inviter
+        :param email:      E-mail to send the invite to
+        :param ip:         IP address the invite was sent from
         """
         while True:
             id = secrets.token_hex(12)
@@ -70,11 +70,11 @@ class Invite(db.Model):
         """
         Get all invites sent by a user.
 
-        :param int inviter_id: The User ID of the inviter.
-        :param bool include_dead: (Default ``False``) Whether or not to include dead
-            invites in the list
+        :param inviter_id:   The User ID of the inviter.
+        :param include_dead: Whether or not to include dead invites in the list
+        :param used:         Whether or not to include used invites in the list
 
-        :return: A ``list`` of ``Invite`` objects
+        :return:             A list of invites sent by the inviter
         """
         filter = cls.inviter_id == inviter_id
         if used:
@@ -84,6 +84,3 @@ class Invite(db.Model):
             filter=filter,
             order=cls.time_sent.desc(),
             include_dead=include_dead or used)
-
-    def belongs_to_user(self) -> bool:
-        return flask.g.user and self.inviter_id == flask.g.user.id

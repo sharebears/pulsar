@@ -13,10 +13,10 @@ def permissions_list(perm_list: List[str]) -> List[str]:
     """
     Validates that every permission in the list is a valid permission.
 
-    :param list perm_list: A list of permissions encoded as ``str``
+    :param perm_list: A list of permissions encoded as ``str``
 
-    :return: The input ``perm_list``
-    :raises Invalid: If a permission in the list isn't valid, or input isn't a list
+    :return:          The inputted perm_list
+    :raises Invalid:  If a permission in the list isn't valid or input isn't a list
     """
     permissions = get_all_permissions()
     invalid = []
@@ -36,10 +36,10 @@ def permissions_list_of_user(perm_list: List[str]) -> List[str]:
     Takes a list of items and asserts that all of them are in the permissions list of
     a user.
 
-    :param list perm_list: A list of permissions encoded as ``str``
+    :param perm_list: A list of permissions encoded as ``str``
 
-    :return: The input ``perm_list``
-    :raises Invalid: If the user does not have a permission in the list
+    :return:          The input perm_list
+    :raises Invalid:  If the user does not have a permission in the list
     """
     if isinstance(perm_list, list):
         for perm in perm_list:
@@ -50,19 +50,19 @@ def permissions_list_of_user(perm_list: List[str]) -> List[str]:
     raise Invalid('permissions must be in the user\'s permissions list')
 
 
-def permissions_dict(dict_: dict) -> dict:
+def permissions_dict(permissions: dict) -> dict:
     """
     Validates that a dictionary contains valid permission name keys
     and has boolean values.
 
-    :param dict dict_: Dictionary of permissions and booleans
+    :param permissions:    Dictionary of permissions and booleans
 
-    :return: Input ``dict``
+    :return:         The input value
     :raises Invalid: A permission name is invalid or a value isn't a bool
     """
     permissions = get_all_permissions()
-    if isinstance(dict_, dict):
-        for perm_name, action in dict_.items():
+    if isinstance(permissions, dict):
+        for perm_name, action in permissions.items():
             if not isinstance(action, bool):
                 raise Invalid('permission actions must be booleans')
             elif perm_name not in permissions and action is True:
@@ -70,7 +70,7 @@ def permissions_dict(dict_: dict) -> dict:
                 raise Invalid(f'{perm_name} is not a valid permission')
     else:
         raise Invalid('input value must be a dictionary')
-    return dict_
+    return permissions
 
 
 def check_permissions(user: User,
@@ -81,14 +81,13 @@ def check_permissions(user: User,
     a permission given to the user class. Permissions can be removed if
     were specifically given to the user previously, or are included in their userclass.
 
-    :param User user: The recipient of the permission changes.
-    :param dict permissions: A dictionary of permission changes, with
-        permission name and boolean (True = Add, False = Remove) key value pairs.
-    :return: A tuple of lists, one of permissions to add, another with
-        permissions to ungrant, and another of permissions to remove.
-    :type: tuple
+    :param user:          The recipient of the permission changes
+    :param permissions:   A dictionary of permission changes, with permission name
+                          and boolean (True = Add, False = Remove) key value pairs
+    :return:              A tuple of lists, one of permissions to add, another with
+                          permissions to ungrant, and another of permissions to remove
     :raises APIException: If the user already has a to-add permission or
-        lacks a to-delete permission.
+                          lacks a to-delete permission
     """
     add, ungrant, delete = [], [], []
     errors: defaultdict = defaultdict(list)
@@ -130,4 +129,4 @@ def check_permissions(user: User,
                 ", ".join(errors['delete'])))
         raise APIException(' '.join(message))
 
-    return (add, ungrant, delete)
+    return add, ungrant, delete

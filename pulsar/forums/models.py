@@ -47,8 +47,8 @@ class ForumCategory(db.Model):
     @classmethod
     def new(cls,
             name: str,
-            description: str,
-            position: int) -> 'ForumCategory':
+            description: Optional[str],
+            position: Optional[int]) -> 'ForumCategory':
         return super().new(
             name=name,
             description=description,
@@ -185,7 +185,7 @@ class ForumThread(db.Model):
 
     @declared_attr
     def __table_args__(cls):
-        return (db.Index('ix_forums_threads_topic', func.lower(cls.topic), unique=True),)
+        return db.Index('ix_forums_threads_topic', func.lower(cls.topic), unique=True),
 
     @classmethod
     def from_forum(cls,

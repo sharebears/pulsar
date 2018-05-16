@@ -1,4 +1,4 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 import flask
 from sqlalchemy import func
@@ -8,8 +8,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from pulsar import APIException, cache, db
 
 if TYPE_CHECKING:
-    from pulsar.auth.models import APIKey as APIKey_, Session as Session_
-    from pulsar.permissions.models import UserClass as UserClass_
+    from pulsar.auth.models import APIKey as APIKey_, Session as Session_  # noqa
+    from pulsar.permissions.models import UserClass as UserClass_  # noqa
 
 app = flask.current_app
 
@@ -136,7 +136,10 @@ class User(db.Model):
         return permissions
 
     def belongs_to_user(self) -> bool:
-        return flask.g.user and self.id == flask.g.user.id
+        """
+        :raises NotImplementedError: This should never be called.
+        """
+        raise NotImplementedError
 
     def set_password(self, password: str) -> None:
         self.passhash = generate_password_hash(password)
