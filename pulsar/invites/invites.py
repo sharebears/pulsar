@@ -1,3 +1,5 @@
+from typing import Optional as Optional_
+
 import flask
 from voluptuous import Email, Optional, Schema
 
@@ -13,7 +15,7 @@ app = flask.current_app
 
 @bp.route('/invites/<id>', methods=['GET'])
 @require_permission('view_invites')
-def view_invite(id: int) -> 'flask.Response':
+def view_invite(id: str) -> 'flask.Response':
     """
     View the details of an invite. Requires the ``view_invites`` permission.
     Requires the ``view_invites_others`` permission to view another user's invites.
@@ -60,7 +62,7 @@ def view_invite(id: int) -> 'flask.Response':
         id, include_dead=True, _404='Invite', asrt='view_invites_others'))
 
 
-view_invites_schema = Schema({
+VIEW_INVITES_SCHEMA = Schema({
     Optional('used', default=False): bool_get,
     Optional('include_dead', default=False): bool_get,
     }, required=True)
@@ -69,10 +71,10 @@ view_invites_schema = Schema({
 @bp.route('/invites', methods=['GET'])
 @bp.route('/invites/user/<int:user_id>', methods=['GET'])
 @require_permission('view_invites')
-@validate_data(view_invites_schema)
+@validate_data(VIEW_INVITES_SCHEMA)
 def view_invites(used: bool,
                  include_dead: bool,
-                 user_id: int = None) -> 'flask.Response':
+                 user_id: Optional_[int] = None) -> 'flask.Response':
     """
     View sent invites. If a user_id is specified, only invites sent by that user
     will be returned, otherwise only your invites are returned. If requester has
@@ -206,7 +208,7 @@ def invite_user(email: str):
     if not flask.g.user.invites:
         raise APIException('You do not have an invite to send.')
 
-    invite = Invite.generate_invite(
+    invite = Invite.new(
         inviter_id=flask.g.user.id,
         email=email,
         ip=flask.request.remote_addr)
@@ -266,6 +268,6 @@ def revoke_invite(code: str) -> 'flask.Response':
     """
     invite = Invite.from_id(code, _404='Invite', asrt='revoke_invites_others')
     invite.expired = True
-    flask.g.user.invites += 1
+    invite.inviter.invites += 1
     db.session.commit()
     return flask.jsonify(invite)

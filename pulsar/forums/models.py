@@ -76,7 +76,7 @@ class Forum(db.Model):
         'threads')
     __serialize_very_detailed__ = (
         'deleted', )
-    __serialize_nested_include = (
+    __serialize_nested_include__ = (
         'last_updated_thread', )
     __serialize_nested_exclude__ = (
         'category',

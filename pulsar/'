@@ -51,7 +51,6 @@ class NewJSONEncoder(JSONEncoder):
             attrs += model.__serialize_very_detailed__
         if nested:
             attrs += model.__serialize_nested_include__
-            print(attrs)
             attrs = tuple(a for a in attrs if a not in model.__serialize_nested_exclude__)
 
         return self._objects_to_dict(

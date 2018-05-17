@@ -4,52 +4,8 @@ import pytest
 
 from conftest import (CODE_1, CODE_2, CODE_3, add_permissions,
                       check_json_response)
-from pulsar import cache, db
+from pulsar import db
 from pulsar.models import Invite, User
-
-
-def hex_generator(_):
-    return next(HEXES)
-
-
-@pytest.fixture(autouse=True)
-def populate_db(client):
-    db.engine.execute(
-        f"""INSERT INTO invites (inviter_id, invitee_id, email, id, expired) VALUES
-        (1, NULL, 'bright@puls.ar', '{CODE_1}', 'f'),
-        (1, 2, 'bright@quas.ar', '{CODE_2}', 't'),
-        (2, NULL, 'bright@puls.ar', '{CODE_3}', 'f')
-         """)
-    yield
-    db.engine.execute("DELETE FROM invites")
-
-
-def test_view_cache(app, client):
-    invite = Invite.from_id(CODE_1)
-    cache.cache_model(invite, timeout=60)
-    invite = invite.from_id(CODE_1)
-    assert invite.inviter_id == 1
-    assert invite.email == 'bright@puls.ar'
-
-
-def test_view_cache_from_inviter(app, client):
-    cache_key = Invite.__cache_key_of_user__.format(user_id=1)
-    cache.set(cache_key, [CODE_3], timeout=60)
-    invites = Invite.from_inviter(1)
-    assert len(invites) == 1
-    assert invites[0].id == CODE_3
-    assert cache.ttl(cache_key) < 61
-
-
-def test_invite_collision(app, monkeypatch):
-    global HEXES
-    HEXES = iter([CODE_1, '098765432109876543211234'])
-    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
-    with app.app_context():
-        invite = Invite.generate_invite(2, 'bitsu@puls.ar', '127.0.0.2')
-        assert invite.id != CODE_1
-        with pytest.raises(StopIteration):
-            hex_generator(None)
 
 
 @pytest.mark.parametrize(
@@ -68,22 +24,14 @@ def test_invite_collision(app, monkeypatch):
         ('abcdef', 'Invite abcdef does not exist.')
     ])
 def test_view_invite(app, authed_client, code, expected):
+    """Viewing invites should return the invite."""
     add_permissions(app, 'view_invites')
     response = authed_client.get(f'/invites/{code}')
     check_json_response(response, expected)
 
 
-def test_view_invite_embedded_invitee(app, authed_client):
-    add_permissions(app, 'view_invites')
-    response = authed_client.get(f'/invites/{CODE_2}')
-    response = response.get_json()
-    assert 'response' in response and 'invitee' in response['response']
-    invitee = response['response']['invitee']
-    assert 'id' in invitee and invitee['id'] == 2
-    assert 'username' in invitee and invitee['username'] == 'paffu'
-
-
-def test_view_invites(app, authed_client):
+def test_view_invites_multiple(app, authed_client):
+    """Viewing the invite of a user should return a list of them."""
     add_permissions(app, 'view_invites')
     response = authed_client.get('/invites')
     check_json_response(response, {
@@ -97,13 +45,15 @@ def test_view_invites(app, authed_client):
 
 
 def test_view_invites_include_dead(app, authed_client):
+    """Including dead torrents in the list view should return dead invites."""
     add_permissions(app, 'view_invites')
     response = authed_client.get('/invites', query_string={'include_dead': True})
-    assert len(response.get_json()['response']) == 2
+    assert len(response.get_json()['response']) == 3
     assert response.status_code == 200
 
 
 def test_view_invites_used(app, authed_client):
+    """Viewing only used invites should omit non-used invites."""
     add_permissions(app, 'view_invites')
     response = authed_client.get('/invites', query_string={'used': True})
     check_json_response(response, {
@@ -115,13 +65,18 @@ def test_view_invites_used(app, authed_client):
     assert response.status_code == 200
 
 
-def test_nonexistent_user(app, authed_client):
+def test_view_invites_of_nonexistent_user(app, authed_client):
+    """Viewing the invites of a nonexistent user should raise a 404."""
     add_permissions(app, 'view_invites', 'view_invites_others')
     response = authed_client.get('/invites/user/99')
     check_json_response(response, 'User 99 does not exist.')
 
 
 def test_invite_user_with_code(app, authed_client):
+    """
+    Sending an invite when code is required should work, return an invite,
+    and deduct an invite from the inviter.
+    """
     app.config['REQUIRE_INVITE_CODE'] = True
     add_permissions(app, 'send_invites')
     response = authed_client.post(
@@ -138,18 +93,19 @@ def test_invite_user_with_code(app, authed_client):
     assert user.invites == 0
 
 
-def test_invites_list_after_invite(app, authed_client):
+def test_invites_list_cache_clear(app, authed_client):
+    """Sending an invite should clear the cache key for a user's list of invites."""
     app.config['REQUIRE_INVITE_CODE'] = True
     add_permissions(app, 'send_invites')
     Invite.from_inviter(1)  # Cache it
 
     authed_client.post('/invites', data=json.dumps({'email': 'bright@puls.ar'}))
     sent_invites = Invite.from_inviter(1, include_dead=True)
-    print(sent_invites)
-    assert len(sent_invites) == 3
+    assert len(sent_invites) == 4
 
 
-def test_does_not_have_invite(app, authed_client):
+def test_user_send_but_does_not_have_invite(app, authed_client):
+    """Attempting to send an invite when the user has none should return an error."""
     app.config['REQUIRE_INVITE_CODE'] = True
     add_permissions(app, 'send_invites')
     db.engine.execute('UPDATE users SET invites = 0')
@@ -162,6 +118,7 @@ def test_does_not_have_invite(app, authed_client):
 
 
 def test_invite_without_code(app, authed_client):
+    """Sending an invite when open reg is on should error."""
     app.config['REQUIRE_INVITE_CODE'] = False
     add_permissions(app, 'send_invites')
     response = authed_client.post('/invites', data=json.dumps({'email': 'bright@puls.ar'}))
@@ -173,9 +130,11 @@ def test_invite_without_code(app, authed_client):
     'code, expected, invites', [
         (CODE_1, {'expired': True}, 2),
         (CODE_2, f'Invite {CODE_2} does not exist.', 1),
+        (CODE_3, f'Invite {CODE_3} does not exist.', 1),
         ('abc', f'Invite abc does not exist.', 1),
     ])
 def test_revoke_invite(app, authed_client, code, expected, invites):
+    """Revoking an invite should work only for active invites."""
     add_permissions(app, 'revoke_invites')
     response = authed_client.delete(f'/invites/{code}')
     user = User.from_id(1)
@@ -186,6 +145,26 @@ def test_revoke_invite(app, authed_client, code, expected, invites):
         assert invite.expired is True
 
 
+def test_revoke_invite_others(app, authed_client):
+    """
+    Reovoking another's invite with the proper permissions should work and re-add
+    the invite to the inviter's invite count.
+    """
+    add_permissions(app, 'revoke_invites', 'revoke_invites_others', 'view_invites_others')
+    response = authed_client.delete(f'/invites/{CODE_3}')
+    check_json_response(response, {'expired': True})
+    user = User.from_id(2)
+    assert user.invites == 1
+
+
+def test_revoke_invite_others_failure(app, authed_client):
+    """Revoking another's invite without permission should raise a 404."""
+    add_permissions(app, 'revoke_invites')
+    response = authed_client.delete(f'/invites/{CODE_3}')
+    print(response.get_json())
+    check_json_response(response, f'Invite {CODE_3} does not exist.')
+
+
 @pytest.mark.parametrize(
     'endpoint, method', [
         ('/invites', 'GET'),
@@ -194,6 +173,7 @@ def test_revoke_invite(app, authed_client, code, expected, invites):
         ('/invites/abc', 'DELETE'),
     ])
 def test_route_permissions(authed_client, endpoint, method):
+    """Make sure all routes are properly permissioned against the unpermissioned user."""
     response = authed_client.open(endpoint, method=method)
     check_json_response(response, 'You do not have permission to access this resource.')
     assert response.status_code == 403

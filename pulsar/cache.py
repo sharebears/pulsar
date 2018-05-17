@@ -1,7 +1,7 @@
 from typing import Any, Optional, Union
 
 import flask
-from flask_sqlalchemy import SignallingSession  # noqa
+from flask_sqlalchemy import SignallingSession
 from redis import Redis  # noqa
 from werkzeug.contrib.cache import RedisCache
 
@@ -50,8 +50,7 @@ class Cache(RedisCache):
 
     def get(self, key: str) -> Any:
         """
-        Look up key in the cache and return the value for it. Key is
-        automatically lower-cased.
+        Look up the key in the cache and return the value for it.
 
         :param key: The key to be looked up
         :returns:   The value if it exists and is readable, else ``None``
@@ -62,14 +61,24 @@ class Cache(RedisCache):
             flask.g.cache_keys['get'].add(key)
         return value
 
+    def has(self, key: str) -> bool:
+        """
+        Look up the key in the cache and return whether or not it exists.
+
+        :param key: The key to be looked up
+        :returns:   The value if it exists and is readable, else ``None``
+        """
+        key = key.lower()
+        flask.g.cache_keys['has'].add(key)
+        return super().has(key)
+
     def set(self,
             key: str,
             value: Union[int, str, list, dict],
             timeout: int = None) -> bool:
         """
         Add a new key/value to the cache (overwrites value,
-        if key already exists in the cache). Keys are automatically
-        lower-cased.
+        if key already exists in the cache).
 
         :param key:     The key to set
         :param value:   The value for the key
@@ -82,8 +91,10 @@ class Cache(RedisCache):
                         pickle.PickleError.
         """
         key = key.lower()
-        flask.g.cache_keys['set'].add(key)
-        return super().set(key, value, timeout)
+        result = super().set(key, value, timeout)
+        if result:
+            flask.g.cache_keys['set'].add(key)
+        return result
 
     def delete(self, key: str) -> bool:
         """
@@ -100,12 +111,15 @@ class Cache(RedisCache):
 
     def ttl(self, key: str) -> int:
         """
-        Return the time to live (time until expiry) for a cache key
+        Return the time to live (time until expiry) for a cache key.
 
         :param key: The cache key to check for expiry
         :return:    The seconds left until a key expires
         """
-        return self._client.ttl((self.key_prefix + key).lower())
+        value = self._client.ttl((self.key_prefix + key).lower())
+        if value:
+            flask.g.cache_keys['ttl'].add(key)
+        return value
 
     def cache_model(self,
                     model: BaseModel,
@@ -127,7 +141,7 @@ class Cache(RedisCache):
         return None
 
 
-def clear_cache_dirty(session: 'SignallingSession') -> None:
+def clear_cache_dirty(session: SignallingSession) -> None:
     """
     Clear the cache key of every dirty/deleted object before DB commit.
 

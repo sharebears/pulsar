@@ -16,13 +16,13 @@ class Invite(db.Model):
 
     __serialize_self__ = (
         'id',
-        'inviter_id',
         'email',
         'time_sent',
         'expired',
         'invitee')
     __serialize_detailed__ = __serialize_self__ + (
-        'from_ip', )
+        'from_ip',
+        'inviter')
 
     __permission_detailed__ = 'view_invites_others'
 
@@ -35,15 +35,11 @@ class Invite(db.Model):
     from_ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
     expired = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
 
-    @property
-    def invitee(self) -> 'User':
-        return User.from_id(self.invitee_id)
-
     @classmethod
-    def generate_invite(cls,
-                        inviter_id: int,
-                        email: str,
-                        ip: int) -> 'Invite':
+    def new(cls,
+            inviter_id: int,
+            email: str,
+            ip: int) -> 'Invite':
         """
         Generate a random invite code.
 
@@ -85,6 +81,14 @@ class Invite(db.Model):
             order=cls.time_sent.desc(),
             include_dead=include_dead or used)
 
+    @property
+    def invitee(self) -> 'User':
+        return User.from_id(self.invitee_id)
+
+    @property
+    def inviter(self) -> 'User':
+        return User.from_id(self.inviter_id)
+
     def belongs_to_user(self) -> bool:
         """Returns whether or not the requesting user matches the inviter."""
-        return flask.g.user and self.inviter_id == flask.g.user.id
+        return flask.g.user is not None and self.inviter_id == flask.g.user.id

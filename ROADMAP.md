@@ -23,15 +23,31 @@
 - [x] Fix type annotations for other models in `users.models`
 - [x] Simplify ``check_permissions`` permissions/ validator complexity | gave up, exceptioned it
 - [x] Documentation about model abstractions and column names / types in BaseModel
+- [ ] Testing & Typing
+- [ ] Script to analyse permission usage--iter through all files and compile list of
+      require_permission, assert_permission, choose_user, has_permission and compare with
+      get_all_permissions() | https://stackoverflow.com/a/25181706
+- [ ] Should invite codes be stored in the URL?
 
 ## Testing & Typing
 * [ ] Classify integration tests vs unit tests (request tests = integration)
 - [ ] Review tests for model property serialization
+- [ ] Change schema names to ALL_CAPS, exclude global app from pylint
 - [ ] Review tests for all schemas, create schematests file for every module?
 - [ ] Hypothesis property tests where possible
 - [ ] Figure out how to fuzz test with hypothesis? (Assert all 400, no 500)
 - [ ] Create stub files for external library interfaces that are used
-- [ ] Change schema names to ALL_CAPS, exclude global app from pylint
+
+## Tests Cleanup List
+- [x] Cache
+- [x] BaseModel
+- [x] Validators
+- [x] Serializer
+- [x] Invites
+- [ ] Users
+- [ ] Authentication
+- [ ] Permissions
+- [ ] Forums
 
 
 # TODO
@@ -39,6 +55,7 @@
 ## General
 - [x] Form validation with voluptuous
 - [x] Permissioned Serialization
+- [ ] Docker/Vagrant environment
 
 ## Users
 - [x] Administration Functions
