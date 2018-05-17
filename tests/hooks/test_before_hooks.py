@@ -7,6 +7,7 @@ from voluptuous import Optional, Schema
 
 from conftest import CODE_1, CODE_2, add_permissions, check_json_response
 from pulsar import APIException, cache, db
+from pulsar.hooks.before import check_rate_limit
 from pulsar.models import Session, User
 from pulsar.utils import require_permission, validate_data
 
@@ -16,6 +17,7 @@ def cache_num_iter(*args, **kwargs):
 
 
 def test_user_session_auth(app, client):
+    """Authentication by session should work and populate the global variable."""
     @app.route('/test_sess')
     @require_permission('test_perm')
     def test_session():
@@ -40,6 +42,7 @@ def test_user_session_auth(app, client):
 
 
 def test_session_auth_and_ip_override(app, client):
+    """The request IP and session IP should not be written with IP override permissions."""
     @app.route('/test_sess')
     @require_permission('no_ip_history')
     def test_session():
@@ -67,6 +70,7 @@ def test_session_auth_and_ip_override(app, client):
         ('1', 'notarealkey'),
     ])
 def test_user_bad_session(app, client, user_id, session_id):
+    """Bad sessions should raise a 404."""
     @app.route('/test_sess')
     @require_permission('test_perm')
     def test_session():
@@ -81,6 +85,7 @@ def test_user_bad_session(app, client, user_id, session_id):
 
 
 def test_user_expired_session(app, client):
+    """Expired sessions should raise a 404."""
     @app.route('/test_sess')
     @require_permission('test_perm')
     def test_session():
@@ -95,6 +100,7 @@ def test_user_expired_session(app, client):
 
 
 def test_api_key_auth_and_ip_override(app, client):
+    """User and API Key IP should be overridden with IP history override permissions."""
     add_permissions(app, 'no_ip_history')
 
     @app.route('/test_api_key')
@@ -116,6 +122,7 @@ def test_api_key_auth_and_ip_override(app, client):
 
 
 def test_auth_updates(app, client):
+    """Test that the cache key delay for updating an API key works."""
     @app.route('/test_api_key')
     def test_api_key():
         return flask.jsonify('completed')
@@ -142,12 +149,14 @@ def test_auth_updates(app, client):
         f'Token 1234567890{CODE_2}',
     ])
 def test_user_bad_api_key(app, client, authorization_header):
+    """Assert that a bad or expired API key raises a 404."""
     response = client.get('/users/1', headers={
         'Authorization': authorization_header})
     check_json_response(response, 'Resource does not exist.')
 
 
 def test_csrf_validation(app, client):
+    """Test that CSRF validation works."""
     @app.route('/test_csrf', methods=['POST'])
     @validate_data(Schema({
         Optional('csrf_token', default='NonExistent'): str,
@@ -167,6 +176,10 @@ def test_csrf_validation(app, client):
 
 
 def test_unneeded_csrf_validation(app, client):
+    """
+    Test that CSRF validation functions don't run when authenticating via
+    API key.
+    """
     @app.route('/test_csrf', methods=['POST'])
     def test_csrf():
         return flask.jsonify('completed')
@@ -184,6 +197,7 @@ def test_unneeded_csrf_validation(app, client):
         '/not/a/real/route',
     ])
 def test_false_csrf_validation_session(app, client, endpoint):
+    """Assert that no CSRF key throws an invalid auth key error."""
     with client.session_transaction() as sess:
         sess['user_id'] = 1
         sess['session_id'] = 'abcdefghij'
@@ -198,11 +212,13 @@ def test_false_csrf_validation_session(app, client, endpoint):
         '/not/a/real/route',
     ])
 def test_no_authorization_post(app, client, endpoint):
+    """Assert that checking an endpoint without authentication throws a 404."""
     response = client.put(endpoint)
     check_json_response(response, 'Resource does not exist.')
 
 
 def test_bad_data(app, client):
+    """Assert that bad request data raises an error."""
     with client.session_transaction() as sess:
         sess['user_id'] = 1
         sess['session_id'] = 'abcdefghij'
@@ -212,6 +228,7 @@ def test_bad_data(app, client):
 
 
 def test_disabled_user(app, client):
+    """Disabled users get disabled errors."""
     db.engine.execute("UPDATE users SET enabled = 'f' where id = 2")
     with client.session_transaction() as sess:
         sess['user_id'] = 2
@@ -222,6 +239,7 @@ def test_disabled_user(app, client):
 
 
 def test_rate_limit_fail(app, client, monkeypatch):
+    """Exceeding the per-key rate limit should return a failure message."""
     monkeypatch.setattr('pulsar.hooks.before.cache.inc', lambda *a, **k: 51)
     monkeypatch.setattr('pulsar.hooks.before.cache.ttl', lambda *a, **k: 7)
     with client.session_transaction() as sess:
@@ -233,6 +251,7 @@ def test_rate_limit_fail(app, client, monkeypatch):
 
 
 def test_rate_limit_user_fail(app, client, monkeypatch):
+    """Exceeding the per-user rate limit should return a failure message."""
     global CACHE_NUM
     CACHE_NUM = iter([2, 91])
     monkeypatch.setattr('pulsar.hooks.before.cache.inc', cache_num_iter)
@@ -248,7 +267,7 @@ api_key = namedtuple('APIKey', ['id'])
 
 
 def test_rate_limit_function(app, client, monkeypatch):
-    from pulsar.hooks.before import check_rate_limit
+    """Test that the per-key rate limit function correctly increments and errors."""
     monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
         user=User.from_id(1),
         user_session=None,
@@ -262,7 +281,7 @@ def test_rate_limit_function(app, client, monkeypatch):
 
 
 def test_rate_limit_function_global(app, client, monkeypatch):
-    from pulsar.hooks.before import check_rate_limit
+    """Test that the per-user rate limit function correctly increments and errors."""
     monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
         user=User.from_id(1),
         user_session=None,

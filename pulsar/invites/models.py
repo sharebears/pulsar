@@ -23,6 +23,8 @@ class Invite(db.Model):
     __serialize_detailed__ = __serialize_self__ + (
         'from_ip',
         'inviter')
+    __serialize_nested_exclude__ = (
+        'inviter', )
 
     __permission_detailed__ = 'view_invites_others'
 

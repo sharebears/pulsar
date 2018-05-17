@@ -1,5 +1,4 @@
 import flask
-import mock
 
 from conftest import add_permissions
 from pulsar import cache, db
@@ -9,19 +8,12 @@ from pulsar.models import User
 def test_get_from_cache(app, authed_client):
     """Test that cache values are used instead of querying a user."""
     add_permissions(app, 'view_users')
-    cache.set('users_1', {
-        'id': 1,
-        'username': 'fakeshit',
-        'passhash': 'abcdefg',
-        'email': 'lights@puls.ar',
-        'enabled': True,
-        'locked': False,
-        'user_class_id': 1,
-        'inviter_id': None,
-        'invites': 999,
-        'uploaded': 9999999,
-        'downloaded': 0,
-        })
+    user = User.from_id(1)
+    data = {}
+    for attr in user.__table__.columns.keys():
+        data[attr] = getattr(user, attr, None)
+    data['username'] = 'fakeshit'
+    cache.set(user.cache_key, data)
     user = User.from_id(1)
     assert user.username == 'fakeshit'
 

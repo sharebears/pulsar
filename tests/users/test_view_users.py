@@ -1,56 +1,9 @@
 import json
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from conftest import add_permissions, check_json_response
-from pulsar import APIException, cache, db
-from pulsar.models import User
-
-
-def test_user_creation(app, client):
-    user = User.new(
-        username='bright',
-        password='13579',
-        email='bright@puls.ar')
-    assert isinstance(user.id, int) and user.id > 1
-
-
-def test_user_creation_dupe_username(app, client):
-    error_str = '<APIException (Code: 400) [Message: The username ligHts is already in use.]>'
-    with pytest.raises(APIException) as e:
-        User.new(
-            username='ligHts',
-            password='13579',
-            email='bright@puls.ar')
-    assert repr(e.value) == error_str
-
-
-def test_user_creation_dupe_username_database(app, client):
-    with pytest.raises(IntegrityError):
-        db.session.execute(
-            """INSERT INTO users (username, passhash, email) VALUES
-            ('LiGhTs', '13579', 'bright@puls.ar')""")
-
-
-def test_user_obj(app, client):
-    user_id = User.from_id(1)
-    user_name = User.from_username('lights')
-    assert repr(user_id) == f'<User 1>'
-    assert user_id == user_name
-
-
-def test_user_passwords(app, client):
-    user = User.from_id(1)
-    user.set_password('secure password')
-    assert user.check_password('secure password')
-
-
-def test_user_has_permission(app, client):
-    add_permissions(app, 'sample_permission')
-    user = User.from_id(1)
-    assert user.has_permission('sample_permission')
-    assert not user.has_permission('nonexistent_permission')
+from pulsar import cache
 
 
 def test_get_user_self_and_caches(app, authed_client):

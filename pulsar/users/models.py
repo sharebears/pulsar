@@ -33,13 +33,8 @@ class User(db.Model):
         'invites',
         'sessions',
         'api_keys')
-    __serialize_detailed__ = (
-        'email',
-        'locked',
-        'invites',
-        'inviter',
-        'sessions',
-        'api_keys')
+    __serialize_detailed__ = __serialize_self__ + (
+        'inviter', )
     __serialize_nested_exclude__ = (
         'inviter',
         'sessions',

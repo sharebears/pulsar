@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 import flask
 from flask.json import JSONEncoder
@@ -31,7 +32,7 @@ class NewJSONEncoder(JSONEncoder):
 
     def _to_dict(self,
                  model: 'BaseModel',
-                 nested: bool = False) -> dict:
+                 nested: bool = False) -> Optional[dict]:
         """
         Convert the model to a dictionary based on its defined serializable attributes.
         ``BaseModel`` objects embedded in the dictionary or lists in the dictionary
@@ -51,11 +52,10 @@ class NewJSONEncoder(JSONEncoder):
             attrs += model.__serialize_very_detailed__
         if nested:
             attrs += model.__serialize_nested_include__
-            print(attrs)
             attrs = tuple(a for a in attrs if a not in model.__serialize_nested_exclude__)
 
-        return self._objects_to_dict(
-            {attr: getattr(model, attr, None) for attr in list(set(attrs))})
+        return self._objects_to_dict({attr: getattr(model, attr, None)
+                                      for attr in list(set(attrs))}) or None
 
     def _objects_to_dict(self, dict_: dict) -> dict:
         """
@@ -79,7 +79,7 @@ class NewJSONEncoder(JSONEncoder):
                 for i, v2 in enumerate(value):
                     if v2 is not None:
                         new_value.append(iter_handler(v2))
-                return new_value
+                return new_value or None
             elif isinstance(value, BaseModel):
                 return self._to_dict(value, nested=True)
             elif isinstance(value, datetime):

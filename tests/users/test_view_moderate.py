@@ -1,12 +1,9 @@
 import json
 
 import pytest
-from voluptuous import MultipleInvalid
 
 from conftest import add_permissions, check_json_response
-from pulsar import db
 from pulsar.models import User
-from pulsar.users.moderate import moderate_user_schema
 
 
 def test_int_overflow(app, authed_client):
@@ -15,52 +12,6 @@ def test_int_overflow(app, authed_client):
         'invites': 99999999999999999999999999,
         }))
     check_json_response(response, 'Invalid data: value must be at most 2147483648 (key "invites")')
-
-
-def test_locked_acc_perms_blocked(app, client):
-    db.engine.execute("UPDATE users SET locked = 't' where id = 2")
-    with client.session_transaction() as sess:
-        sess['user_id'] = 2
-        sess['session_id'] = 'bcdefghijk'
-
-    response = client.get('/users/1')
-    check_json_response(response, 'Your account has been locked.')
-
-
-def test_locked_acc_perms_can_access(app, client):
-    db.engine.execute("UPDATE users SET locked = 't' where id = 2")
-    with client.session_transaction() as sess:
-        sess['user_id'] = 2
-        sess['session_id'] = 'bcdefghijk'
-    app.config['LOCKED_ACCOUNT_PERMISSIONS'] = 'view_users'
-
-    response = client.get('/users/1')
-    assert response.status_code == 200
-    assert response.get_json()['response']['id'] == 1
-
-
-@pytest.mark.parametrize(
-    'schema', [
-        {'email': 'new@ema.il'},
-        {'email': 'new@ema.il', 'password': 'abcdefGHIfJK12#'},
-        {'downloaded': 123123123, 'invites': 104392},
-    ])
-def test_moderate_user_schema(schema):
-    assert schema == moderate_user_schema(schema)
-
-
-@pytest.mark.parametrize(
-    'schema, error', [
-        ({'email': 'new@ema.il', 'password': '1231233281FF'},
-         "Password must be 12 or more characters and contain at least 1 letter, "
-         "1 number, and 1 special character, for dictionary value @ data['password']"),
-        ({'uploaded': 12313, 'extra': 0},
-         "extra keys not allowed @ data['extra']"),
-    ])
-def test_moderate_user_schema_failure(schema, error):
-    with pytest.raises(MultipleInvalid) as e:
-        moderate_user_schema(schema)
-    assert str(e.value) == error
 
 
 def test_moderate_user(app, authed_client):
@@ -104,3 +55,13 @@ def test_moderate_user_not_found(app, authed_client):
         }))
     check_json_response(response, 'User 10 does not exist.')
     assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    'endpoint, method', [
+        ('/users/1/moderate', 'PUT'),
+    ])
+def test_route_permissions(app, authed_client, endpoint, method):
+    response = authed_client.open(endpoint, method=method)
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403

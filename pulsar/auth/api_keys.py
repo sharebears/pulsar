@@ -69,7 +69,7 @@ def view_api_key(id: str) -> 'flask.Response':
         id, include_dead=True, _404='API Key', asrt='view_api_keys_others'))
 
 
-view_all_api_keys_schema = Schema({
+VIEW_ALL_API_KEYS_SCHEMA = Schema({
     Optional('include_dead', default=True): bool_get,
     })
 
@@ -77,7 +77,7 @@ view_all_api_keys_schema = Schema({
 @bp.route('/api_keys', methods=['GET'])
 @bp.route('/api_keys/user/<int:user_id>', methods=['GET'])
 @require_permission('view_api_keys')
-@validate_data(view_all_api_keys_schema)
+@validate_data(VIEW_ALL_API_KEYS_SCHEMA)
 def view_all_api_keys(include_dead: bool,
                       user_id: TOptional[int] = None) -> 'flask.Response':
     """
@@ -140,14 +140,14 @@ def view_all_api_keys(include_dead: bool,
     return flask.jsonify(api_keys)
 
 
-create_api_key_schema = Schema({
+CREATE_API_KEY_SCHEMA = Schema({
     Optional('permissions', default=[]): permissions_list_of_user,
     })
 
 
 @bp.route('/api_keys', methods=['POST'])
 @require_permission('create_api_keys')
-@validate_data(create_api_key_schema)
+@validate_data(CREATE_API_KEY_SCHEMA)
 def create_api_key(permissions: List[str]) -> 'flask.Response':
     """
     Creates an API key for use. Requires the ``create_api_keys`` permission to
@@ -203,14 +203,14 @@ def create_api_key(permissions: List[str]) -> 'flask.Response':
         })
 
 
-revoke_api_key_schema = Schema({
+REVOKE_API_KEY_SCHEMA = Schema({
     'id': All(str, Length(min=10, max=10)),
     }, required=True)
 
 
 @bp.route('/api_keys', methods=['DELETE'])
 @require_permission('revoke_api_keys')
-@validate_data(revoke_api_key_schema)
+@validate_data(REVOKE_API_KEY_SCHEMA)
 def revoke_api_key(id: int) -> 'flask.Response':
     """
     Revokes an API key currently in use by the user. Requires the

@@ -2,12 +2,14 @@ from conftest import check_json_response
 
 
 def test_404_exception(app, client):
+    """Nonexistent route should return 404 API response."""
     response = client.get('/nonexistent/endpoint')
     assert response.status_code == 404
     check_json_response(response, 'Resource does not exist.')
 
 
 def test_500_exception(app, client):
+    """Server error should return response in JSON."""
     app.debug = False
 
     @app.route('/exception_causer')
@@ -19,6 +21,7 @@ def test_500_exception(app, client):
 
 
 def test_405_exception(app, client):
+    """405 exception should return response in JSON."""
     @app.route('/exception_causer', methods=['POST'])
     def exception_causer():
         return 'never hit this'

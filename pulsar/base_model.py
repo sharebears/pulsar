@@ -195,6 +195,7 @@ class BaseModel(Model):
                  include_dead: bool = False,
                  page: Optional[int] = None,
                  limit: Optional[int] = None,
+                 reverse: bool = False,
                  expr_override: Optional[BinaryExpression] = None) -> List['BaseModel']:
         """
         An abstracted function to get a list of IDs from the cache with a cache key,
@@ -211,10 +212,11 @@ class BaseModel(Model):
         :param order:               A SQLAlchemy order_by expression to be applied to the query
         :param required_properties: Properties required to validate to ``True``
                                     for a retrieved item to be included in the returned list
-        :param bool include_dead:   Whether or not to include deleted/revoked/expired models
-        :param int page:            The page number of results to return
-        :param int limit:           The limit of results to return, defaults to 50 if page
+        :param include_dead:        Whether or not to include deleted/revoked/expired models
+        :param page:                The page number of results to return
+        :param limit:               The limit of results to return, defaults to 50 if page
                                     is set, otherwise infinite
+        :param reverse:             Whether or not to reverse the order of the list
         :param expr_override:       If passed, this will override filter and order, and be
                                     called verbatim in a ``db.session.execute`` if the cache
                                     key does not exist
@@ -231,8 +233,11 @@ class BaseModel(Model):
                 ids = [x[0] for x in query.all()]
             cache.set(key, ids)
 
-        if page is not None and isinstance(ids, list):
+        if page is not None:
             limit = limit or 50
+
+        if reverse:
+            ids = reversed(ids)
 
         models = []
         for id in ids:

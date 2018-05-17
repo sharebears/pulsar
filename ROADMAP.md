@@ -28,14 +28,19 @@
       require_permission, assert_permission, choose_user, has_permission and compare with
       get_all_permissions() | https://stackoverflow.com/a/25181706
 - [ ] Should invite codes be stored in the URL?
+- [ ] No authentication and no route should raise a 401, same with required_permission no authentication,
+      although should still allow masquerade (not a 404 (can confuse clients))
+- [ ] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
+- [ ] Need a way to serialize basic permissions for moderators
 
 ## Testing & Typing
-* [ ] Classify integration tests vs unit tests (request tests = integration)
-- [ ] Review tests for model property serialization
-- [ ] Change schema names to ALL_CAPS, exclude global app from pylint
-- [ ] Review tests for all schemas, create schematests file for every module?
+* [-] Classify integration tests vs unit tests **(request tests = integration)**
+- [-] Create serialization tests that validate the presence and accuracy
+      of serialized data.
+- [-] Change schema names to ALL_CAPS
+- [-] Review tests for all schemas (``test_schemas.py``)
 - [ ] Hypothesis property tests where possible
-- [ ] Figure out how to fuzz test with hypothesis? (Assert all 400, no 500)
+- [ ] Figure out how to fuzz test with hypothesis? (Assert no 500)
 - [ ] Create stub files for external library interfaces that are used
 
 ## Tests Cleanup List
@@ -44,7 +49,8 @@
 - [x] Validators
 - [x] Serializer
 - [x] Invites
-- [ ] Users
+- [x] Hooks
+- [x] Users
 - [ ] Authentication
 - [ ] Permissions
 - [ ] Forums
@@ -80,6 +86,9 @@
 - [ ] Thread View
 - [ ] Posts View
 - [ ] Forum/Thread Permissions
+- [ ] Subscriptions
+- [ ] Last viewed post in a thread
+- [ ] "viewed" boolean, clear on new post in thread
 
 ## Rules
 - [ ] Fuck it, we're going to make these dictionaries and serve them

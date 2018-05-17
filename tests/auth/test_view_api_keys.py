@@ -3,88 +3,14 @@ import json
 import flask
 import pytest
 
-from conftest import (CODE_1, CODE_2, CODE_3, add_permissions,
-                      check_json_response)
-from pulsar import cache, db
+from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
+from pulsar import cache
 from pulsar.models import APIKey
 from pulsar.utils import require_permission
 
 
 def hex_generator(_):
     return next(HEXES)
-
-
-def test_new_key(app, client):
-    raw_key, api_key = APIKey.new(2, '127.0.0.2', 'UA')
-    assert len(raw_key) == 26
-    assert api_key.ip == '127.0.0.2'
-    assert api_key.user_id == 2
-
-
-def test_api_key_collision(app, client, monkeypatch):
-    # First four are the the id and csrf_token, last one is the 16char key.
-    global HEXES
-    HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16]])
-    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
-
-    raw_key, api_key = APIKey.new(2, '127.0.0.2', 'UA')
-    assert len(raw_key) == 26
-    assert api_key.id != CODE_2[:10]
-    with pytest.raises(StopIteration):
-        hex_generator(None)
-
-
-def test_from_id_and_check(app, client):
-    api_key = APIKey.from_id('abcdefghij')
-    assert api_key.user_id == 1
-    assert api_key.check_key(CODE_1)
-    assert not api_key.check_key(CODE_2)
-
-
-def test_from_id_when_dead(app, client):
-    api_key = APIKey.from_id('1234567890', include_dead=True)
-    assert api_key.user_id == 2
-    assert api_key.check_key(CODE_2)
-
-
-def test_api_key_revoke_all(app, client):
-    APIKey.revoke_all_of_user(1)
-    db.session.commit()
-    api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert api_key.revoked
-
-
-def test_api_key_revoke_all_cache(client):
-    api_key = APIKey.from_id('abcdefghij')
-    cache_key = cache.cache_model(api_key, timeout=60)
-    assert cache.ttl(cache_key) < 61
-    APIKey.revoke_all_of_user(1)
-    db.session.commit()
-    api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert api_key.revoked is True
-    assert cache.ttl(cache_key) > 61
-
-
-def test_api_key_permission(app, client):
-    api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert api_key.has_permission('sample_permission')
-    assert not api_key.has_permission('not_a_permission')
-
-
-@pytest.mark.parametrize(
-    'input_', ['1', 'true', False])
-def test_view_all_api_keys_schema(input_):
-    from pulsar.auth.api_keys import view_all_api_keys_schema
-    assert view_all_api_keys_schema({'include_dead': input_})
-
-
-@pytest.mark.parametrize(
-    'input_', [0, '2', '\x01'])
-def test_view_all_api_keys_schema_failure(input_):
-    from voluptuous import MultipleInvalid
-    from pulsar.auth.api_keys import view_all_api_keys_schema
-    with pytest.raises(MultipleInvalid):
-        assert not view_all_api_keys_schema({'include_dead': input_})
 
 
 @pytest.mark.parametrize(

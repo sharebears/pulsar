@@ -1,5 +1,3 @@
-import json
-
 import flask
 import pytest
 
@@ -16,18 +14,20 @@ from pulsar.models import User
         (500, 'failed'),
     ])
 def test_status_string(app, authed_client, status_code, status):
+    """The status string should populate itself based on status code."""
     @app.route('/test_endpoint')
     def test_endpoint():
         return flask.jsonify('test'), status_code
 
     response = authed_client.get('/test_endpoint')
-    assert json.loads(response.get_data()) == {
+    assert response.get_json() == {
         'response': 'test',
         'status': status,
     }
 
 
 def test_csrf_token(app, client):
+    """The CSRF token should be present if the request is made by a session."""
     @app.route('/test_endpoint')
     def test_endpoint():
         return flask.jsonify('test')
@@ -37,14 +37,28 @@ def test_csrf_token(app, client):
         sess['session_id'] = 'abcdefghij'
 
     response = client.get('/test_endpoint')
-    assert json.loads(response.get_data()) == {
+    assert response.get_json() == {
         'status': 'success',
         'csrf_token': CODE_1,
         'response': 'test',
         }
 
 
+def test_csrf_token_no_session(app, authed_client):
+    """The CSRF token should not be present if the request isn't made by a session."""
+    @app.route('/test_endpoint')
+    def test_endpoint():
+        return flask.jsonify('test')
+
+    response = authed_client.get('/test_endpoint')
+    assert 'csrf_token' not in response.get_json()
+
+
 def test_cache_keys(app, authed_client):
+    """
+    Cache keys should be included in the response if user has
+    view_cache_keys permission.
+    """
     add_permissions(app, 'view_cache_keys')
 
     @app.route('/test_endpoint')
@@ -57,3 +71,16 @@ def test_cache_keys(app, authed_client):
     assert 'set' in data['cache_keys']
     assert 'users_1_permissions' in data['cache_keys']['set']
     assert 'users_2' in data['cache_keys']['set']
+
+
+def test_cache_keys_no_perms(app, authed_client):
+    """
+    Cache keys should not be included in the response if user does not have
+    view_cache_keys permission.
+    """
+    @app.route('/test_endpoint')
+    def test_endpoint():
+        return flask.jsonify('test')
+
+    response = authed_client.get('/test_endpoint')
+    assert 'cache_keys' not in response.get_json()

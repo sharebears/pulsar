@@ -1,10 +1,8 @@
 import json
 
 import pytest
-from voluptuous import Invalid
 
 from conftest import CODE_1, CODE_2, CODE_3, check_json_response
-from pulsar import APIException
 
 
 @pytest.mark.parametrize(
@@ -51,25 +49,3 @@ def test_registration_no_code(app, client):
         'email': 'bright@puls.ar'}))
     check_json_response(response, 'An invite code is required for registration.')
     assert response.status_code == 400
-
-
-@pytest.mark.parametrize(
-    'username', [
-        123, '1234567890abcdefghijklmnoqrstuvwxyzabcdef', None
-    ])
-def test_username_validation_fail(app, client, username):
-    from pulsar.users.validators import val_username
-    with pytest.raises(Invalid) as e:
-        val_username(username)
-    assert str(e.value) == (
-        'usernames must start with an alphanumeric character; can only contain '
-        'alphanumeric characters, underscores, hyphens, and periods; and be '
-        '32 characters or less')
-
-
-def test_invite_code_validation_fail(app, client):
-    from pulsar.users.validators import val_invite_code
-    app.config['REQUIRE_INVITE_CODE'] = True
-    with pytest.raises(APIException) as e:
-        val_invite_code(123)
-    assert e.value.message == 'Invite code must be a 24 character string.'
