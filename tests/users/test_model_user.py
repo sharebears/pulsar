@@ -1,10 +1,9 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from conftest import add_permissions, check_json_response, check_dictionary
-from pulsar import APIException, db, NewJSONEncoder
+from conftest import add_permissions, check_dictionary, check_json_response
+from pulsar import APIException, NewJSONEncoder, db
 from pulsar.users.models import User
-
 
 # TODO: Test base model shit with this model
 
@@ -116,12 +115,11 @@ def test_serialize_no_perms(app, client):
         'id': 1,
         'username': 'lights',
         'enabled': True,
+        'user_class': 'User',
         'secondary_classes': ['FLS'],
         'uploaded': 5368709120,
         'downloaded': 0,
-        })
-    assert 'user_class' in data and data['user_class']['id'] == 1
-    assert len(data) == 7
+        }, strict=True)
 
 
 def test_serialize_self(app, authed_client):
@@ -133,13 +131,13 @@ def test_serialize_self(app, authed_client):
         'email': 'lights@puls.ar',
         'enabled': True,
         'locked': False,
+        'user_class': 'User',
         'secondary_classes': ['FLS'],
         'uploaded': 5368709120,
         'downloaded': 0,
         'invites': 1,
         'sessions': None,
         })
-    assert 'user_class' in data and data['user_class']['id'] == 1
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['id'] == 'abcdefghij')
@@ -156,6 +154,7 @@ def test_serialize_detailed(app, authed_client):
         'email': 'lights@puls.ar',
         'enabled': True,
         'locked': False,
+        'user_class': 'User',
         'secondary_classes': ['FLS'],
         'uploaded': 5368709120,
         'downloaded': 0,
@@ -163,7 +162,6 @@ def test_serialize_detailed(app, authed_client):
         'inviter': None,
         'sessions': None,
         })
-    assert 'user_class' in data and data['user_class']['id'] == 1
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['id'] == 'abcdefghij')
@@ -180,10 +178,9 @@ def test_serialize_nested(app, authed_client):
         'email': 'lights@puls.ar',
         'enabled': True,
         'locked': False,
+        'user_class': 'User',
         'secondary_classes': ['FLS'],
         'uploaded': 5368709120,
         'downloaded': 0,
         'invites': 1,
-        })
-    assert 'user_class' in data and data['user_class']['id'] == 1
-    assert len(data) == 10
+        }, strict=True)

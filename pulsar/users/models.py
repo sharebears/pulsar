@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import TYPE_CHECKING, List, Optional
 
 import flask
@@ -83,9 +84,8 @@ class User(db.Model):
             email=email.lower().strip())
 
     @property
-    def user_class(self) -> 'UserClass_':
-        from pulsar.permissions.models import UserClass
-        return UserClass.from_id(self.user_class_id)
+    def user_class(self):
+        return self.user_class_model.name
 
     @property
     def secondary_classes(self) -> List[str]:
@@ -116,7 +116,7 @@ class User(db.Model):
         cache_key = self.__cache_key_permissions__.format(id=self.id)
         permissions = cache.get(cache_key)
         if not permissions:
-            permissions = self.user_class.permissions or []
+            permissions = deepcopy(self.user_class_model.permissions) or []
             for class_ in SecondaryClass.from_user(self.id):
                 permissions += class_.permissions or []
             permissions = list(set(permissions))  # De-dupe
@@ -129,6 +129,11 @@ class User(db.Model):
 
             cache.set(cache_key, permissions)
         return permissions
+
+    @property
+    def user_class_model(self) -> 'UserClass_':
+        from pulsar.permissions.models import UserClass
+        return UserClass.from_id(self.user_class_id)
 
     def belongs_to_user(self):
         """Check whether or not the requesting user matches this user."""

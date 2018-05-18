@@ -1,7 +1,7 @@
 import pytest
 
-from conftest import CODE_1, CODE_2, CODE_3
-from pulsar import cache, db
+from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_dictionary
+from pulsar import NewJSONEncoder, cache, db
 from pulsar.auth.models import APIKey
 
 
@@ -64,3 +64,39 @@ def test_api_key_permission(app, client):
     api_key = APIKey.from_id('abcdefghij', include_dead=True)
     assert api_key.has_permission('sample_permission')
     assert not api_key.has_permission('not_a_permission')
+
+
+def test_serialize_no_perms(app, client):
+    session = APIKey.from_id('abcdefghij')
+    assert NewJSONEncoder()._to_dict(session) is None
+
+
+def test_serialize_detailed(app, authed_client):
+    add_permissions(app, 'view_api_keys_others')
+    session = APIKey.from_id('1234567890', include_dead=True)
+    data = NewJSONEncoder()._to_dict(session)
+    check_dictionary(data, {
+        'id': '1234567890',
+        'user_id': 2,
+        'ip': '0.0.0.0',
+        'user_agent': None,
+        'revoked': True,
+        'permissions': None,
+        })
+    assert 'last_used' in data and isinstance(data['last_used'], int)
+    assert len(data) == 7
+
+
+def test_serialize_self(app, authed_client):
+    session = APIKey.from_id('abcdefghij')
+    data = NewJSONEncoder()._to_dict(session)
+    check_dictionary(data, {
+        'id': 'abcdefghij',
+        'user_id': 1,
+        'ip': '0.0.0.0',
+        'user_agent': None,
+        'revoked': False,
+        'permissions': ['sample_permission', 'sample_2_permission', 'sample_3_permission'],
+        })
+    assert 'last_used' in data and isinstance(data['last_used'], int)
+    assert len(data) == 7

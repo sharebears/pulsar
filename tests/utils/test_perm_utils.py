@@ -2,18 +2,7 @@ import flask
 import pytest
 
 from conftest import add_permissions, check_json_response
-from pulsar import db
 from pulsar.utils import assert_permission, assert_user, choose_user
-
-
-@pytest.fixture(autouse=True)
-def populate_db(client):
-    db.engine.execute(
-        """INSERT INTO users_permissions (user_id, permission) VALUES
-        (1, 'sample_perm_one'),
-        (1, 'sample_perm_two'),
-        (1, 'sample_perm_three')
-        """)
 
 
 @pytest.mark.parametrize(

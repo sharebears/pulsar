@@ -34,11 +34,11 @@
 - [ ] Need a way to serialize basic permissions for moderators
 
 ## Testing & Typing
-* [-] Classify integration tests vs unit tests **(request tests = integration)**
-- [-] Create serialization tests that validate the presence and accuracy
+* [x] Classify integration tests vs unit tests **(request tests = integration)**
+- [x] Create serialization tests that validate the presence and accuracy
       of serialized data.
-- [-] Change schema names to ALL_CAPS
-- [-] Review tests for all schemas (``test_schemas.py``)
+- [x] Change schema names to ALL_CAPS
+- [x] Review tests for all schemas (``test_schemas.py``)
 - [ ] Hypothesis property tests where possible
 - [ ] Figure out how to fuzz test with hypothesis? (Assert no 500)
 - [ ] Create stub files for external library interfaces that are used
@@ -51,8 +51,8 @@
 - [x] Invites
 - [x] Hooks
 - [x] Users
-- [ ] Authentication
-- [ ] Permissions
+- [x] Authentication
+- [x] Permissions
 - [ ] Forums
 
 

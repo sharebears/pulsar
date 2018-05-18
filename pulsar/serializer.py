@@ -31,7 +31,7 @@ class NewJSONEncoder(JSONEncoder):
             return super().default(obj)
 
     def _to_dict(self,
-                 model: 'BaseModel',
+                 model: BaseModel,
                  nested: bool = False) -> Optional[dict]:
         """
         Convert the model to a dictionary based on its defined serializable attributes.

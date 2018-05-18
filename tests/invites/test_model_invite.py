@@ -1,7 +1,7 @@
 import pytest
 
-from conftest import CODE_1, CODE_2, CODE_3, CODE_4
-from pulsar import cache
+from conftest import CODE_1, CODE_2, CODE_3, CODE_4, add_permissions, check_dictionary
+from pulsar import NewJSONEncoder, cache
 from pulsar.invites.models import Invite
 
 
@@ -62,3 +62,49 @@ def test_belongs_to_user(app, authed_client, inv_id, result):
     invite = Invite.from_id(inv_id)
     with app.test_request_context('/test'):
         assert invite.belongs_to_user() is result
+
+
+def test_serialize_no_perms(app, authed_client):
+    invite = Invite.from_id(CODE_3)
+    assert NewJSONEncoder()._to_dict(invite) is None
+
+
+def test_serialize_self(app, authed_client):
+    invite = Invite.from_id(CODE_1)
+    data = NewJSONEncoder()._to_dict(invite)
+    check_dictionary(data, {
+        'id': CODE_1,
+        'email': 'bright@puls.ar',
+        'expired': False,
+        'invitee': None})
+    assert isinstance(data['time_sent'], int)
+    assert len(data) == 5
+
+
+def test_serialize_detailed(app, authed_client):
+    add_permissions(app, 'view_invites_others')
+    invite = Invite.from_id(CODE_1)
+    data = NewJSONEncoder()._to_dict(invite)
+    check_dictionary(data, {
+        'id': CODE_1,
+        'email': 'bright@puls.ar',
+        'expired': False,
+        'invitee': None,
+        'from_ip': '0.0.0.0'})
+    assert isinstance(data['time_sent'], int)
+    assert isinstance(data['inviter'], dict)
+    assert len(data) == 7
+
+
+def test_serialize_nested(app, authed_client):
+    add_permissions(app, 'view_invites_others')
+    invite = Invite.from_id(CODE_1)
+    data = NewJSONEncoder()._to_dict(invite, nested=True)
+    check_dictionary(data, {
+        'id': CODE_1,
+        'email': 'bright@puls.ar',
+        'expired': False,
+        'invitee': None,
+        'from_ip': '0.0.0.0'})
+    assert isinstance(data['time_sent'], int)
+    assert len(data) == 6

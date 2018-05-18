@@ -49,7 +49,7 @@ class UserClass(db.Model):
 
     __serialize__ = (
         'id',
-        'name')
+        'name', )
     __serialize_detailed__ = (
         'permissions', )
 
@@ -99,8 +99,11 @@ class SecondaryClass(db.Model):
     __cache_key_all__ = 'secondary_classes'
     __cache_key_of_user__ = 'secondary_classes_users_{id}'
 
-    __serialize__ = ('id', 'name', )
-    __serialize_detailed__ = ('permissions', )
+    __serialize__ = (
+        'id',
+        'name', )
+    __serialize_detailed__ = (
+        'permissions', )
 
     __permission_detailed__ = 'modify_user_classes'
 

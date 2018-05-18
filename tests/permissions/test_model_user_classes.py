@@ -1,0 +1,93 @@
+import pytest
+from pulsar.permissions.models import UserClass, SecondaryClass
+from conftest import check_dictionary
+from pulsar import APIException, db, cache, NewJSONEncoder
+from sqlalchemy.exc import IntegrityError
+
+
+@pytest.mark.parametrize(
+    'class_, name', [
+        (UserClass, 'UsEr'), (SecondaryClass, 'Fls')
+    ])
+def test_create_dupe_user_classes(app, client, class_, name):
+    with pytest.raises(APIException):
+        class_.new(
+            name=name,
+            permissions=None)
+
+
+@pytest.mark.parametrize(
+    'class_, name', [
+        ('user_classes', 'USeR'), ('secondary_classes', 'fLS')
+    ])
+def test_create_dupe_user_classes_database(app, client, class_, name):
+    with pytest.raises(IntegrityError):
+        db.session.execute(f"INSERT INTO {class_} (name) VALUES ('{name}')")
+
+
+@pytest.mark.parametrize(
+    'class_, class_id, permission', [
+        (UserClass, 1, 'edit_settings'),
+        (SecondaryClass, 1, 'send_invites'),
+    ])
+def test_user_class_cache(app, client, class_, class_id, permission):
+    user_class = class_.from_id(class_id)
+    cache_key = cache.cache_model(user_class, timeout=60)
+    user_class = class_.from_id(class_id)
+    assert user_class.id == class_id
+    assert permission in user_class.permissions
+    assert cache.ttl(cache_key) < 61
+
+
+@pytest.mark.parametrize(
+    'class_', [UserClass, SecondaryClass])
+def test_user_class_cache_get_all(app, client, class_):
+    cache.set(class_.__cache_key_all__, [2], timeout=60)
+    all_user_classes = class_.get_all()
+    assert len(all_user_classes) == 1
+    assert 'edit_settings' in all_user_classes[0].permissions
+
+
+def test_user_secondary_classes_models(app, client):
+    cache.set(SecondaryClass.__cache_key_of_user__.format(id=1), [2], timeout=60)
+    secondary_classes = SecondaryClass.from_user(1)
+    assert len(secondary_classes) == 1
+    assert secondary_classes[0].name == 'user_v2'
+
+
+def test_serialize_user_class_permless(app, client):
+    user_class = UserClass.from_id(1)
+    data = NewJSONEncoder()._to_dict(user_class)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'User',
+        }, strict=True)
+
+
+def test_serialize_user_class_detailed(app, authed_client):
+    user_class = UserClass.from_id(1)
+    data = NewJSONEncoder()._to_dict(user_class)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'User',
+        'permissions': ['modify_permissions', 'edit_settings'],
+        }, strict=True)
+
+
+def test_serialize_secondary_class_permless(app, client):
+    user_class = SecondaryClass.from_id(1)
+    data = NewJSONEncoder()._to_dict(user_class)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'FLS',
+        }, strict=True)
+
+
+def test_serialize_secondary_class_detailed(app, authed_client):
+    user_class = SecondaryClass.from_id(1)
+    data = NewJSONEncoder()._to_dict(user_class)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'FLS',
+        'permissions': ['send_invites'],
+        }, strict=True)

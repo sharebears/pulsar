@@ -27,16 +27,11 @@ def test_get_user(app, authed_client):
     check_json_response(response, {
         'id': 2,
         'username': 'paffu',
-        'user_class': {
-            'id': 1,
-            'name': 'User',
-        }
+        'user_class': 'User',
         })
     assert response.status_code == 200
     data = response.get_json()
     assert 'user_class' in data['response']
-    assert data['response']['user_class']['id'] == 1
-    assert data['response']['user_class']['name'] == 'User'
     assert 'api_keys' not in data['response']
     assert 'email' not in data['response']
 
@@ -47,10 +42,7 @@ def test_get_user_detailed(app, authed_client):
     check_json_response(response, {
         'id': 1,
         'username': 'lights',
-        'user_class': {
-            'id': 1,
-            'name': 'User',
-        },
+        'user_class': 'User',
         'secondary_classes': ['FLS'],
         'downloaded': 0,
         'email': 'lights@puls.ar',

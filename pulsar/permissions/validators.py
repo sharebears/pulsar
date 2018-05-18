@@ -94,7 +94,7 @@ def check_permissions(user: User,  # noqa: C901
     delete: List[str] = []
     errors: Dict[str, List[str]] = defaultdict(list)
 
-    uc_permissions: List[str] = user.user_class.permissions
+    uc_permissions: List[str] = user.user_class_model.permissions
     user_permissions: Dict[str, bool] = UserPermission.from_user(user.id)
 
     for perm, active in permissions.items():

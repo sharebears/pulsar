@@ -1,7 +1,7 @@
 import pytest
 
-from conftest import CODE_1, CODE_2, CODE_3
-from pulsar import cache, db
+from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_dictionary
+from pulsar import NewJSONEncoder, cache, db
 from pulsar.auth.models import Session
 
 
@@ -110,3 +110,39 @@ def test_session_is_expired_not_persistent(app, client):
 def test_session_expiry(app, client, code, expired):
     session = Session.from_id(code, include_dead=True)
     assert session.is_expired() is expired
+
+
+def test_serialize_no_perms(app, client):
+    session = Session.from_id('abcdefghij')
+    assert NewJSONEncoder()._to_dict(session) is None
+
+
+def test_serialize_detailed(app, authed_client):
+    add_permissions(app, 'view_sessions_others')
+    session = Session.from_id('1234567890', include_dead=True)
+    data = NewJSONEncoder()._to_dict(session)
+    check_dictionary(data, {
+        'id': '1234567890',
+        'user_id': 2,
+        'persistent': False,
+        'ip': '0.0.0.0',
+        'user_agent': None,
+        'expired': True,
+        })
+    assert 'last_used' in data and isinstance(data['last_used'], int)
+    assert len(data) == 7
+
+
+def test_serialize_self(app, authed_client):
+    session = Session.from_id('abcdefghij')
+    data = NewJSONEncoder()._to_dict(session)
+    check_dictionary(data, {
+        'id': 'abcdefghij',
+        'user_id': 1,
+        'persistent': True,
+        'ip': '0.0.0.0',
+        'user_agent': None,
+        'expired': False,
+        })
+    assert 'last_used' in data and isinstance(data['last_used'], int)
+    assert len(data) == 7
