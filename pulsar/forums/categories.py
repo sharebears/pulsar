@@ -23,7 +23,7 @@ def view_categories():
 
     .. sourcecode:: http
 
-       POST /forums/categories HTTP/1.1
+       GET /forums/categories HTTP/1.1
        Host: pul.sar
        Accept: application/json
        Content-Type: application/json
@@ -53,19 +53,50 @@ def view_categories():
     return flask.jsonify(categories)
 
 
-add_forum_category_schema = Schema({
+ADD_FORUM_CATEGORY_SCHEMA = Schema({
     'name': All(str, Length(max=32)),
-    Optional('description', default=None): Any(All(str, Length(max=1024), None)),
+    Optional('description', default=None): Any(All(str, Length(max=1024)), None),
     Optional('position', default=0): All(int, Range(min=0, max=99999)),
     }, required=True)
 
 
 @bp.route('/forums/categories', methods=['POST'])
 @require_permission('modify_forums')
-@validate_data(add_forum_category_schema)
+@validate_data(ADD_FORUM_CATEGORY_SCHEMA)
 def add_category(name, description, position):
     """
-    GOOd Docstring.
+    This is the endpoint for forum category creation. The ``modify_forums`` permission
+    is required to access this endpoint.
+
+    .. :quickref: ForumCategory; Create a ForumCategory.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       POST /forums/categories HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+       Content-Type: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": {
+         }
+       }
+
+    :>json list response: The newly created forum category
+
+    :statuscode 200: Creation successful
+    :statuscode 400: Creation unsuccessful
     """
     category = ForumCategory.new(
         name=name,

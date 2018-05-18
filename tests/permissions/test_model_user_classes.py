@@ -1,8 +1,9 @@
 import pytest
-from pulsar.permissions.models import UserClass, SecondaryClass
-from conftest import check_dictionary
-from pulsar import APIException, db, cache, NewJSONEncoder
 from sqlalchemy.exc import IntegrityError
+
+from conftest import check_dictionary
+from pulsar import APIException, NewJSONEncoder, cache, db
+from pulsar.permissions.models import SecondaryClass, UserClass
 
 
 @pytest.mark.parametrize(

@@ -1,7 +1,7 @@
 import pytest
 
-from conftest import check_dictionary, add_permissions
-from pulsar import cache, NewJSONEncoder
+from conftest import add_permissions, check_dictionary
+from pulsar import NewJSONEncoder, cache
 from pulsar.models import ForumPost, ForumThread
 
 

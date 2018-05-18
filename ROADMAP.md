@@ -3,15 +3,17 @@
 - [x] Rate Limiting
 - [x] Caching
 - [x] Permissioned Serialization
-- [-] Boilerplate Refactors & Typing (Issues)
+- [x] Boilerplate Refactors & Typing (Issues)
 - [-] Forums
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
 
 # Issues
-- [ ] Testing & Typing
-- [ ] Script to analyse permission usage--iter through all files and compile list of
+- [x] Refactor the tests
+- [ ] Forums system
+- [ ] Add tests for all lowercased schemas and convert them to uppercase
+- [ ] Script to analyse permission usage--iterate through all files and compile list of
       require_permission, assert_permission, choose_user, has_permission and compare with
       get_all_permissions() | https://stackoverflow.com/a/25181706
 - [ ] Should invite codes be stored in the URL?
@@ -19,16 +21,8 @@
       although should still allow masquerade (not a 404 (can confuse clients))
 - [ ] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
 - [ ] Need a way to serialize basic permissions for moderators
-
-## Testing & Typing
-* [x] Classify integration tests vs unit tests **(request tests = integration)**
-- [x] Create serialization tests that validate the presence and accuracy
-      of serialized data.
-- [x] Change schema names to ALL_CAPS
-- [x] Review tests for all schemas (``test_schemas.py``)
-- [ ] Hypothesis property tests where possible
-- [ ] Figure out how to fuzz test with hypothesis? (Assert no 500)
-- [ ] Create stub files for external library interfaces that are used
+- [ ] Typing Stubs
+- [ ] Review HTTP codes in documentation and the return values
 
 
 # TODO
@@ -160,3 +154,6 @@
 ## User Stats & History
 - [ ] Community Stats
 - [ ] Data Visualization
+
+## Testing
+- [ ] Figure out how to fuzz API endpoints with hypothesis property testing (assert no 500)

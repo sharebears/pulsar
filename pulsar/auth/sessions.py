@@ -3,13 +3,12 @@ from typing import Optional as Optional_
 import flask
 from voluptuous import All, Length, Optional, Schema
 
-from pulsar import APIException, db, _401Exception
+from pulsar import APIException, _401Exception, db
 from pulsar.models import Session, User
 from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import bool_get
 
 from . import bp
-
 
 app = flask.current_app
 
