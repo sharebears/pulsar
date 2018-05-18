@@ -3,48 +3,8 @@ from datetime import datetime
 import pytest
 import pytz
 
-from conftest import add_permissions
 from pulsar import NewJSONEncoder
-from pulsar.models import ForumCategory, User
-
-
-def test_serialize_model_attributes_unpermissioned(app, authed_client):
-    """Make sure default serialization permissions only show the defaults."""
-    user = User.from_id(2)
-    data = NewJSONEncoder()._to_dict(user)
-    assert 'id' in data
-    assert 'email' not in data
-    assert 'inviter' not in data
-
-
-def test_serialize_test_self_permissions(app, authed_client):
-    """Make sure self-permission works for serialization."""
-    user = User.from_id(1)
-    data = NewJSONEncoder()._to_dict(user)
-    assert 'id' in data
-    assert 'email' in data
-    assert 'inviter' not in data
-
-
-def test_serialize_detailed_permissions_and_nested(app, authed_client):
-    """Make sure detailed permissions and nested excludes work."""
-    add_permissions(app, 'moderate_users')
-    user = User.from_id(2)
-    data = NewJSONEncoder()._to_dict(user)
-    assert 'id' in data
-    assert 'email' in data
-    assert 'inviter' in data
-    assert 'id' in data['inviter']
-    assert 'inviter' not in data['inviter']
-
-
-def test_serialize_nested_include(app, authed_client):
-    """Make sure that nested include permissions work."""
-    forums = NewJSONEncoder()._to_dict(ForumCategory.from_id(2))['forums']
-    assert len(forums) == 1
-    assert forums[0]['name'] == '/_\\'
-    assert 'last_updated_thread' in forums[0]
-    assert 'category' not in forums[0]
+from pulsar.models import User
 
 
 def test_to_dict_plain(app, authed_client):

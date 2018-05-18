@@ -1,6 +1,7 @@
 import pytest
 
-from pulsar import cache
+from conftest import check_dictionary, add_permissions
+from pulsar import cache, NewJSONEncoder
 from pulsar.models import Forum
 
 
@@ -107,3 +108,51 @@ def test_forum_threads_with_deleted(app, authed_client):
     threads = forum.threads
     assert len(threads) == 1
     assert threads[0].topic != 'New Site Borked'
+
+
+def test_serialize_no_perms(app, client):
+    category = Forum.from_id(1)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'Pulsar',
+        'description': 'Stuff about pulsar',
+        'position': 1,
+        'thread_count': 1,
+        })
+    assert 'category' in data and data['category']['id'] == 1
+    assert 'threads' in data and len(data['threads']) == 1
+    assert len(data) == 7
+
+
+def test_serialize_very_detailed(app, authed_client):
+    add_permissions(app, 'modify_forums')
+    category = Forum.from_id(1)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'Pulsar',
+        'description': 'Stuff about pulsar',
+        'position': 1,
+        'thread_count': 1,
+        'deleted': False,
+        })
+    assert 'category' in data and data['category']['id'] == 1
+    assert 'threads' in data and len(data['threads']) == 1
+    assert len(data) == 8
+
+
+def test_serialize_nested(app, authed_client):
+    add_permissions(app, 'modify_forums')
+    category = Forum.from_id(1)
+    data = NewJSONEncoder()._to_dict(category, nested=True)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'Pulsar',
+        'description': 'Stuff about pulsar',
+        'position': 1,
+        'thread_count': 1,
+        'deleted': False,
+        })
+    assert 'last_updated_thread' in data and 'id' in data['last_updated_thread']
+    assert len(data) == 7

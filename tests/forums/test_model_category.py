@@ -1,5 +1,6 @@
-from pulsar import cache
+from pulsar import cache, NewJSONEncoder
 from pulsar.models import ForumCategory
+from conftest import add_permissions, check_dictionary
 
 
 def test_category_from_id(app, authed_client):
@@ -49,3 +50,44 @@ def test_new_category(app, authed_client):
     assert category.description is None
     assert category.position == 100
     assert ForumCategory.from_cache(category.cache_key).id == category.id == 6
+
+
+def test_serialize_no_perms(app, client):
+    category = ForumCategory.from_id(1)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'Site',
+        'description': 'General site discussion',
+        'position': 1,
+        })
+    assert 'forums' in data and len(data['forums']) == 2
+    assert len(data) == 5
+
+
+def test_serialize_very_detailed(app, authed_client):
+    add_permissions(app, 'modify_forums')
+    category = ForumCategory.from_id(1)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'Site',
+        'description': 'General site discussion',
+        'position': 1,
+        'deleted': False,
+        })
+    assert 'forums' in data and len(data['forums']) == 2
+    assert len(data) == 6
+
+
+def test_serialize_nested(app, authed_client):
+    add_permissions(app, 'modify_forums')
+    category = ForumCategory.from_id(1)
+    data = NewJSONEncoder()._to_dict(category, nested=True)
+    check_dictionary(data, {
+        'id': 1,
+        'name': 'Site',
+        'description': 'General site discussion',
+        'position': 1,
+        'deleted': False,
+        }, strict=True)

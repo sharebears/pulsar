@@ -3,26 +3,13 @@
 - [x] Rate Limiting
 - [x] Caching
 - [x] Permissioned Serialization
-- [ ] Boilerplate Refactors & Typing (Issues)
+- [-] Boilerplate Refactors & Typing (Issues)
 - [-] Forums
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
 
 # Issues
-- [x] Add test for expired session / revoked API Key auth
-- [x] User classes need unique lowercase constraints
-- [x] Do integer voluptuous validators prevent overflow? A: Nope!
-- [x] Abstract 404 exceptions to model queries
-- [x] Set up pipenv dependencies
-- [x] Static typing with annotations and mypy (well I did the basics)
-- [x] Abstract model cache clears to the commit function
-- [x] Take types out of documentation with https://github.com/agronholm/sphinx-autodoc-typehints
-- [x] Document development tools in Installation & Development
-- [x] Re-document style guide, include docstring guides, type annotation guides, and lax up on parenthesis
-- [x] Fix type annotations for other models in `users.models`
-- [x] Simplify ``check_permissions`` permissions/ validator complexity | gave up, exceptioned it
-- [x] Documentation about model abstractions and column names / types in BaseModel
 - [ ] Testing & Typing
 - [ ] Script to analyse permission usage--iter through all files and compile list of
       require_permission, assert_permission, choose_user, has_permission and compare with
@@ -42,18 +29,6 @@
 - [ ] Hypothesis property tests where possible
 - [ ] Figure out how to fuzz test with hypothesis? (Assert no 500)
 - [ ] Create stub files for external library interfaces that are used
-
-## Tests Cleanup List
-- [x] Cache
-- [x] BaseModel
-- [x] Validators
-- [x] Serializer
-- [x] Invites
-- [x] Hooks
-- [x] Users
-- [x] Authentication
-- [x] Permissions
-- [ ] Forums
 
 
 # TODO

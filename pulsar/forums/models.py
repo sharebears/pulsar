@@ -24,12 +24,12 @@ class ForumCategory(db.Model):
         'description',
         'position',
         'forums')
-    __serialize_detailed__ = (
+    __serialize_very_detailed__ = (
         'deleted', )
     __serialize_nested_exclude__ = (
         'forums', )
 
-    __permission_detailed__ = 'modify_forums'
+    __permission_very_detailed__ = 'modify_forums'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
@@ -82,7 +82,7 @@ class Forum(db.Model):
         'category',
         'threads')
 
-    __permission_very_detailed__ = 'modify_forum_threads_advanced'
+    __permission_very_detailed__ = 'modify_forums'
 
     _threads: List['ForumThread']
 
@@ -162,7 +162,8 @@ class ForumThread(db.Model):
         'poster',
         'locked',
         'sticky',
-        'last_updated',
+        'created_time',
+        'last_post',
         'post_count',
         'posts')
     __serialize_very_detailed__ = (
@@ -179,6 +180,7 @@ class ForumThread(db.Model):
     topic = db.Column(db.String(255), nullable=False)
     forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), nullable=False)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    created_time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
     locked = db.Column(db.Boolean, nullable=False, server_default='f')
     sticky = db.Column(db.Boolean, nullable=False, server_default='f')
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
@@ -264,10 +266,10 @@ class ForumPost(db.Model):
         'contents',
         'time',
         'sticky',
-        'editor')
+        'editor', )
     __serialize_very_detailed__ = (
         'deleted',
-        'edit_history')
+        'edit_history', )
     __serialize_nested_exclude__ = (
         'thread_id', )
 
@@ -327,16 +329,13 @@ class ForumPostEditHistory(db.Model):
     __cache_key__ = 'forums_posts_edit_history_{id}'
     __cache_key_of_post__ = 'forums_posts_edit_history_posts_{id}'
 
-    __serialize_detailed__ = (
+    __serialize_very_detailed__ = (
         'id',
-        'post',
         'editor',
         'contents',
         'time')
-    __serialize_nested_exclude__ = (
-        'post', )
 
-    __permission_detailed__ = 'modify_forum_posts_advanced'
+    __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('forums_posts.id'), nullable=False)
@@ -350,10 +349,6 @@ class ForumPostEditHistory(db.Model):
             key=cls.__cache_key_of_post__.format(id=post_id),
             filter=cls.post_id == post_id,
             order=cls.id.desc())
-
-    @property
-    def post(self) -> 'ForumPost':
-        return ForumPost.from_id(self.post_id)
 
     @property
     def editor(self) -> User:

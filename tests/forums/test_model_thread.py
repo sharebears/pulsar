@@ -1,6 +1,7 @@
 import pytest
 
-from pulsar import cache
+from conftest import check_dictionary, add_permissions
+from pulsar import cache, NewJSONEncoder
 from pulsar.models import ForumPost, ForumThread
 
 
@@ -126,3 +127,63 @@ def test_thread_last_post_already_cached(app, authed_client):
     post = thread.last_post
     assert post.contents == 'Delete this'
     assert cache.ttl(post.cache_key) < 61
+
+
+def test_serialize_no_perms(app, client):
+    category = ForumThread.from_id(3)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 3,
+        'topic': 'Using PHP',
+        'locked': True,
+        'sticky': True,
+        'post_count': 1,
+        })
+    assert 'forum' in data and data['forum']['id'] == 2
+    assert 'poster' in data and data['poster']['id'] == 2
+    assert 'last_post' in data and data['last_post']['id'] == 2
+    assert ('posts' in data
+            and len(data['posts']) == 1
+            and data['posts'][0]['id'] == 2)
+    assert 'created_time' in data and isinstance(data['created_time'], int)
+    assert len(data) == 10
+
+
+def test_serialize_very_detailed(app, authed_client):
+    add_permissions(app, 'modify_forum_threads_advanced')
+    category = ForumThread.from_id(3)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 3,
+        'topic': 'Using PHP',
+        'locked': True,
+        'sticky': True,
+        'deleted': False,
+        'post_count': 1,
+        })
+    assert 'forum' in data and data['forum']['id'] == 2
+    assert 'poster' in data and data['poster']['id'] == 2
+    assert 'last_post' in data and data['last_post']['id'] == 2
+    assert ('posts' in data
+            and len(data['posts']) == 1
+            and data['posts'][0]['id'] == 2)
+    assert 'created_time' in data and isinstance(data['created_time'], int)
+    assert len(data) == 11
+
+
+def test_serialize_nested(app, authed_client):
+    add_permissions(app, 'modify_forum_threads_advanced')
+    category = ForumThread.from_id(3)
+    data = NewJSONEncoder()._to_dict(category, nested=True)
+    check_dictionary(data, {
+        'id': 3,
+        'topic': 'Using PHP',
+        'locked': True,
+        'sticky': True,
+        'deleted': False,
+        'post_count': 1,
+        })
+    assert 'poster' in data and data['poster']['id'] == 2
+    assert 'last_post' in data and data['last_post']['id'] == 2
+    assert 'created_time' in data and isinstance(data['created_time'], int)
+    assert len(data) == 9
