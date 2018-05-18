@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Optional, List, Union
 
 import flask
 from flask_sqlalchemy import SignallingSession
@@ -108,6 +108,20 @@ class Cache(RedisCache):
         if result:
             flask.g.cache_keys['delete'].add(key)
         return result
+
+    def delete_many(self, *keys: List[str]) -> bool:
+        """
+        Delete multiple keys from the cache.
+
+        :param keys: The keys to delete
+        :return:     Whether or not all keys have been deleted
+        """
+        keys = [key.lower() for key in keys]
+        result = super().delete_many(keys)
+        if result:
+            flask.g.cache_keys['delete'] += set(keys)
+        return result
+
 
     def ttl(self, key: str) -> int:
         """

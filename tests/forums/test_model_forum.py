@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import add_permissions, check_dictionary
-from pulsar import NewJSONEncoder, cache
+from pulsar import NewJSONEncoder, cache, APIException
 from pulsar.models import Forum
 
 
@@ -58,11 +58,12 @@ def test_new_forum(app, authed_client):
 @pytest.mark.parametrize(
     'category_id', [10, 3])
 def test_new_forum_failure(app, authed_client, category_id):
-    assert Forum.new(
-        name='NewForum',
-        description=None,
-        category_id=category_id,
-        position=100) is None
+    with pytest.raises(APIException):
+        Forum.new(
+            name='NewForum',
+            description=None,
+            category_id=category_id,
+            position=100)
 
 
 @pytest.mark.parametrize(

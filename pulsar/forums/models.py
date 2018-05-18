@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import db
+from pulsar import db, APIException
 from pulsar.models import User
 
 app = flask.current_app
@@ -54,6 +54,22 @@ class ForumCategory(db.Model):
             name=name,
             description=description,
             position=position)
+
+    @classmethod
+    def is_valid(cls,
+                 id: int,
+                 error_: bool = False) -> bool:
+        """
+        Check whether or not the forum category exists and isn't deleted.
+
+        :param id: The forum category ID to validate
+        :return: Validity of the category
+        """
+        category = cls.from_id(id)
+        valid = category and not category.deleted
+        if error_ and not valid:
+            raise APIException('Invalid category ID.')
+        return valid
 
     @property
     def forums(self) -> List['Forum']:
@@ -105,16 +121,15 @@ class Forum(db.Model):
     @classmethod
     def new(cls,
             name: str,
-            description: str,
-            category_id: int,
-            position: int) -> Optional['Forum']:
-        category = ForumCategory.from_id(category_id)
-        if not category or category.deleted:
-            return None
+            category_id: Optional[int],
+            description: Optional[str],
+            position: Optional[int],
+            error_: bool = True) -> Optional['Forum']:
+        ForumCategory.is_valid(category_id, error_=True)
         return super().new(
             name=name,
-            description=description,
             category_id=category_id,
+            description=description,
             position=position)
 
     @property

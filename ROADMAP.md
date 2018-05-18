@@ -11,8 +11,8 @@
 
 # Issues
 - [x] Refactor the tests
-- [ ] Forums system
 
+- [ ] Add error_ kwargs to all new() functions
 - [ ] Add tests for all lowercased schemas and convert them to uppercase
 - [ ] Take cache tests out of views and move them into model tests
 - [ ] Generally reduce the amount of shit in view tests
@@ -32,15 +32,21 @@
 - [ ] Typing Stubs
 - [ ] Hypothesis property testing for the schemas and validators
 - [ ] Review HTTP codes in documentation and the return values
+- [ ] Review usage of optional in .new(**kwarg**) stuff
 
+- [ ] (v0.03) Would like more inventive and free serialization; define serialization objects
+      that wrap around models (stick in flask.Response) and define custom handler functions
+      for nested models? Would like individual forumcategory view with 10 nested threads each,
+      but not cleanly possible in current system.
+ 
 
 # TODO
 
 ## General
 - [x] Form validation with voluptuous
 - [x] Permissioned Serialization
-- [ ] (v0.03) Docker/Vagrant environment
-- [ ] (v0.03) Would like more inventive and free serialization
+- [ ] Docker/Vagrant environment
+     
 
 ## Users
 - [x] Administration Functions
@@ -61,7 +67,7 @@
 ## Forums
 - [x] Models
 - [x] Category View
-- [ ] Forum View
+- [x] Forum View
 - [ ] Thread View
 - [ ] Posts View
 - [ ] Forum/Thread Permissions
@@ -74,9 +80,11 @@
 - [ ] Built in git versioning
 
 ## Index
-- [ ] Basic user info, API version
-- [ ] SiteStatus endpoint, yada yada
+(All of these get their own endpoint too)
 - [ ] News Posts
+- [ ] Blog Posts
+- [ ] Site Stats
+- [ ] (delay) Featured Torrents (Leave Vanity House as RED fork implementation)
 
 ## Wiki
 - [ ] Wiki Pages
@@ -92,6 +100,7 @@
 ## Staff Tools
 - [ ] Basic Site-Level Administration Tools
 - [ ] Separate Repository * .gitignored
+- [ ] Cache Key Clearing
 
 ## Tors
 - [ ] Global Base Torrent
