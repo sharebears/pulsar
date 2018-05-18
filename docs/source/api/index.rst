@@ -23,3 +23,4 @@ case insensitive.
    authentication
    permissions
    invites
+   forums

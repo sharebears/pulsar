@@ -10,7 +10,7 @@ app = flask.current_app
 
 @bp.route('/users/<int:user_id>', methods=['GET'])
 @require_permission('view_users')
-def get_user(user_id: int) -> 'flask.Response':
+def get_user(user_id: int) -> flask.Response:
     """
     Return general information about a user with the given user ID.  If the
     user is getting information about themselves, the API will return more

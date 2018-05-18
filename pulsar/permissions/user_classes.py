@@ -22,7 +22,7 @@ secondary_schema = Schema({
 @require_permission('modify_user_classes')
 @validate_data(secondary_schema)
 def view_user_class(user_class_id: int,
-                    secondary: bool = False) -> 'flask.Response':
+                    secondary: bool = False) -> flask.Response:
     """
     View an available user class and its associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -74,7 +74,7 @@ def view_user_class(user_class_id: int,
 @bp.route('/user_classes', methods=['GET'])
 @require_permission('list_user_classes')
 @validate_data(secondary_schema)
-def view_multiple_user_classes(secondary: bool = False) -> 'flask.Response':
+def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
     """
     View all available user classes and their associated permission sets.
     Requires the ``list_user_classes`` permission.
@@ -151,7 +151,7 @@ create_user_class_schema = Schema({
 @validate_data(create_user_class_schema)
 def create_user_class(name: str,
                       secondary: bool,
-                      permissions: List[str]) -> 'flask.Response':
+                      permissions: List[str]) -> flask.Response:
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
@@ -214,7 +214,7 @@ def create_user_class(name: str,
 
 @bp.route('/user_classes/<int:user_class_id>', methods=['DELETE'])
 @require_permission('modify_user_classes')
-def delete_user_class(user_class_id: int) -> 'flask.Response':
+def delete_user_class(user_class_id: int) -> flask.Response:
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
@@ -283,7 +283,7 @@ modify_user_class_schema = Schema({
 @validate_data(modify_user_class_schema)
 def modify_user_class(user_class_id: int,
                       permissions: Dict[str, bool],
-                      secondary: bool) -> 'flask.Response':
+                      secondary: bool) -> flask.Response:
     """
     Modifies permissions for an existing user class.
     Requires the ``modify_user_classes`` permission.

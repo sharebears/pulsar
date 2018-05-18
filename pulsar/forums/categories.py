@@ -1,6 +1,9 @@
+from typing import Optional as Optional_
+
 import flask
 from voluptuous import All, Any, Length, Optional, Range, Schema
 
+from pulsar import APIException, db
 from pulsar.models import ForumCategory
 from pulsar.utils import require_permission, validate_data
 
@@ -11,7 +14,7 @@ app = flask.current_app
 
 @bp.route('/forums/categories', methods=['GET'])
 @require_permission('view_forums')
-def view_categories():
+def view_categories() -> flask.Response:
     """
     This endpoint allows users to view the available forum categories
     and the forums in each category, along with some information about
@@ -63,12 +66,14 @@ ADD_FORUM_CATEGORY_SCHEMA = Schema({
 @bp.route('/forums/categories', methods=['POST'])
 @require_permission('modify_forums')
 @validate_data(ADD_FORUM_CATEGORY_SCHEMA)
-def add_category(name, description, position):
+def add_category(name: str,
+                 description: Optional_[str],
+                 position: int) -> flask.Response:
     """
     This is the endpoint for forum category creation. The ``modify_forums`` permission
     is required to access this endpoint.
 
-    .. :quickref: ForumCategory; Create a ForumCategory.
+    .. :quickref: ForumCategory; Create a forum category.
 
     **Example request**:
 
@@ -78,6 +83,12 @@ def add_category(name, description, position):
        Host: pul.sar
        Accept: application/json
        Content-Type: application/json
+
+       {
+         "name": "Support",
+         "description": "The place for confused share bears.",
+         "position": 6
+       }
 
     **Example response**:
 
@@ -103,3 +114,119 @@ def add_category(name, description, position):
         description=description,
         position=position)
     return flask.jsonify(category)
+
+
+MODIFY_FORUM_CATEGORY_SCHEMA = Schema({
+    'name': All(str, Length(max=32)),
+    'description': All(str, Length(max=1024)),
+    'position': All(int, Range(min=0, max=99999)),
+    })
+
+
+@bp.route('/forums/categories/<int:id>', methods=['PUT'])
+@require_permission('modify_forums')
+@validate_data(MODIFY_FORUM_CATEGORY_SCHEMA)
+def edit_category(id: int,
+                  name: Optional_[str] = None,
+                  description: Optional_[str] = None,
+                  position: Optional_[int] = None) -> flask.Response:
+    """
+    This is the endpoint for forum category editing. The ``modify_forums`` permission
+    is required to access this endpoint. The name, description, and position of a forum
+    category can be changed here.
+
+    .. :quickref: ForumCategory; Edit a forum category.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       PUT /forums/categories/6 HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+       Content-Type: application/json
+
+       {
+         "name": "Support",
+         "description": "The place for **very** confused share bears.",
+         "position": 99
+       }
+
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": {
+         }
+       }
+
+    :>json list response: The edited forum category
+
+    :statuscode 200: Editing successful
+    :statuscode 400: Editing unsuccessful
+    :statuscode 404: Forum category does not exist
+    """
+    category = ForumCategory.from_id(id, _404='Forum category')
+    if name:
+        category.name = name
+    if description:
+        category.description = description
+    if position is not None:
+        category.position = position
+    db.session.commit()
+    return flask.jsonify(category)
+
+
+@bp.route('/forums/categories/<int:id>', methods=['DELETE'])
+@require_permission('modify_forums')
+def delete_category(id: int) -> flask.Response:
+    """
+    This is the endpoint for forum category deletion . The ``modify_forums`` permission
+    is required to access this endpoint. The category must have no forums assigned to it
+    in order to delete it.
+
+    .. :quickref: ForumCategory; Delete a forum category.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       DELETE /forums/categories/2 HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+       Content-Type: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": {
+         }
+       }
+
+    :>json list response: The newly deleted forum category
+
+    :statuscode 200: Deletion successful
+    :statuscode 400: Deletion unsuccessful
+    :statuscode 404: Forum category does not exist
+    """
+    category = ForumCategory.from_id(id, _404='Forum category')
+    if category.forums:
+        raise APIException(
+            'You cannot delete a forum category while it still has forums assigned to it.')
+    category.deleted = True
+    db.session.commit()
+    return flask.jsonify(f'Forum category {id} ({category.name}) has been deleted.')

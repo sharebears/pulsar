@@ -31,7 +31,7 @@ def moderate_user(user_id: int,
                   password: Optional[str] = None,
                   uploaded: Optional[int] = None,
                   downloaded: Optional[int] = None,
-                  invites: Optional[int] = None) -> 'flask.Response':
+                  invites: Optional[int] = None) -> flask.Response:
     """
     Moderate a user - change password for them, alter stats, modify basic permissions,
     etc.

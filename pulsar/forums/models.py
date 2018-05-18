@@ -42,6 +42,7 @@ class ForumCategory(db.Model):
         return cls.get_many(
             key=cls.__cache_key_all__,
             order=cls.position.asc(),
+            include_dead=include_dead,
             required_properties=('forums', ))
 
     @classmethod
@@ -64,7 +65,7 @@ class Forum(db.Model):
     __cache_key__ = 'forums_{id}'
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
     __cache_key_thread_count__ = 'forums_{id}_thread_count'
-    __cache_key_of_category__ = 'forums_forums_categories_{id}'
+    __cache_key_of_category__ = 'forums_forums_of_categories_{id}'
 
     __serialize__ = (
         'id',

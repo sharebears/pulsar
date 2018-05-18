@@ -69,9 +69,9 @@ def _404_handler(_) -> flask.Response:
     return flask.jsonify(_404Exception().message), 404
 
 
-def _405_handler(_) -> 'flask.Response':
+def _405_handler(_) -> flask.Response:
     return flask.jsonify(_405Exception().message), 405
 
 
-def _500_handler(_) -> 'flask.Response':
+def _500_handler(_) -> flask.Response:
     return flask.jsonify(_500Exception().message), 500

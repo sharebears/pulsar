@@ -95,7 +95,7 @@ class BaseModel(Model):
         ID parameter, and executes a query if the object isn't cached.
         Can optionally raise a ``_404Exception`` if the object is not queried.
 
-        :param id:             The primary key ID of the object to query for.
+        :param id:             The primary key ID of the object to query for
         :param include_dead:   Whether or not to return deleted/revoked/expired objects
         :param _404:           Whether or not to raise a _404Exception with the value of
                                _404 and the given ID as the resource name if a model is not found
@@ -324,7 +324,7 @@ class BaseModel(Model):
         if the model has a ``user_id`` column, it compares ``flask.g.user`` with that column.
         If that column does not exist, ``False`` will be returned by default.
 
-        :return: Whether or not the object "belongs" to the user.
+        :return: Whether or not the object "belongs" to the user
         """
         return (flask.g.user
                 and flask.g.user.id

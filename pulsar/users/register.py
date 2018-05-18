@@ -28,7 +28,7 @@ registration_schema = Schema({
 def register(username: str,
              password: str,
              email: str,
-             code: TOptional[str]) -> 'flask.Response':
+             code: TOptional[str]) -> flask.Response:
     """
     Creates a user account with the provided credentials.
     An invite code may be required for registration.

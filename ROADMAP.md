@@ -12,16 +12,25 @@
 # Issues
 - [x] Refactor the tests
 - [ ] Forums system
+
 - [ ] Add tests for all lowercased schemas and convert them to uppercase
+- [ ] Take cache tests out of views and move them into model tests
+- [ ] Generally reduce the amount of shit in view tests
+
 - [ ] Script to analyse permission usage--iterate through all files and compile list of
       require_permission, assert_permission, choose_user, has_permission and compare with
       get_all_permissions() | https://stackoverflow.com/a/25181706
-- [ ] Should invite codes be stored in the URL?
+
+- [ ] Should invite codes be stored in the URL? No! Query parameters!
+
 - [ ] No authentication and no route should raise a 401, same with required_permission no authentication,
       although should still allow masquerade (not a 404 (can confuse clients))
+
 - [ ] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
 - [ ] Need a way to serialize basic permissions for moderators
+
 - [ ] Typing Stubs
+- [ ] Hypothesis property testing for the schemas and validators
 - [ ] Review HTTP codes in documentation and the return values
 
 
@@ -30,7 +39,8 @@
 ## General
 - [x] Form validation with voluptuous
 - [x] Permissioned Serialization
-- [ ] Docker/Vagrant environment
+- [ ] (v0.03) Docker/Vagrant environment
+- [ ] (v0.03) Would like more inventive and free serialization
 
 ## Users
 - [x] Administration Functions
@@ -50,7 +60,7 @@
 
 ## Forums
 - [x] Models
-- [-] Category View
+- [x] Category View
 - [ ] Forum View
 - [ ] Thread View
 - [ ] Posts View
@@ -154,6 +164,3 @@
 ## User Stats & History
 - [ ] Community Stats
 - [ ] Data Visualization
-
-## Testing
-- [ ] Figure out how to fuzz API endpoints with hypothesis property testing (assert no 500)

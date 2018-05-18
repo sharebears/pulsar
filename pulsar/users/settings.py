@@ -26,7 +26,7 @@ settings_schema = Schema({
 @validate_data(settings_schema)
 def edit_settings(user_id: int =None,
                   existing_password: Optional[str] =None,
-                  new_password: Optional[str] =None) -> 'flask.Response':
+                  new_password: Optional[str] =None) -> flask.Response:
     # TODO: Fix documentation
     """
     Change a user's password. Requires the ``change_password`` permission.

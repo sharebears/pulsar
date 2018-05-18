@@ -16,7 +16,7 @@ app = flask.current_app
 @bp.route('/permissions', methods=['GET'])
 @require_permission('modify_permissions')
 def view_permissions(user_id: Optional[int] = None,
-                     all: bool = False) -> 'flask.Response':
+                     all: bool = False) -> flask.Response:
     """
     View all permissions available. Requires the ``modify_permissions`` permission.
 
@@ -64,7 +64,7 @@ change_permissions_schema = Schema({
 @require_permission('modify_permissions')
 @validate_data(change_permissions_schema)
 def change_permissions(user_id: int,
-                       permissions: Dict[str, bool]) -> 'flask.Response':
+                       permissions: Dict[str, bool]) -> flask.Response:
     """
     Manually change the permissions assignments of a user.
     Requires the ``modify_permissions`` permission.
