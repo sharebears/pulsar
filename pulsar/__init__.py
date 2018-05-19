@@ -18,7 +18,7 @@ db = SQLAlchemy(model_class=BaseModel)
 cache = Cache()
 migrate = Migrate()
 
-event.listen(db.session, 'before_commit', clear_cache_dirty)
+event.listen(db.session, 'before_flush', clear_cache_dirty)
 
 
 def create_app(config: str) -> 'flask.Flask':

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union, Dict, Any
 
 import flask
 from flask_sqlalchemy import BaseQuery, Model
@@ -79,11 +79,11 @@ class BaseModel(Model):
         :return:           The cache key of the model
         :raises NameError: If the model does not have a cache key
         """
-        return self._create_cache_key(id=self.id)
+        return self.create_cache_key(id=self.id)
 
     @classmethod
     def from_id(cls,
-                id: int, *,
+                id: Union[str, int, None], *,
                 include_dead: bool = False,
                 _404: bool = False,
                 asrt: bool = False) -> Optional['BaseModel']:
@@ -107,16 +107,17 @@ class BaseModel(Model):
         :raises _404Exception: If ``_404`` is passed and a model is not found or accessible
         """
         from pulsar import _404Exception
-        model = cls.from_cache(
-            key=cls._create_cache_key(id=id),
-            query=cls.query.filter(cls.id == id))
-        if model:
-            if include_dead or not (
-                    getattr(model, 'deleted', False)
-                    or getattr(model, 'revoked', False)
-                    or getattr(model, 'expired', False)):
-                if not asrt or model.belongs_to_user() or flask.g.user.has_permission(asrt):
-                    return model
+        if id:
+            model = cls.from_cache(
+                key=cls.create_cache_key(id=id),
+                query=cls.query.filter(cls.id == id))
+            if model:
+                if include_dead or not (
+                        getattr(model, 'deleted', False)
+                        or getattr(model, 'revoked', False)
+                        or getattr(model, 'expired', False)):
+                    if not asrt or model.belongs_to_user() or flask.g.user.has_permission(asrt):
+                        return model
         if _404:
             raise _404Exception(f'{_404} {id}')
         return None
@@ -223,24 +224,13 @@ class BaseModel(Model):
 
         :return:                    A list of objects matching the query specifications
         """
-        from pulsar import db, cache
-        ids = cache.get(key)
-        if not ids or not isinstance(ids, list):
-            if expr_override is not None:
-                ids = [x[0] for x in db.session.execute(expr_override)]
-            else:
-                query = cls._construct_query(db.session.query(cls.id), filter, order)
-                ids = [x[0] for x in query.all()]
-            cache.set(key, ids)
+        ids = cls.get_ids_of_many(key, filter, order, expr_override)
 
         if page is not None:
             limit = limit or 50
 
-        if reverse:
-            ids = reversed(ids)
-
         models = []
-        for id in ids:
+        for id in (ids if not reverse else reversed(ids)):
             model = cls.from_id(id, include_dead=include_dead)
             if model:
                 for prop in required_properties:
@@ -251,6 +241,60 @@ class BaseModel(Model):
                     if limit and len(models) >= limit:
                         break
         return models
+
+    @classmethod
+    def get_ids_of_many(cls,
+                        key: str,
+                        filter: Optional[BinaryExpression] = None,
+                        order: Optional[BinaryExpression] = None,
+                        expr_override: Optional[BinaryExpression] = None
+                        ) -> List[Union[int, str]]:
+        """
+        Get a list of object IDs meeting query criteria. Fetching from the
+        cache with the provided cache key will be attempted first; if the cache
+        key does not exist then a query will be ran.
+
+        :param key:                 The cache key to check (and return if present)
+        :param filter:              A SQLAlchemy filter expression to be applied to the query
+        :param order:               A SQLAlchemy order_by expression to be applied to the query
+        :param expr_override:       If passed, this will override filter and order, and be
+                                    called verbatim in a ``db.session.execute`` if the cache
+                                    key does not exist
+
+        :return: A list of IDs
+        """
+        from pulsar import db, cache
+        ids = cache.get(key)
+        if not ids or not isinstance(ids, list):
+            if expr_override is not None:
+                ids = [x[0] for x in db.session.execute(expr_override)]
+            else:
+                query = cls._construct_query(db.session.query(cls.id), filter, order)
+                ids = [x[0] for x in query.all()]
+            cache.set(key, ids)
+        return ids
+
+    @classmethod
+    def is_valid(cls,
+                 id: Union[int, str, None],
+                 error: bool = False) -> bool:
+        """
+        Check whether or not the object exists and isn't deleted.
+
+        :param id:            The object ID to validate
+        :param error:         Whether or not to raise an APIException on validation fail
+        :return:              Validity of the object
+        :raises APIException: If error param is passed and ID is not valid
+        """
+        from pulsar.exceptions import APIException
+        obj = cls.from_id(id)
+        valid = obj is not None and not (
+            getattr(obj, 'deleted', False)
+            or getattr(obj, 'revoked', False)
+            or getattr(obj, 'expired', False))
+        if error and not valid:
+            raise APIException(f'Invalid {cls.__name__} ID.')
+        return valid
 
     @classmethod
     def _valid_data(cls, data: dict) -> bool:
@@ -264,7 +308,7 @@ class BaseModel(Model):
         return isinstance(data, dict) and set(data.keys()) == set(cls.__table__.columns.keys())
 
     @classmethod
-    def _create_cache_key(cls, **kwargs) -> str:
+    def create_cache_key(cls, **kwargs) -> str:
         """
         Populate the ``__cache_key__`` class attribute with the kwargs.
 
@@ -293,6 +337,29 @@ class BaseModel(Model):
         db.session.commit()
         cache.cache_model(model)
         return model
+
+    @classmethod
+    def update_many(cls, *,
+                    ids: List[Union[str, int]],
+                    update: Dict[str, Any],
+                    sychronize_session: bool = False) -> None:
+        """
+        Construct and execute a query affecting all objects with IDs in the
+        list of IDs passed to this function. This is only meant to be used for
+        models with an ID primary key and cache key formatted by ID.
+
+        :param ids:                 The list of primary key IDs to update
+        :param update:              The dictionary of column values to update
+        :param synchronize_session: Whether or not to update the session after
+                                    the query; should be True if the objects are
+                                    going to be used after updating
+        """
+        from pulsar import cache, db
+        if ids:
+            db.session.query(cls).filter(cls.id.in_(ids)).update(
+                update, synchronize_session=sychronize_session)
+            db.session.commit()
+            cache.delete_many(*(cls.create_cache_key(id=id) for id in ids))
 
     def count(self, *,
               key: str,

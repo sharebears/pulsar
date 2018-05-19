@@ -12,10 +12,9 @@
 # Issues
 - [x] Refactor the tests
 
-- [ ] Add error_ kwargs to all new() functions
+- [ ] Add is_valid to all new() functions
 - [ ] Add tests for all lowercased schemas and convert them to uppercase
-- [ ] Take cache tests out of views and move them into model tests
-- [ ] Generally reduce the amount of shit in view tests
+- [ ] Take cache tests out of views and move them into model tests, generally reduce the amount of shit in view tests
 
 - [ ] Script to analyse permission usage--iterate through all files and compile list of
       require_permission, assert_permission, choose_user, has_permission and compare with
@@ -34,10 +33,8 @@
 - [ ] Review HTTP codes in documentation and the return values
 - [ ] Review usage of optional in .new(**kwarg**) stuff
 
-- [ ] (v0.03) Would like more inventive and free serialization; define serialization objects
-      that wrap around models (stick in flask.Response) and define custom handler functions
-      for nested models? Would like individual forumcategory view with 10 nested threads each,
-      but not cleanly possible in current system.
+- [ ] Change \_404 argument in from_id to just use classname
+- [ ] Built in debug logging?
  
 
 # TODO
@@ -46,6 +43,8 @@
 - [x] Form validation with voluptuous
 - [x] Permissioned Serialization
 - [ ] Docker/Vagrant environment
+- [ ] More inventive and free serialization - Define objects for serialization and have them
+      use custom kwarg arguments which are passed down to all nested models?
      
 
 ## Users
@@ -68,7 +67,7 @@
 - [x] Models
 - [x] Category View
 - [x] Forum View
-- [ ] Thread View
+- [x] Thread View
 - [ ] Posts View
 - [ ] Forum/Thread Permissions
 - [ ] Subscriptions

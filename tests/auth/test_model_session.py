@@ -69,25 +69,6 @@ def test_get_nonexistent_session(app, client):
     assert not session
 
 
-def test_session_expire_all(app, client):
-    Session.expire_all_of_user(1)
-    db.session.commit()
-    session = Session.from_id('abcdefghij', include_dead=True)
-    assert session.expired
-
-
-def test_session_expire_all_cached(app, client):
-    session = Session.from_id('abcdefghij')
-    cache_key = cache.cache_model(session, timeout=60)
-    assert cache.ttl(cache_key) < 61
-
-    Session.expire_all_of_user(1)
-    db.session.commit()
-    session = Session.from_id('abcdefghij', include_dead=True)
-    assert session.expired is True
-    assert cache.ttl(cache_key) > 61
-
-
 def test_session_is_expired_not_persistent(app, client):
     db.session.execute(
         "UPDATE sessions SET last_used = NOW() - INTERVAL '31 MINUTES', persistent = 'f'")

@@ -1,7 +1,7 @@
 from typing import Optional as Optional_
 
 import flask
-from voluptuous import All, Any, Length, Optional, Range, Schema, In
+from voluptuous import All, Any, In, Length, Optional, Range, Schema
 
 from pulsar import db
 from pulsar.models import Forum, ForumCategory, ForumThread
@@ -36,7 +36,7 @@ def view_forum(id: int,
 
     .. sourcecode:: http
 
-       GET /forums/forums HTTP/1.1
+       GET /forums/1 HTTP/1.1
        Host: pul.sar
        Accept: application/json
        Content-Type: application/json
@@ -161,7 +161,7 @@ def modify_forum(id: int,
 
     .. sourcecode:: http
 
-       PUT /forums/forums/6 HTTP/1.1
+       PUT /forums/6 HTTP/1.1
        Host: pul.sar
        Accept: application/json
        Content-Type: application/json
@@ -187,7 +187,7 @@ def modify_forum(id: int,
          }
        }
 
-    :>json list response: The edited forum
+    :>json dict response: The edited forum
 
     :statuscode 200: Editing successful
     :statuscode 400: Editing unsuccessful
@@ -196,7 +196,7 @@ def modify_forum(id: int,
     forum = Forum.from_id(id, _404='Forum')
     if name:
         forum.name = name
-    if category_id and ForumCategory.is_valid(category_id, error_=True):
+    if category_id and ForumCategory.is_valid(category_id, error=True):
         forum.category_id = category_id
     if description:
         forum.description = description
@@ -239,7 +239,7 @@ def delete_forum(id: int) -> flask.Response:
          }
        }
 
-    :>json list response: The newly deleted forum
+    :>json dict response: The newly deleted forum
 
     :statuscode 200: Deletion successful
     :statuscode 400: Deletion unsuccessful
@@ -247,8 +247,7 @@ def delete_forum(id: int) -> flask.Response:
     """
     forum = Forum.from_id(id, _404='Forum')
     forum.deleted = True
-    threads = ForumThread.from_forum(forum.id, limit=None)
-    for thread in threads:
-        thread.deleted = True
-    db.session.commit()
+    ForumThread.update_many(
+        ids=ForumThread.get_ids_from_forum(forum.id),
+        update={'deleted': True})
     return flask.jsonify(f'Forum {id} ({forum.name}) has been deleted.')

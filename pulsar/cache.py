@@ -1,4 +1,4 @@
-from typing import Any, Optional, List, Union
+from typing import Any, Iterator, Optional, Union
 
 import flask
 from flask_sqlalchemy import SignallingSession
@@ -57,7 +57,7 @@ class Cache(RedisCache):
         """
         key = key.lower()
         value = super().get(key)
-        if value:
+        if value is not None:
             flask.g.cache_keys['get'].add(key)
         return value
 
@@ -109,19 +109,17 @@ class Cache(RedisCache):
             flask.g.cache_keys['delete'].add(key)
         return result
 
-    def delete_many(self, *keys: List[str]) -> bool:
+    def delete_many(self, *keys: str) -> bool:
         """
         Delete multiple keys from the cache.
 
         :param keys: The keys to delete
         :return:     Whether or not all keys have been deleted
         """
-        keys = [key.lower() for key in keys]
-        result = super().delete_many(keys)
-        if result:
-            flask.g.cache_keys['delete'] += set(keys)
+        lower_keys: Iterator[str] = (key.lower() for key in keys)
+        result = super().delete_many(*lower_keys)
+        flask.g.cache_keys['delete_many'] |= set(lower_keys)
         return result
-
 
     def ttl(self, key: str) -> int:
         """
@@ -131,13 +129,13 @@ class Cache(RedisCache):
         :return:    The seconds left until a key expires
         """
         value = self._client.ttl((self.key_prefix + key).lower())
-        if value:
+        if value is not None:
             flask.g.cache_keys['ttl'].add(key)
         return value
 
     def cache_model(self,
                     model: BaseModel,
-                    timeout: int = None) -> Union[str, None]:
+                    timeout: Optional[int] = None) -> Optional[str]:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
 
@@ -148,14 +146,18 @@ class Cache(RedisCache):
         """
         if model and isinstance(model, BaseModel):
             data = {}
-            for attr in model.__table__.columns.keys():
-                data[attr] = getattr(model, attr, None)
-            self.set(model.cache_key, data, timeout or self.default_timeout)
+            try:
+                for attr in model.__table__.columns.keys():
+                    data[attr] = getattr(model, attr)
+            except AttributeError:  # Something went wrong
+                # TODO: Log this
+                return None
+            self.set(model.cache_key, data, timeout)
             return model.cache_key
         return None
 
 
-def clear_cache_dirty(session: SignallingSession) -> None:
+def clear_cache_dirty(session: SignallingSession, _, __) -> None:
     """
     Clear the cache key of every dirty/deleted object before DB commit.
 

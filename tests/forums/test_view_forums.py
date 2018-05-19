@@ -1,5 +1,7 @@
 import json
+
 import pytest
+
 from conftest import add_permissions, check_json_response
 from pulsar.forums.models import Forum, ForumThread
 
@@ -36,7 +38,7 @@ def test_add_forum_nonexistent_category(app, authed_client):
         'name': 'New Forum',
         'category_id': 100,
         }))
-    check_json_response(response, 'Invalid category ID.')
+    check_json_response(response, 'Invalid ForumCategory ID.')
 
 
 def test_edit_forum(app, authed_client):
@@ -79,7 +81,15 @@ def test_edit_forum_bad_category(app, authed_client):
     response = authed_client.put('/forums/1', data=json.dumps({
         'category_id': 100,
         }))
-    check_json_response(response, 'Invalid category ID.')
+    check_json_response(response, 'Invalid ForumCategory ID.')
+
+
+def test_edit_forum_nonexistent(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forums')
+    response = authed_client.put('/forums/100', data=json.dumps({
+        'category_id': 10000,
+        }))
+    check_json_response(response, 'Forum 100 does not exist.')
 
 
 def test_delete_forum(app, authed_client):

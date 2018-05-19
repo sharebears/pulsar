@@ -85,6 +85,13 @@ class Session(db.Model):
             filter=cls.user_id == user_id,
             include_dead=include_dead)
 
+    @classmethod
+    def ids_from_user(cls,
+                      user_id: int) -> List[str]:
+        return cls.get_ids_of_many(
+            key=cls.__cache_key_of_user__.format(user_id=user_id),
+            filter=cls.user_id == user_id)
+
     def is_expired(self) -> bool:
         """Checks whether or not the session is expired."""
         if self.expired:
@@ -96,21 +103,6 @@ class Session(db.Model):
                 db.session.commit()
                 return True
         return False
-
-    @staticmethod
-    def expire_all_of_user(user_id) -> None:
-        """
-        Expire all active sessions that belong to a user.
-
-        :param user_id: The User ID of the user whose sessions will be expired
-        """
-        ids = db.session.query(Session.id).filter(Session.expired == 'f').all()
-        for id in ids:
-            cache.delete(Session.__cache_key__.format(id=id[0]))
-
-        db.session.query(Session).filter(
-            Session.user_id == user_id
-            ).update({'expired': True})
 
 
 class APIKey(db.Model):
@@ -188,6 +180,13 @@ class APIKey(db.Model):
             filter=cls.user_id == user_id,
             include_dead=include_dead)
 
+    @classmethod
+    def ids_from_user(cls,
+                      user_id: int) -> List[str]:
+        return cls.get_ids_of_many(
+            key=cls.__cache_key_of_user__.format(user_id=user_id),
+            filter=cls.user_id == user_id)
+
     def check_key(self, key: str) -> bool:
         """
         Validates the authenticity of an API key against its stored id.
@@ -211,18 +210,3 @@ class APIKey(db.Model):
 
         user = User.from_id(self.user_id)
         return permission in user.permissions
-
-    @staticmethod
-    def revoke_all_of_user(user_id: int) -> None:
-        """
-        Revokes all active API keys of a user.
-
-        :param user_id: The User ID of the user whose API keys will be revoked
-        """
-        ids = db.session.query(APIKey.id).filter(APIKey.revoked == 'f').all()
-        for id in ids:
-            cache.delete(APIKey.__cache_key__.format(id=id[0]))
-
-        db.session.query(APIKey).filter(
-            APIKey.user_id == user_id
-            ).update({'revoked': True})

@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import db, APIException
+from pulsar import db, cache
 from pulsar.models import User
 
 app = flask.current_app
@@ -54,22 +54,6 @@ class ForumCategory(db.Model):
             name=name,
             description=description,
             position=position)
-
-    @classmethod
-    def is_valid(cls,
-                 id: int,
-                 error_: bool = False) -> bool:
-        """
-        Check whether or not the forum category exists and isn't deleted.
-
-        :param id: The forum category ID to validate
-        :return: Validity of the category
-        """
-        category = cls.from_id(id)
-        valid = category and not category.deleted
-        if error_ and not valid:
-            raise APIException('Invalid category ID.')
-        return valid
 
     @property
     def forums(self) -> List['Forum']:
@@ -123,9 +107,9 @@ class Forum(db.Model):
             name: str,
             category_id: Optional[int],
             description: Optional[str],
-            position: Optional[int],
-            error_: bool = True) -> Optional['Forum']:
-        ForumCategory.is_valid(category_id, error_=True)
+            position: Optional[int]) -> Optional['Forum']:
+        ForumCategory.is_valid(category_id, error=True)
+        cache.delete(cls.__cache_key_of_category__.format(id=category_id))
         return super().new(
             name=name,
             category_id=category_id,
@@ -167,7 +151,6 @@ class ForumThread(db.Model):
     __tablename__ = 'forums_threads'
     __cache_key__ = 'forums_threads_{id}'
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
-    __cache_key_posts__ = 'forums_threads_{id}_posts'
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
 
@@ -209,11 +192,11 @@ class ForumThread(db.Model):
     def from_forum(cls,
                    forum_id: int,
                    page: int = 1,
-                   limit: int = 50,
+                   limit: Optional[int] = 50,
                    include_dead: bool = False) -> List['ForumThread']:
         return cls.get_many(
             key=cls.__cache_key_of_forum__.format(id=forum_id),
-            filter=(cls.forum_id == forum_id),
+            filter=cls.forum_id == forum_id,
             order=cls.last_updated.desc(),
             page=page,
             limit=limit)
@@ -223,19 +206,26 @@ class ForumThread(db.Model):
             topic: str,
             forum_id: int,
             poster_id: int) -> Optional['ForumThread']:
-        forum = Forum.from_id(forum_id)
-        if not forum or forum.deleted or not User.from_id(poster_id):
-            return None
+        Forum.is_valid(forum_id, error=True)
+        User.is_valid(poster_id, error=True)
+        cache.delete(cls.__cache_key_of_forum__.format(id=forum_id))
         return super().new(
             topic=topic,
             forum_id=forum_id,
             poster_id=poster_id)
 
+    @classmethod
+    def get_ids_from_forum(cls, id):
+        return cls.get_ids_of_many(
+            key=cls.__cache_key_of_forum__.format(id=id),
+            filter=cls.forum_id == id,
+            order=cls.last_updated.desc())
+
     @property
     def last_post(self) -> 'ForumPost':
         return ForumPost.from_query(
             key=self.__cache_key_last_post__.format(id=self.id),
-            filter=(ForumPost.thread_id == self.id),
+            filter=ForumPost.thread_id == self.id,
             order=ForumPost.id.desc())
 
     @hybrid_property
@@ -314,6 +304,13 @@ class ForumPost(db.Model):
             limit=limit)
 
     @classmethod
+    def get_ids_from_thread(cls, id):
+        return cls.get_ids_of_many(
+            key=cls.__cache_key_of_thread__.format(id=id),
+            filter=cls.thread_id == id,
+            order=cls.id.asc())
+
+    @classmethod
     def new(cls,
             thread_id: int,
             poster_id: int,
@@ -322,6 +319,7 @@ class ForumPost(db.Model):
         poster = User.from_id(poster_id)
         if not thread or thread.deleted or not poster:
             return None
+        cache.delete(cls.__cache_key_of_thread__.format(id=thread_id))
         return super().new(
             thread_id=thread_id,
             poster_id=poster_id,

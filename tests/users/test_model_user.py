@@ -5,8 +5,6 @@ from conftest import add_permissions, check_dictionary, check_json_response
 from pulsar import APIException, NewJSONEncoder, db
 from pulsar.users.models import User
 
-# TODO: Test base model shit with this model
-
 
 def test_user_creation(app, client):
     """User creation should create a user object and populate default values."""

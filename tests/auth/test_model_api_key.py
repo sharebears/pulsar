@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_dictionary
-from pulsar import NewJSONEncoder, cache, db
+from pulsar import NewJSONEncoder
 from pulsar.auth.models import APIKey
 
 
@@ -40,24 +40,6 @@ def test_from_id_when_dead(app, client):
     api_key = APIKey.from_id('1234567890', include_dead=True)
     assert api_key.user_id == 2
     assert api_key.check_key(CODE_2)
-
-
-def test_api_key_revoke_all(app, client):
-    APIKey.revoke_all_of_user(1)
-    db.session.commit()
-    api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert api_key.revoked
-
-
-def test_api_key_revoke_all_cache(client):
-    api_key = APIKey.from_id('abcdefghij')
-    cache_key = cache.cache_model(api_key, timeout=60)
-    assert cache.ttl(cache_key) < 61
-    APIKey.revoke_all_of_user(1)
-    db.session.commit()
-    api_key = APIKey.from_id('abcdefghij', include_dead=True)
-    assert api_key.revoked is True
-    assert cache.ttl(cache_key) > 61
 
 
 def test_api_key_permission(app, client):

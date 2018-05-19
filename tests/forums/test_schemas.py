@@ -1,6 +1,8 @@
 import pytest
-from pulsar.forums.categories import ADD_FORUM_CATEGORY_SCHEMA, MODIFY_FORUM_CATEGORY_SCHEMA
 from voluptuous import MultipleInvalid
+
+from pulsar.forums.categories import (ADD_FORUM_CATEGORY_SCHEMA,
+                                      MODIFY_FORUM_CATEGORY_SCHEMA)
 
 
 @pytest.mark.parametrize(

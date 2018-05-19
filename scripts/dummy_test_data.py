@@ -2,13 +2,15 @@
 
 import os
 import sys
+
 from sqlalchemy.exc import ProgrammingError
+
+from pulsar import create_app, db  # noqa
+from pulsar.models import User  # noqa
 
 # Add root project dir to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pulsar import db, create_app  # noqa
-from pulsar.models import User  # noqa
 
 ####################################
 ############ CONSTANTS ######## noqa

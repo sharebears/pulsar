@@ -306,6 +306,8 @@ def revoke_all_api_keys(user_id: TOptional[int] = None) -> flask.Response:
     :statuscode 403: User does not have permission to revoke API keys
     """
     user = choose_user(user_id, 'revoke_api_keys_others')
-    APIKey.revoke_all_of_user(user.id)
+    APIKey.update_many(
+        ids=APIKey.ids_from_user(user.id),
+        update={'revoked': True})
     db.session.commit()
     return flask.jsonify('All api keys have been revoked.')

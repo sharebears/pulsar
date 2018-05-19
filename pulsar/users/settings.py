@@ -81,7 +81,9 @@ def edit_settings(user_id: int =None,
         if not existing_password or not user.check_password(existing_password):
             raise _401Exception(message='Invalid existing password.')
         user.set_password(new_password)
-        Session.expire_all_of_user(user.id)
+        Session.update_many(
+            ids=Session.ids_from_user(user.id),
+            update={'expired': True})
 
     db.session.commit()
     return flask.jsonify('Settings updated.')

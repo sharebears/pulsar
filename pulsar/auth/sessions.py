@@ -330,6 +330,8 @@ def expire_all_sessions(user_id: Optional_[int] = None) -> flask.Response:
     :statuscode 404: User does not exist
     """
     user = choose_user(user_id, 'expire_sessions_others')
-    Session.expire_all_of_user(user.id)
+    Session.update_many(
+        ids=Session.ids_from_user(user.id),
+        update={'expired': True})
     db.session.commit()
     return flask.jsonify('All sessions have been expired.')

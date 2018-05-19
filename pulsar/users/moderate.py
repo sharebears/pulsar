@@ -78,10 +78,10 @@ def moderate_user(user_id: int,
     """
     user = User.from_id(user_id, _404='User')
 
-    if email:
-        user.email = email
     if password:
         user.set_password(password)
+    if email:
+        user.email = email
     if uploaded:
         user.uploaded = uploaded
     if downloaded:

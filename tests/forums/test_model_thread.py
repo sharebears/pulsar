@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import add_permissions, check_dictionary
-from pulsar import NewJSONEncoder, cache
+from pulsar import NewJSONEncoder, cache, APIException
 from pulsar.models import ForumPost, ForumThread
 
 
@@ -62,10 +62,11 @@ def test_new_thread(app, authed_client):
     'forum_id, poster_id', [
         (10, 1), (3, 1), (1, 6)])
 def test_new_thread_failure(app, authed_client, forum_id, poster_id):
-    assert ForumThread.new(
-        topic='NewForumThread',
-        forum_id=forum_id,
-        poster_id=poster_id) is None
+    with pytest.raises(APIException):
+        ForumThread.new(
+            topic='NewForumThread',
+            forum_id=forum_id,
+            poster_id=poster_id)
 
 
 @pytest.mark.parametrize(
