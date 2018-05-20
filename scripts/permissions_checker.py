@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+"""
+This script checks all usages of permissions in the codebase and compares
+them to the defined permissions in module __init__ files. It will print
+and error if defined permissions are unused or undefined permissions are
+used. Since permissions are statically defined in the codebase, this works
+great. If that ever changes in the future, this script will need modifications
+made to it.
+"""
+
 import re
 import os
 import sys
@@ -30,8 +39,8 @@ for root, dirs, files in os.walk(project_dir):
                             if g:
                                 used_permissions.append(g)
 
-unused_permissions = [a for a in all_permissions if a not in used_permissions]
-undefined_permissions = [u for u in used_permissions if u not in all_permissions]
+unused_permissions = [a for a in set(all_permissions) if a not in used_permissions]
+undefined_permissions = [u for u in set(used_permissions) if u not in all_permissions]
 if unused_permissions or undefined_permissions:
     if unused_permissions:
         print('The following permissions are defined but not used: {}'.format(
