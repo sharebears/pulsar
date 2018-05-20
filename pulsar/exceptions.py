@@ -23,7 +23,7 @@ class _405Exception(APIException):
     def __init__(self) -> None:
         super().__init__(
             message='Method not allowed for this resource.',
-            status_code=404)
+            status_code=405)
 
 
 class _404Exception(APIException):
