@@ -11,7 +11,7 @@
 
 # Issues
 - [x] Script to analyse permission usage
-- [ ] No authentication and no route should raise a 401, same with required_permission no authentication, although should still allow masquerade (not a 404 (can confuse clients))
+- [x] No authentication and no route should raise a 401
 
 - [ ] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
 - [ ] Need a way to serialize basic permissions for moderators

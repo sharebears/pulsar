@@ -4,7 +4,7 @@ from typing import Callable, List, Optional
 import flask
 from werkzeug import find_modules, import_string
 
-from pulsar import _403Exception, _404Exception
+from pulsar import _401Exception, _403Exception, _404Exception
 from pulsar.models import User
 
 app = flask.current_app
@@ -28,7 +28,7 @@ def require_permission(permission: str,
         @wraps(func)
         def new_function(*args, **kwargs) -> Callable:
             if not flask.g.user:
-                raise _403Exception(masquerade=True)
+                raise _401Exception
 
             if not flask.g.user.has_permission(permission):
                 if flask.g.user.locked and not masquerade:

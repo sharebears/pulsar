@@ -60,6 +60,8 @@ def register_error_handlers(app: 'flask.Flask') -> None:
 
 
 def _404_handler(_) -> flask.Response:
+    if not flask.g.user:
+        return flask.jsonify(_401Exception().message), 401
     return flask.jsonify(_404Exception().message), 404
 
 

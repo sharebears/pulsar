@@ -81,7 +81,7 @@ def test_user_bad_session(app, client, user_id, session_id):
         sess['user_id'] = user_id
         sess['session_id'] = session_id
     response = client.get('/test_sess')
-    check_json_response(response, 'Resource does not exist.')
+    check_json_response(response, 'Invalid authorization.')
 
 
 def test_user_expired_session(app, client):
@@ -96,7 +96,7 @@ def test_user_expired_session(app, client):
         sess['user_id'] = 1
         sess['session_id'] = '1234567890'
     response = client.get('/test_sess')
-    check_json_response(response, 'Resource does not exist.')
+    check_json_response(response, 'Invalid authorization.')
 
 
 def test_api_key_auth_and_ip_override(app, client):
@@ -152,7 +152,7 @@ def test_user_bad_api_key(app, client, authorization_header):
     """Assert that a bad or expired API key raises a 404."""
     response = client.get('/users/1', headers={
         'Authorization': authorization_header})
-    check_json_response(response, 'Resource does not exist.')
+    check_json_response(response, 'Invalid authorization.')
 
 
 def test_csrf_validation(app, client):
@@ -212,9 +212,34 @@ def test_false_csrf_validation_session(app, client, endpoint):
         '/not/a/real/route',
     ])
 def test_no_authorization_post(app, client, endpoint):
-    """Assert that checking an endpoint without authentication throws a 404."""
+    """Assert that checking an endpoint without authentication throws a 401."""
     response = client.put(endpoint)
+    check_json_response(response, 'Invalid authorization.')
+
+
+def test_403_masquerade(app, client):
+    """Masqueraded 403 endpoints should throw 404s."""
+    @app.route('/test_endpoint')
+    @require_permission('test_perm', masquerade=True)
+    def test_session():
+        return flask.jsonify('completed')
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = 1
+        sess['session_id'] = 'abcdefghij'
+    response = client.get('/test_endpoint')
     check_json_response(response, 'Resource does not exist.')
+
+
+def test_403_masquerade_no_auth(app, client):
+    """Masqueraded 403 endpoints should throw 401s without authentication."""
+    @app.route('/test_endpoint')
+    @require_permission('test_perm', masquerade=True)
+    def test_session():
+        return flask.jsonify('completed')
+
+    response = client.get('/test_endpoint')
+    check_json_response(response, 'Invalid authorization.')
 
 
 def test_bad_data(app, client):
