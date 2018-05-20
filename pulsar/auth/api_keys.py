@@ -141,14 +141,14 @@ def view_all_api_keys(include_dead: bool,
 
 
 CREATE_API_KEY_SCHEMA = Schema({
-    Optional('permissions', default=[]): permissions_list_of_user,
+    'permissions': permissions_list_of_user,
     })
 
 
 @bp.route('/api_keys', methods=['POST'])
 @require_permission('create_api_keys')
 @validate_data(CREATE_API_KEY_SCHEMA)
-def create_api_key(permissions: List[str]) -> flask.Response:
+def create_api_key(permissions: List[str] = []) -> flask.Response:
     """
     Creates an API key for use. Requires the ``create_api_keys`` permission to
     create new API keys. Keys are unrecoverable after generation; if a key is lost,

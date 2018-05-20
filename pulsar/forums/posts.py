@@ -1,13 +1,13 @@
-import pytz
 from datetime import datetime
 from typing import Optional
 
 import flask
+import pytz
 from voluptuous import All, Length, Range, Schema
 
-from pulsar import db, APIException
+from pulsar import APIException, db
 from pulsar.models import ForumPost, ForumPostEditHistory, ForumThread
-from pulsar.utils import require_permission, validate_data, assert_user
+from pulsar.utils import assert_user, require_permission, validate_data
 
 from . import bp
 

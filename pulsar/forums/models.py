@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import db, cache
+from pulsar import cache, db
 from pulsar.models import User
 
 app = flask.current_app

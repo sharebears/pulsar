@@ -1,7 +1,7 @@
 import pytest
-from voluptuous import Invalid
+from voluptuous import MultipleInvalid
 
-from pulsar.invites.invites import VIEW_INVITES_SCHEMA
+from pulsar.invites.invites import VIEW_INVITES_SCHEMA, USER_INVITE_SCHEMA
 
 
 @pytest.mark.parametrize(
@@ -20,5 +20,16 @@ def test_invite_schema_pass(data):
         {'used': True, 'include_dead': True, 'third': False},
     ])
 def test_invite_schema_fail(data):
-    with pytest.raises(Invalid):
+    with pytest.raises(MultipleInvalid):
         VIEW_INVITES_SCHEMA(data)
+
+
+def test_user_invite_schema():
+    assert {'email': 'aemail@puls.ar'} == USER_INVITE_SCHEMA({
+        'email': 'aemail@puls.ar'})
+
+
+def test_user_invite_schema_failure():
+    with pytest.raises(MultipleInvalid) as e:
+        USER_INVITE_SCHEMA({'email': 'aemail@pulsar'})
+    assert str(e.value) == "expected an Email for dictionary value @ data['email']"

@@ -3,43 +3,43 @@ from typing import Optional
 import flask
 from voluptuous import All, Length, Match, Schema
 
-from pulsar import PASSWORD_REGEX, _401Exception, _403Exception, db
+from pulsar import _401Exception, _403Exception, db
 from pulsar.models import Session
 from pulsar.utils import choose_user, require_permission, validate_data
+from pulsar.users.validators import PASSWORD_REGEX
 
 from . import bp
 
 app = flask.current_app
 
-settings_schema = Schema({
+SETTINGS_SCHEMA = Schema({
     # Length restrictions inaccurate for legacy databases and testing.
-    'existing_password': All(str, Length(min=4, max=512)),
+    'existing_password': All(str, Length(min=5, max=512)),
     'new_password': Match(PASSWORD_REGEX, msg=(
-        'Password must between 12 and 512 characters and contain at least 1 letter, '
-        '1 number, and 1 special character.')),
+        'Password must be between 12 and 512 characters and contain at least 1 letter, '
+        '1 number, and 1 special character')),
     })
 
 
 @bp.route('/users/settings', methods=['PUT'])
 @bp.route('/users/<int:user_id>/settings', methods=['PUT'])
 @require_permission('edit_settings')
-@validate_data(settings_schema)
+@validate_data(SETTINGS_SCHEMA)
 def edit_settings(user_id: int =None,
                   existing_password: Optional[str] =None,
                   new_password: Optional[str] =None) -> flask.Response:
-    # TODO: Fix documentation
     """
-    Change a user's password. Requires the ``change_password`` permission.
+    Change a user's settings. Requires the ``edit_settings`` permission.
     Requires the ``moderate_users`` permission to change another user's
-    password, which can be done by specifying a ``user_id``.
+    settings, which can be done by specifying a ``user_id``.
 
-    .. :quickref: Password; Change password.
+    .. :quickref: UserSettings; Change settings.
 
     **Example request**:
 
     .. sourcecode:: http
 
-       PUT /change_password HTTP/1.1
+       PUT /users/settings HTTP/1.1
        Host: pul.sar
        Accept: application/json
 
@@ -58,7 +58,7 @@ def edit_settings(user_id: int =None,
 
        {
          "status": "success",
-         "response": "Password changed."
+         "response": "Settings updated."
        }
 
     :json string existing_password: User's existing password, not needed
@@ -68,12 +68,11 @@ def edit_settings(user_id: int =None,
 
     :>json string response: Success message
 
-    :statuscode 200: Password successfully changed
-    :statuscode 400: Password unsuccessfully changed
-    :statuscode 403: User does not have permission to change user's password
+    :statuscode 200: Settings successfully updated
+    :statuscode 400: Settings unsuccessfully updated
+    :statuscode 403: User does not have permission to change user's settings
     """
     user = choose_user(user_id, 'moderate_users')
-
     if new_password:
         if not flask.g.user.has_permission('change_password'):
             raise _403Exception(

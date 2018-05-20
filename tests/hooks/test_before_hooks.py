@@ -91,7 +91,7 @@ def test_user_expired_session(app, client):
     def test_session():
         return flask.jsonify('completed')
 
-    add_permissions('test_perm')
+    add_permissions(app, 'test_perm')
     with client.session_transaction() as sess:
         sess['user_id'] = 1
         sess['session_id'] = '1234567890'

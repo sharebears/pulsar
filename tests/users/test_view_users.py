@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from conftest import add_permissions, check_json_response
+from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
 from pulsar import cache
 
 
@@ -90,6 +90,51 @@ def test_edit_settings_others(app, authed_client):
     response = authed_client.put('/users/2/settings', data=json.dumps({
         }))
     check_json_response(response, 'Settings updated.', strict=True)
+
+
+@pytest.mark.parametrize(
+    'code, status_code, expected', [
+        (CODE_1, 200, {'username': 'bright'}),
+        (None, 400, 'An invite code is required for registration.'),
+        (CODE_2, 400, f'{CODE_2} is not a valid invite code.'),
+        (CODE_3, 400, f'{CODE_3} is not a valid invite code.'),
+    ])
+def test_register_with_code(app, client, code, status_code, expected):
+    app.config['REQUIRE_INVITE_CODE'] = True
+    endpoint = f'/users' if code else '/users'
+    response = client.post(endpoint, data=json.dumps({
+        'username': 'bright',
+        'password': 'abcdEF123123%',
+        'email': 'bright@puls.ar',
+        'code': code,
+        }))
+    check_json_response(response, expected, strict=True)
+    assert response.status_code == status_code
+
+
+@pytest.mark.parametrize(
+    'username, status_code, expected', [
+        ('bright', 200, {'username': 'bright'}),
+        ('lights', 400, 'Invalid data: another user already has the username '
+                        'lights (key "username")'),
+    ])
+def test_registration(app, client, username, status_code, expected):
+    app.config['REQUIRE_INVITE_CODE'] = False
+    response = client.post('/users', data=json.dumps({
+        'username': username,
+        'password': 'abcdEF123123%',
+        'email': 'bright@puls.ar'}))
+    check_json_response(response, expected, strict=True)
+    assert response.status_code == status_code
+
+
+def test_registration_no_code(app, client):
+    app.config['REQUIRE_INVITE_CODE'] = True
+    response = client.post('/users', data=json.dumps({
+        'username': 'abiejfaiwof',
+        'password': 'abcdEF123123%',
+        'email': 'bright@puls.ar'}))
+    check_json_response(response, 'An invite code is required for registration.')
 
 
 @pytest.mark.parametrize(

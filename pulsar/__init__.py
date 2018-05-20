@@ -10,10 +10,6 @@ from pulsar.exceptions import (  # noqa
     APIException, _500Exception, _405Exception, _404Exception,
     _403Exception, _401Exception, _312Exception)
 
-
-USERNAME_REGEX = r'^[A-Za-z0-9][A-Za-z0-9_\-\.]*$'
-PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&]).{12,512}$'
-
 db = SQLAlchemy(model_class=BaseModel)
 cache = Cache()
 migrate = Migrate()

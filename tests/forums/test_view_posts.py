@@ -1,9 +1,9 @@
-import pytz
 import json
 from datetime import datetime
 
 import mock
 import pytest
+import pytz
 
 from conftest import add_permissions, check_json_response
 from pulsar.forums.models import ForumPost, ForumPostEditHistory
@@ -119,7 +119,7 @@ def test_edit_post_other_and_history(app, authed_client):
         'contents': 'snipped',
         })
     post = ForumPost.from_id(7)
-    assert post.sticky is False
+    assert post.contents == 'snipped'
     post_edits = ForumPostEditHistory.from_post(7)
     assert len(post_edits) == 1
     assert ((datetime.utcnow().replace(tzinfo=pytz.utc)

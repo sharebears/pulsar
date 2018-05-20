@@ -230,14 +230,14 @@ def create_session(username: str, password: str, persistent: bool) -> flask.Resp
     return flask.jsonify(session)
 
 
-EXPIRE_SESSIONS_SCHEMA = Schema({
+EXPIRE_SESSION_SCHEMA = Schema({
     'id': All(str, Length(min=10, max=10)),
     }, required=True)
 
 
 @bp.route('/sessions', methods=['DELETE'])
 @require_permission('expire_sessions')
-@validate_data(EXPIRE_SESSIONS_SCHEMA)
+@validate_data(EXPIRE_SESSION_SCHEMA)
 def expire_session(id: int) -> flask.Response:
     """
     Revoke a user's session. Requires the ``expire_sessions`` permission to expire

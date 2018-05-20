@@ -4,19 +4,20 @@ import flask
 from voluptuous import All, Email, Range, Schema
 from voluptuous.validators import Match
 
-from pulsar import PASSWORD_REGEX, db
+from pulsar import db
 from pulsar.models import User
 from pulsar.utils import require_permission, validate_data
+from pulsar.users.validators import PASSWORD_REGEX
 
 from . import bp
 
 app = flask.current_app
 
-moderate_user_schema = Schema({
+MODERATE_USER_SCHEMA = Schema({
     'email': Email(),
     'password': Match(PASSWORD_REGEX, msg=(
-        'Password must be 12 or more characters and contain at least 1 letter, '
-        '1 number, and 1 special character,')),
+        'Password must be between 12 and 512 characters and contain at least 1 letter, '
+        '1 number, and 1 special character')),
     'uploaded': All(int, Range(min=0, max=9223372036854775808)),
     'downloaded': All(int, Range(min=0, max=9223372036854775808)),
     'invites': All(int, Range(min=0, max=2147483648)),
@@ -25,7 +26,7 @@ moderate_user_schema = Schema({
 
 @bp.route('/users/<int:user_id>/moderate', methods=['PUT'])
 @require_permission('moderate_users')
-@validate_data(moderate_user_schema)
+@validate_data(MODERATE_USER_SCHEMA)
 def moderate_user(user_id: int,
                   email: Optional[str] = None,
                   password: Optional[str] = None,

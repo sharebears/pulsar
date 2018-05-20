@@ -56,6 +56,8 @@
 - [ ] User Settings -- Define constant defaults and save user overrides of those defaults,
       creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2)
       user settings
+- [ ] Email blacklist
+- [ ] Invite Trees
 
 ## Permissions
 - [x] Primary User Classes

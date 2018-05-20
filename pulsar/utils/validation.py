@@ -3,15 +3,17 @@ from functools import wraps
 from typing import Any, Callable, Dict
 
 import flask
-from voluptuous import Invalid, Schema  # noqa
+from voluptuous import Invalid, Schema
 
 from pulsar import APIException
 
 
-def validate_data(schema: 'Schema') -> Callable:
+def validate_data(schema: Schema) -> Callable:
     """
-    Compare a request's form data to a provided Voluptuous schema.
-    If the request data is invalid, an APIException is raised.
+    Compare a request's form data to a provided Voluptuous schema. If the
+    request data is invalid, an APIException is raised.  If an endpoint is
+    decorated with this function and you wish to call it directly, it can be
+    bypassed with by passing a ``skip_validation`` kwarg that evaluates to ``True``.
 
     :param schema: A voluptuous Schema object.
     """
@@ -38,7 +40,6 @@ def get_request_data() -> Dict[Any, Any]:
     Turn the incoming json data into a dictionary and remove the CSRF key if present.
 
     :return:              The unserialized dict sent by the requester.
-
     :raises APIException: If the sent data cannot be decoded from JSON.
     """
     try:

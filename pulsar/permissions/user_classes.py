@@ -13,14 +13,14 @@ from . import bp
 
 app = flask.current_app
 
-secondary_schema = Schema({
+VIEW_USER_CLASS_SCHEMA = Schema({
     'secondary': bool_get,
     })
 
 
 @bp.route('/user_classes/<int:user_class_id>', methods=['GET'])
 @require_permission('modify_user_classes')
-@validate_data(secondary_schema)
+@validate_data(VIEW_USER_CLASS_SCHEMA)
 def view_user_class(user_class_id: int,
                     secondary: bool = False) -> flask.Response:
     """
@@ -73,7 +73,7 @@ def view_user_class(user_class_id: int,
 
 @bp.route('/user_classes', methods=['GET'])
 @require_permission('list_user_classes')
-@validate_data(secondary_schema)
+@validate_data(VIEW_USER_CLASS_SCHEMA)
 def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
     """
     View all available user classes and their associated permission sets.
@@ -139,7 +139,7 @@ def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
         })
 
 
-create_user_class_schema = Schema({
+CREATE_USER_CLASS_SCHEMA = Schema({
     'name': All(str, Length(max=24)),
     'permissions': permissions_list,
     Optional('secondary', default=False): bool_get,
@@ -148,7 +148,7 @@ create_user_class_schema = Schema({
 
 @bp.route('/user_classes', methods=['POST'])
 @require_permission('modify_user_classes')
-@validate_data(create_user_class_schema)
+@validate_data(CREATE_USER_CLASS_SCHEMA)
 def create_user_class(name: str,
                       secondary: bool,
                       permissions: List[str]) -> flask.Response:
@@ -272,7 +272,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
     return flask.jsonify(response)
 
 
-modify_user_class_schema = Schema({
+MODIFY_USER_CLASS_SCHEMA = Schema({
     'permissions': permissions_dict,
     Optional('secondary', default=False): bool_get,
     }, required=True)
@@ -280,7 +280,7 @@ modify_user_class_schema = Schema({
 
 @bp.route('/user_classes/<int:user_class_id>', methods=['PUT'])
 @require_permission('modify_user_classes')
-@validate_data(modify_user_class_schema)
+@validate_data(MODIFY_USER_CLASS_SCHEMA)
 def modify_user_class(user_class_id: int,
                       permissions: Dict[str, bool],
                       secondary: bool) -> flask.Response:

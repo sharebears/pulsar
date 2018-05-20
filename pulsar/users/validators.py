@@ -7,10 +7,13 @@ import pytz
 from sqlalchemy import func
 from voluptuous import Invalid
 
-from pulsar import USERNAME_REGEX, APIException
+from pulsar import APIException
 from pulsar.models import Invite, User
 
 app = flask.current_app
+
+USERNAME_REGEX = r'^[A-Za-z0-9][A-Za-z0-9_\-\.]*$'
+PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&\^]).{12,512}$'
 
 
 def val_username(username: str) -> str:
@@ -33,8 +36,8 @@ def val_username(username: str) -> str:
                       'underscores, hyphens, and periods; and be 32 characters '
                       'or less')
 
-    username = username.lower()
-    if User.query.filter(func.lower(User.username) == username).one_or_none():
+    lower_name = username.lower()
+    if User.query.filter(func.lower(User.username) == lower_name).one_or_none():
         raise Invalid(f'another user already has the username {username}')
     return username
 

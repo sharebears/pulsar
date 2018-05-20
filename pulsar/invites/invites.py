@@ -142,14 +142,14 @@ def view_invites(used: bool,
     return flask.jsonify(invites)
 
 
-user_invite_schema = Schema({
+USER_INVITE_SCHEMA = Schema({
     'email': Email(),
     }, required=True)
 
 
 @bp.route('/invites', methods=['POST'])
 @require_permission('send_invites')
-@validate_data(user_invite_schema)
+@validate_data(USER_INVITE_SCHEMA)
 def invite_user(email: str):
     """
     Sends an invite to the provided email address. Requires the ``send_invites``

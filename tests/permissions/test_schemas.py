@@ -1,14 +1,16 @@
 import pytest
 from voluptuous import Invalid
 
+from pulsar.permissions.user_classes import (
+    CREATE_USER_CLASS_SCHEMA, MODIFY_USER_CLASS_SCHEMA)
+
 
 def test_create_user_class_schema(app, authed_client):
-    from pulsar.permissions.user_classes import create_user_class_schema
     data = {
         'name': 'user_v3',
         'permissions': ['edit_settings', 'send_invites'],
         }
-    response_data = create_user_class_schema(data)
+    response_data = CREATE_USER_CLASS_SCHEMA(data)
     data['secondary'] = False
     assert response_data == data
 
@@ -20,14 +22,12 @@ def test_create_user_class_schema(app, authed_client):
          "value @ data['permissions']"),
     ])
 def test_create_user_class_schema_failure(app, authed_client, data, error):
-    from pulsar.permissions.user_classes import create_user_class_schema
     with pytest.raises(Invalid) as e:
-        create_user_class_schema(data)
+        CREATE_USER_CLASS_SCHEMA(data)
     assert str(e.value) == error
 
 
 def test_modify_user_class_schema(app, authed_client):
-    from pulsar.permissions.user_classes import modify_user_class_schema
     data = {
         'permissions': {
             'modify_permissions': False,
@@ -35,4 +35,4 @@ def test_modify_user_class_schema(app, authed_client):
             },
         'secondary': True,
         }
-    data == modify_user_class_schema(data)
+    data == MODIFY_USER_CLASS_SCHEMA(data)

@@ -97,7 +97,8 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     'identifier, message', [
         ('abcdefghij', 'API Key abcdefghij has been revoked.'),
         ('1234567890', 'API Key 1234567890 is already revoked.'),
-        ('nonexisten', 'API Key nonexisten does not exist.'),
+        ('\x02\xb0\xc0AZ\xf2\x99\x22\x8b\xdc',
+         'API Key \x02\xb0\xc0AZ\xf2\x99\x22\x8b\xdc does not exist.'),
     ])
 def test_revoke_api_key(app, authed_client, identifier, message):
     add_permissions(app, 'revoke_api_keys', 'revoke_api_keys_others')

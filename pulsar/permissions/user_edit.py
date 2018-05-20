@@ -55,14 +55,14 @@ def view_permissions(user_id: Optional[int] = None,
     return flask.jsonify({'permissions': get_all_permissions()})
 
 
-change_permissions_schema = Schema({
+CHANGE_PERMISSIONS_SCHEMA = Schema({
     'permissions': permissions_dict,
     }, required=True)
 
 
 @bp.route('/permissions/user/<int:user_id>', methods=['PUT'])
 @require_permission('modify_permissions')
-@validate_data(change_permissions_schema)
+@validate_data(CHANGE_PERMISSIONS_SCHEMA)
 def change_permissions(user_id: int,
                        permissions: Dict[str, bool]) -> flask.Response:
     """
