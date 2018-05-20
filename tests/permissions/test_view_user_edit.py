@@ -15,7 +15,7 @@ def test_get_all_permissions(app, authed_client):
     assert all(perm in data['permissions'] for perm in [
         'modify_permissions',
         'view_invites',
-        'no_ip_tracking',
+        'no_ip_history',
         ])
     assert all(len(perm) <= 32 for perm in data['permissions'])
 

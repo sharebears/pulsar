@@ -1,7 +1,16 @@
 import pytest
 from voluptuous import MultipleInvalid
 
-from pulsar.invites.invites import USER_INVITE_SCHEMA, VIEW_INVITES_SCHEMA
+from pulsar.invites.invites import USER_INVITE_SCHEMA, VIEW_INVITES_SCHEMA, VIEW_INVITE_SCHEMA
+
+
+def test_view_invite_schema():
+    assert {'id': 'bac'} == VIEW_INVITE_SCHEMA({'id': 'bac'})
+
+
+def test_view_invite_schema_failure():
+    with pytest.raises(MultipleInvalid):
+        VIEW_INVITE_SCHEMA({'id': 123})
 
 
 @pytest.mark.parametrize(

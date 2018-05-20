@@ -25,7 +25,7 @@ from pulsar.models import Invite, User
 def test_view_invite(app, authed_client, code, expected):
     """Viewing invites should return the invite."""
     add_permissions(app, 'view_invites')
-    response = authed_client.get(f'/invites/{code}')
+    response = authed_client.get(f'/invite', query_string={'id': code})
     check_json_response(response, expected)
 
 
@@ -135,7 +135,7 @@ def test_invite_without_code(app, authed_client):
 def test_revoke_invite(app, authed_client, code, expected, invites):
     """Revoking an invite should work only for active invites."""
     add_permissions(app, 'revoke_invites')
-    response = authed_client.delete(f'/invites/{code}')
+    response = authed_client.delete(f'/invite', data=json.dumps({'id': code}))
     user = User.from_id(1)
     check_json_response(response, expected)
     assert user.invites == invites
@@ -150,7 +150,7 @@ def test_revoke_invite_others(app, authed_client):
     the invite to the inviter's invite count.
     """
     add_permissions(app, 'revoke_invites', 'revoke_invites_others', 'view_invites_others')
-    response = authed_client.delete(f'/invites/{CODE_3}')
+    response = authed_client.delete(f'/invite', data=json.dumps({'id': CODE_3}))
     check_json_response(response, {'expired': True})
     user = User.from_id(2)
     assert user.invites == 1
@@ -159,7 +159,7 @@ def test_revoke_invite_others(app, authed_client):
 def test_revoke_invite_others_failure(app, authed_client):
     """Revoking another's invite without permission should raise a 404."""
     add_permissions(app, 'revoke_invites')
-    response = authed_client.delete(f'/invites/{CODE_3}')
+    response = authed_client.delete(f'/invite', data=json.dumps({'id': CODE_3}))
     print(response.get_json())
     check_json_response(response, f'Invite {CODE_3} does not exist.')
 
@@ -169,10 +169,15 @@ def test_revoke_invite_others_failure(app, authed_client):
         ('/invites', 'GET'),
         ('/invites/user/1', 'GET'),
         ('/invites', 'POST'),
-        ('/invites/abc', 'DELETE'),
     ])
 def test_route_permissions(authed_client, endpoint, method):
     """Make sure all routes are properly permissioned against the unpermissioned user."""
     response = authed_client.open(endpoint, method=method)
+    check_json_response(response, 'You do not have permission to access this resource.')
+    assert response.status_code == 403
+
+
+def test_view_invite_route_permission(app, authed_client):
+    response = authed_client.get('/invite', query_string={'id': CODE_1})
     check_json_response(response, 'You do not have permission to access this resource.')
     assert response.status_code == 403

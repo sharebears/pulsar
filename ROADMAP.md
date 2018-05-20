@@ -10,19 +10,8 @@
 - [ ] Index
 
 # Issues
-- [x] Refactor the tests
-
-- [ ] Add tests for all lowercased schemas and convert them to uppercase
-- [ ] Take cache tests out of views and move them into model tests, generally reduce the amount of shit in view tests
-
-- [ ] Script to analyse permission usage--iterate through all files and compile list of
-      require_permission, assert_permission, choose_user, has_permission and compare with
-      get_all_permissions() | https://stackoverflow.com/a/25181706
-
-- [ ] Should invite codes be stored in the URL? No! Query parameters!
-
-- [ ] No authentication and no route should raise a 401, same with required_permission no authentication,
-      although should still allow masquerade (not a 404 (can confuse clients))
+- [x] Script to analyse permission usage
+- [ ] No authentication and no route should raise a 401, same with required_permission no authentication, although should still allow masquerade (not a 404 (can confuse clients))
 
 - [ ] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
 - [ ] Need a way to serialize basic permissions for moderators

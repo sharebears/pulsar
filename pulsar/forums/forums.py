@@ -1,4 +1,4 @@
-from typing import Optional as Optional_
+from typing import Optional as Optional_, Union
 
 import flask
 from voluptuous import All, Any, In, Length, Optional, Range, Schema
@@ -137,7 +137,7 @@ def create_forum(name: str,
 MODIFY_FORUM_SCHEMA = Schema({
     'name': All(str, Length(max=32)),
     'category_id': All(int, Range(min=0, max=2147483648)),
-    'description': All(str, Length(max=1024)),
+    'description': Any(All(str, Length(max=1024)), None),
     'position': All(int, Range(min=0, max=99999)),
     })
 
@@ -148,7 +148,7 @@ MODIFY_FORUM_SCHEMA = Schema({
 def modify_forum(id: int,
                  name: Optional_[str] = None,
                  category_id: Optional_[int] = None,
-                 description: Optional_[str] = None,
+                 description: Union[str, bool, None] = False,
                  position: Optional_[int] = None) -> flask.Response:
     """
     This is the endpoint for forum editing. The ``modify_forums`` permission
@@ -198,7 +198,7 @@ def modify_forum(id: int,
         forum.name = name
     if category_id and ForumCategory.is_valid(category_id, error=True):
         forum.category_id = category_id
-    if description:
+    if description is not False:
         forum.description = description
     if position is not None:
         forum.position = position

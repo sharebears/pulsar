@@ -8,6 +8,6 @@ PERMISSIONS = [
     'edit_settings',  # Edit own user's settings
     'moderate_users',  # User moderation (Staff)
     'moderate_users_advanced',  # Advanced user moderation (Admin+)
-    'no_ip_tracking',  # IPs of user are not recorded
+    'no_ip_history',  # IPs of user are not recorded
     'view_cache_keys',  # View accessed and modified cache keys, for debug in production
 ]

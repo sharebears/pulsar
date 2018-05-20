@@ -70,7 +70,7 @@ def view_thread(id: int,
     return flask.jsonify(thread)
 
 
-CREATE_FORUM_THREAD_SCHEMA = Schema({  # TODO: Polls
+CREATE_FORUM_THREAD_SCHEMA = Schema({
     'topic': All(str, Length(max=150)),
     'forum_id': All(int, Range(min=0, max=2147483648)),
     }, required=True)

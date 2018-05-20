@@ -13,8 +13,14 @@ from . import bp
 app = flask.current_app
 
 
-@bp.route('/invites/<id>', methods=['GET'])
+VIEW_INVITE_SCHEMA = Schema({
+    'id': str,
+    }, required=True)
+
+
+@bp.route('/invite', methods=['GET'])
 @require_permission('view_invites')
+@validate_data(VIEW_INVITE_SCHEMA)
 def view_invite(id: str) -> flask.Response:
     """
     View the details of an invite. Requires the ``view_invites`` permission.
@@ -26,9 +32,14 @@ def view_invite(id: str) -> flask.Response:
 
     .. sourcecode:: http
 
-       GET /invites/an-invite-code HTTP/1.1
+       GET /invite HTTP/1.1
        Host: pul.sar
        Accept: application/json
+       Content-Type: application/json
+
+       {
+         "id": "an-invite-code"
+       }
 
     **Example response**:
 
@@ -218,9 +229,10 @@ def invite_user(email: str):
     return flask.jsonify(invite)
 
 
-@bp.route('/invites/<code>', methods=['DELETE'])
+@bp.route('/invite', methods=['DELETE'])
 @require_permission('revoke_invites')
-def revoke_invite(code: str) -> flask.Response:
+@validate_data(VIEW_INVITE_SCHEMA)
+def revoke_invite(id: str) -> flask.Response:
     """
     Revokes an active invite code, preventing it from being used. The
     invite is returned to the user's account. Requires the
@@ -233,9 +245,13 @@ def revoke_invite(code: str) -> flask.Response:
 
     .. sourcecode:: http
 
-       DELETE /invites/an-invite-code HTTP/1.1
+       DELETE /invite HTTP/1.1
        Host: pul.sar
        Accept: application/json
+
+       {
+         "id": "an-invite-code"
+       }
 
     **Example response**:
 
@@ -266,7 +282,7 @@ def revoke_invite(code: str) -> flask.Response:
     :statuscode 403: Unauthorized to revoke invites
     :statuscode 404: Invite does not exist or user cannot view invite
     """
-    invite = Invite.from_id(code, _404='Invite', asrt='revoke_invites_others')
+    invite = Invite.from_id(id, _404='Invite', asrt='revoke_invites_others')
     invite.expired = True
     invite.inviter.invites += 1
     db.session.commit()
