@@ -49,7 +49,7 @@ def test_new_post(app, authed_client):
     assert post.thread_id == 3
     assert post.poster_id == 1
     assert post.contents == 'NewForumPost'
-    assert ForumPost.from_cache(post.cache_key).id == post.id == 7
+    assert ForumPost.from_cache(post.cache_key).id == post.id == 9
 
 
 @pytest.mark.parametrize(
@@ -103,7 +103,8 @@ def test_serialize_no_perms(app, client):
         })
     assert 'poster' in data and data['poster']['id'] == 1
     assert 'time' in data and isinstance(data['time'], int)
-    assert len(data) == 7
+    assert 'edited_time' in data
+    assert len(data) == 8
 
 
 def test_serialize_very_detailed(app, authed_client):
@@ -120,10 +121,11 @@ def test_serialize_very_detailed(app, authed_client):
         })
     assert 'poster' in data and data['poster']['id'] == 1
     assert 'time' in data and isinstance(data['time'], int)
+    assert 'edited_time' in data
     assert ('edit_history' in data
             and data['edit_history'][0]['id'] == 1
             and len(data['edit_history']) == 1)
-    assert len(data) == 9
+    assert len(data) == 10
 
 
 def test_serialize_nested(app, authed_client):
@@ -139,7 +141,8 @@ def test_serialize_nested(app, authed_client):
         })
     assert 'poster' in data and data['poster']['id'] == 1
     assert 'time' in data and isinstance(data['time'], int)
+    assert 'edited_time' in data
     assert ('edit_history' in data
             and data['edit_history'][0]['id'] == 1
             and len(data['edit_history']) == 1)
-    assert len(data) == 8
+    assert len(data) == 9

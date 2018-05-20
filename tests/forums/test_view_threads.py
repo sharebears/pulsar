@@ -109,12 +109,6 @@ def test_delete_thread_no_posts(app, authed_client):
     assert thread.deleted
 
 
-def test_delete_thread_no_permissions(app, authed_client):
-    add_permissions(app, 'view_threads', 'modify_forum_threads')
-    response = authed_client.delete('/forums/threads/5')
-    check_json_response(response, 'You do not have permission to access this resource.')
-
-
 def test_delete_thread_nonexistent(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
     response = authed_client.delete('/forums/threads/100')

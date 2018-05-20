@@ -215,7 +215,7 @@ def delete_thread(id: int) -> flask.Response:
 
     .. sourcecode:: http
 
-       DELETE /forums/threads2 HTTP/1.1
+       DELETE /forums/threads/2 HTTP/1.1
        Host: pul.sar
        Accept: application/json
        Content-Type: application/json

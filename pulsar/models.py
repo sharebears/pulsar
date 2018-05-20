@@ -1,3 +1,4 @@
+# type: ignore
 # flake8: noqa
 
 from pulsar.auth.models import *

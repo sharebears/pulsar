@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 import flask
@@ -225,7 +226,9 @@ class ForumThread(db.Model):
     def last_post(self) -> 'ForumPost':
         return ForumPost.from_query(
             key=self.__cache_key_last_post__.format(id=self.id),
-            filter=ForumPost.thread_id == self.id,
+            filter=and_(
+                ForumPost.thread_id == self.id,
+                ForumPost.deleted == 'f'),
             order=ForumPost.id.desc())
 
     @hybrid_property
@@ -271,6 +274,7 @@ class ForumPost(db.Model):
         'poster',
         'contents',
         'time',
+        'edited_time',
         'sticky',
         'editor', )
     __serialize_very_detailed__ = (
@@ -288,6 +292,7 @@ class ForumPost(db.Model):
     time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
     sticky = db.Column(db.Boolean, nullable=False, server_default='f')
     edited_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    edited_time = db.Column(db.DateTime(timezone=True))
     deleted = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
@@ -363,6 +368,21 @@ class ForumPostEditHistory(db.Model):
             key=cls.__cache_key_of_post__.format(id=post_id),
             filter=cls.post_id == post_id,
             order=cls.id.desc())
+
+    @classmethod
+    def new(cls,
+            post_id: int,
+            editor_id: int,
+            contents: str,
+            time: datetime) -> Optional[ForumPost]:
+        ForumPost.is_valid(post_id, error=True)
+        User.is_valid(editor_id, error=True)
+        cache.delete(cls.__cache_key_of_post__.format(id=post_id))
+        return super().new(
+            post_id=post_id,
+            editor_id=editor_id,
+            contents=contents,
+            time=time)
 
     @property
     def editor(self) -> User:

@@ -36,10 +36,12 @@ def populate_db(app, client):
         (1, 2, 1, '!site New yeah', NOW() - INTERVAL '1 MINUTE', 't', NULL, 'f'),
         (2, 3, 1, 'Why the fuck is Gazelle in PHP?!', NOW(), 't', NULL, 'f'),
         (3, 5, 1, 'How do we increase donations?', NOW(), 't', NULL, 'f'),
-        (4, 5, 2, 'Since we need a new yacht!', NOW(), 't', NULL, 't'),
+        (4, 5, 2, 'Since we need a new yacht!', NOW() - INTERVAL '1 MINUTE', 't', NULL, 't'),
         (5, 4, 2, 'Smelly Gazelles!', NOW() - INTERVAL '1 HOUR', 't', NULL, 't'),
-        (6, 2, 2, 'Delete this', NOW(), 't', NULL, 'f')""")
-    db.engine.execute("ALTER SEQUENCE forums_posts_id_seq RESTART WITH 7")
+        (6, 2, 2, 'Delete this', NOW(), 't', NULL, 'f'),
+        (7, 4, 2, 'Dont delete this!', NOW() - INTERVAL '2 MINUTES', 't', NULL, 'f'),
+        (8, 4, 1, 'I dont understand this post', NOW() - INTERVAL '3 MINUTES', 'f', NULL, 'f')""")
+    db.engine.execute("ALTER SEQUENCE forums_posts_id_seq RESTART WITH 9")
     db.engine.execute(
         """INSERT INTO forums_posts_edit_history (id, post_id, editor_id, contents, time) VALUES
         (1, 1, 1, 'Why the fcuk is Gazelle in HPH?', NOW() - INTERVAL '1 DAY'),

@@ -18,13 +18,16 @@ def validate_data(schema: 'Schema') -> Callable:
     def wrapper(func):
         @wraps(func)
         def new_function(*args, **kwargs):
-            try:
-                if flask.request.method == 'GET':
-                    kwargs.update(schema(flask.request.args.to_dict()))
-                else:
-                    kwargs.update(schema(get_request_data()))
-            except Invalid as e:
-                raise APIException(f'Invalid data: {e.msg} (key "{".".join(e.path)}")')
+            if not kwargs.get('skip_validation'):
+                try:
+                    if flask.request.method == 'GET':
+                        kwargs.update(schema(flask.request.args.to_dict()))
+                    else:
+                        kwargs.update(schema(get_request_data()))
+                except Invalid as e:
+                    raise APIException(f'Invalid data: {e.msg} (key "{".".join(e.path)}")')
+            else:
+                del kwargs['skip_validation']
             return func(*args, **kwargs)
         return new_function
     return wrapper

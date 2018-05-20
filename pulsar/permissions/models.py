@@ -128,11 +128,6 @@ class SecondaryClass(db.Model):
                 [secondary_class_assoc_table.c.secondary_class_id]).where(
                     secondary_class_assoc_table.c.user_id == user_id))
 
-    def has_users(self) -> bool:
-        return bool(db.session.execute(
-            select([secondary_class_assoc_table.c.user_id]).where(
-                secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1)))
-
     @classmethod
     def new(cls,
             name: str,
@@ -146,3 +141,8 @@ class SecondaryClass(db.Model):
     @classmethod
     def get_all(cls) -> List['SecondaryClass']:
         return cls.get_many(key=cls.__cache_key_all__)
+
+    def has_users(self) -> bool:
+        return bool(db.session.execute(
+            select([secondary_class_assoc_table.c.user_id]).where(
+                secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1)))

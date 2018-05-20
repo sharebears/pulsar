@@ -4,7 +4,7 @@
 - [x] Caching
 - [x] Permissioned Serialization
 - [x] Boilerplate Refactors & Typing (Issues)
-- [-] Forums
+- [x] Forums
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
@@ -12,7 +12,6 @@
 # Issues
 - [x] Refactor the tests
 
-- [ ] Add is_valid to all new() functions
 - [ ] Add tests for all lowercased schemas and convert them to uppercase
 - [ ] Take cache tests out of views and move them into model tests, generally reduce the amount of shit in view tests
 
@@ -35,6 +34,7 @@
 
 - [ ] Change \_404 argument in from_id to just use classname
 - [ ] Built in debug logging?
+- [ ] Fix PUT endpoints to be one change total, not one change per model
  
 
 # TODO
@@ -68,11 +68,12 @@
 - [x] Category View
 - [x] Forum View
 - [x] Thread View
-- [ ] Posts View
+- [x] Posts View
 - [ ] Forum/Thread Permissions
 - [ ] Subscriptions
-- [ ] Last viewed post in a thread
-- [ ] "viewed" boolean, clear on new post in thread
+- [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
+- [ ] Max post lengths on a per-user basis
+- [ ] Can view deleted threads themselves if have special perm
 
 ## Rules
 - [ ] Fuck it, we're going to make these dictionaries and serve them
