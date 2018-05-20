@@ -76,6 +76,7 @@
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis
 - [ ] Can view deleted threads themselves if have special perm
+- [ ] Polls
 
 ## Rules
 - [ ] Fuck it, we're going to make these dictionaries and serve them

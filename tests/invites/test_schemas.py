@@ -1,7 +1,7 @@
 import pytest
 from voluptuous import MultipleInvalid
 
-from pulsar.invites.invites import VIEW_INVITES_SCHEMA, USER_INVITE_SCHEMA
+from pulsar.invites.invites import USER_INVITE_SCHEMA, VIEW_INVITES_SCHEMA
 
 
 @pytest.mark.parametrize(

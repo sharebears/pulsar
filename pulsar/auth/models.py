@@ -27,15 +27,15 @@ class Session(db.Model):
 
     __permission_detailed__ = 'view_sessions_others'
 
-    id = db.Column(db.String(10), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    persistent = db.Column(db.Boolean, nullable=False, server_default='f')
-    last_used = db.Column(
+    id: str = db.Column(db.String(10), primary_key=True)
+    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    persistent: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    last_used: datetime = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
-    user_agent = db.Column(db.Text)
-    csrf_token = db.Column(db.String(24), nullable=False)
-    expired = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
+    ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
+    user_agent: str = db.Column(db.Text)
+    csrf_token: str = db.Column(db.String(24), nullable=False)
+    expired: bool = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
 
     @classmethod
     def new(cls,
@@ -106,11 +106,11 @@ class Session(db.Model):
 
 
 class APIKey(db.Model):
-    __tablename__ = 'api_keys'
-    __cache_key__ = 'api_keys_{id}'
-    __cache_key_of_user__ = 'api_keys_user_{user_id}'
+    __tablename__: str = 'api_keys'
+    __cache_key__: str = 'api_keys_{id}'
+    __cache_key_of_user__: str = 'api_keys_user_{user_id}'
 
-    __serialize_self__ = __serialize_detailed__ = (
+    __serialize_self__: tuple = (
         'id',
         'user_id',
         'last_used',
@@ -118,18 +118,19 @@ class APIKey(db.Model):
         'user_agent',
         'revoked',
         'permissions')
+    __serialize_detailed__: tuple = __serialize_self__
 
     __permission_detailed__ = 'view_api_keys_others'
 
-    id = db.Column(db.String(10), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    keyhashsalt = db.Column(db.String(128))
-    last_used = db.Column(
+    id: str = db.Column(db.String(10), primary_key=True)
+    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    keyhashsalt: str = db.Column(db.String(128))
+    last_used: str = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip = db.Column(INET, nullable=False, server_default='0.0.0.0')
-    user_agent = db.Column(db.Text)
-    revoked = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
-    permissions = db.Column(ARRAY(db.String(32)))
+    ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
+    user_agent: str = db.Column(db.Text)
+    revoked: str = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
+    permissions: str = db.Column(ARRAY(db.String(32)))
 
     @classmethod
     def new(cls,

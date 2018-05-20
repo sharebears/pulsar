@@ -39,7 +39,6 @@ def view_thread(id: int,
        GET /forums/threads/1 HTTP/1.1
        Host: pul.sar
        Accept: application/json
-       Content-Type: application/json
 
     **Example response**:
 
@@ -71,7 +70,7 @@ def view_thread(id: int,
     return flask.jsonify(thread)
 
 
-CREATE_THREAD_SCHEMA = Schema({  # TODO: Polls
+CREATE_FORUM_THREAD_SCHEMA = Schema({  # TODO: Polls
     'topic': All(str, Length(max=150)),
     'forum_id': All(int, Range(min=0, max=2147483648)),
     }, required=True)
@@ -79,7 +78,7 @@ CREATE_THREAD_SCHEMA = Schema({  # TODO: Polls
 
 @bp.route('/forums/threads', methods=['POST'])
 @require_permission('create_forum_threads')
-@validate_data(CREATE_THREAD_SCHEMA)
+@validate_data(CREATE_FORUM_THREAD_SCHEMA)
 def create_thread(topic: str,
                   forum_id: int) -> flask.Response:
     """
@@ -91,7 +90,7 @@ def create_thread(topic: str,
     **Example request**:
 
     .. sourcecode:: http
-j
+
        POST /forums/threads HTTP/1.1
        Host: pul.sar
        Accept: application/json
@@ -116,7 +115,7 @@ j
          }
        }
 
-    :>json list response: The newly created forum thread
+    :>json dict response: The newly created forum thread
 
     :statuscode 200: Creation successful
     :statuscode 400: Creation unsuccessful
@@ -164,7 +163,7 @@ def modify_thread(id: int,
          "topic": "This does not contain typos.",
          "forum_id": 2,
          "locked": true,
-         "sticky': false
+         "sticky": false
        }
 
 
@@ -234,7 +233,7 @@ def delete_thread(id: int) -> flask.Response:
          }
        }
 
-    :>json list response: The newly deleted forum thread
+    :>json dict response: The deleted forum thread
 
     :statuscode 200: Deletion successful
     :statuscode 400: Deletion unsuccessful

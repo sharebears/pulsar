@@ -5,15 +5,13 @@ from werkzeug import find_modules, import_string
 
 from pulsar.base_model import BaseModel
 from pulsar.cache import Cache, clear_cache_dirty
+from pulsar.exceptions import (APIException, _312Exception, _401Exception,  # noqa
+                               _403Exception, _404Exception, _405Exception, _500Exception)
 from pulsar.serializer import NewJSONEncoder
-from pulsar.exceptions import (  # noqa
-    APIException, _500Exception, _405Exception, _404Exception,
-    _403Exception, _401Exception, _312Exception)
 
 db = SQLAlchemy(model_class=BaseModel)
 cache = Cache()
 migrate = Migrate()
-
 event.listen(db.session, 'before_flush', clear_cache_dirty)
 
 

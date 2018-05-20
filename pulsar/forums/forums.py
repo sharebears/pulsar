@@ -71,7 +71,7 @@ def view_forum(id: int,
     return flask.jsonify(forum)
 
 
-ADD_FORUM_SCHEMA = Schema({
+CREATE_FORUM_SCHEMA = Schema({
     'name': All(str, Length(max=32)),
     'category_id': All(int, Range(min=0, max=2147483648)),
     Optional('description', default=None): Any(All(str, Length(max=1024)), None),
@@ -81,11 +81,11 @@ ADD_FORUM_SCHEMA = Schema({
 
 @bp.route('/forums', methods=['POST'])
 @require_permission('modify_forums')
-@validate_data(ADD_FORUM_SCHEMA)
-def add_forum(name: str,
-              category_id: int,
-              description: Optional_[str],
-              position: int) -> flask.Response:
+@validate_data(CREATE_FORUM_SCHEMA)
+def create_forum(name: str,
+                 category_id: int,
+                 description: Optional_[str],
+                 position: int) -> flask.Response:
     """
     This is the endpoint for forum creation. The ``modify_forums`` permission
     is required to access this endpoint.

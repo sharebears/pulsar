@@ -361,11 +361,11 @@
         },
         "pyflakes": {
             "hashes": [
-                "sha256:08bd6a50edf8cffa9fa09a463063c425ecaaf10d1eb0335a7e8b1401aef89e6f",
-                "sha256:8d616a382f243dbf19b54743f280b80198be0bca3a5396f1d2e1fca6223e8805"
+                "sha256:9a7662ec724d0120012f6e29d6248ae3727d821bba522a0e6b356eff19126a49",
+                "sha256:f661252913bc1dbe7fcfcbf0af0db3f42ab65aabd1a6ca68fe5d466bace94dae"
             ],
             "index": "pypi",
-            "version": "==1.6.0"
+            "version": "==2.0.0"
         },
         "pygments": {
             "hashes": [
@@ -410,11 +410,11 @@
         },
         "pytest-flakes": {
             "hashes": [
-                "sha256:3e880927fd2a77d31715eaab3876196e76d779726c9c24fe32ee5bab23281f82",
-                "sha256:b39afa41ca2d20dc23f487f046c0a7eab26525bca503c999586c07c742835ba8"
+                "sha256:62511b188227c6cbd663327cbd37afc05b41ab80de6ec6556193e7bed31e13a8",
+                "sha256:763ec290b89e2dc8f25f49d71cb9b869b8df843697b730233f61c78f847f2e57"
             ],
             "index": "pypi",
-            "version": "==2.0.0"
+            "version": "==3.0.2"
         },
         "pytz": {
             "hashes": [

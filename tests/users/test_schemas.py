@@ -3,10 +3,10 @@ import re
 import pytest
 from voluptuous import MultipleInvalid
 
-from pulsar.users.users import CREATE_USER_SCHEMA
 from pulsar.users.moderate import MODERATE_USER_SCHEMA
 from pulsar.users.settings import SETTINGS_SCHEMA
-from pulsar.users.validators import USERNAME_REGEX, PASSWORD_REGEX
+from pulsar.users.users import CREATE_USER_SCHEMA
+from pulsar.users.validators import PASSWORD_REGEX, USERNAME_REGEX
 
 
 @pytest.mark.parametrize(

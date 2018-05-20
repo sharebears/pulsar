@@ -36,3 +36,11 @@ Invites
 .. automodule:: pulsar.invites.models
     :members:
     :show-inheritance:
+
+
+Forums
+------
+
+.. automodule:: pulsar.forums.models
+    :members:
+    :show-inheritance:

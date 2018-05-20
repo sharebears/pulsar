@@ -44,19 +44,19 @@ class User(db.Model):
     __permission_detailed__ = 'moderate_users'
     __permission_very_detailed__ = 'moderate_users_advanced'
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), unique=True, nullable=False)
-    passhash = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
-    enabled = db.Column(db.Boolean, nullable=False, server_default='t')
-    locked = db.Column(db.Boolean, nullable=False, server_default='f')
-    user_class_id = db.Column(
+    id: int = db.Column(db.Integer, primary_key=True)
+    username: str = db.Column(db.String(32), unique=True, nullable=False)
+    passhash: str = db.Column(db.String(128), nullable=False)
+    email: str = db.Column(db.String(255), nullable=False)
+    enabled: bool = db.Column(db.Boolean, nullable=False, server_default='t')
+    locked: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    user_class_id: int = db.Column(
         db.Integer, db.ForeignKey('user_classes.id'), nullable=False, server_default='1')
-    inviter_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
-    invites = db.Column(db.Integer, nullable=False, server_default='0')
+    inviter_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
+    invites: int = db.Column(db.Integer, nullable=False, server_default='0')
 
-    uploaded = db.Column(db.BigInteger, nullable=False, server_default='5368709120')  # 5 GB
-    downloaded = db.Column(db.BigInteger, nullable=False, server_default='0')
+    uploaded: int = db.Column(db.BigInteger, nullable=False, server_default='5368709120')  # 5 GB
+    downloaded: int = db.Column(db.BigInteger, nullable=False, server_default='0')
 
     @declared_attr
     def __table_args__(cls):

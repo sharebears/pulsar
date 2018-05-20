@@ -6,8 +6,8 @@ from voluptuous.validators import Match
 
 from pulsar import db
 from pulsar.models import User
-from pulsar.utils import require_permission, validate_data
 from pulsar.users.validators import PASSWORD_REGEX
+from pulsar.utils import require_permission, validate_data
 
 from . import bp
 

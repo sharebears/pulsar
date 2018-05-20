@@ -1,8 +1,9 @@
 import pytest
 from voluptuous import Invalid
 
-from pulsar.permissions.user_classes import (
-    CREATE_USER_CLASS_SCHEMA, MODIFY_USER_CLASS_SCHEMA)
+from pulsar.permissions.user_classes import (CREATE_USER_CLASS_SCHEMA,
+                                             MODIFY_USER_CLASS_SCHEMA)
+from pulsar.permissions.user_edit import CHANGE_PERMISSIONS_SCHEMA
 
 
 def test_create_user_class_schema(app, authed_client):
@@ -36,3 +37,13 @@ def test_modify_user_class_schema(app, authed_client):
         'secondary': True,
         }
     data == MODIFY_USER_CLASS_SCHEMA(data)
+
+
+def test_user_edit_change_permissions_schema(app, authed_client):
+    data = {
+        'permissions': {
+            'modify_permissions': False,
+            'edit_settings': True
+        },
+    }
+    data == CHANGE_PERMISSIONS_SCHEMA(data)

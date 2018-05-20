@@ -1,15 +1,11 @@
 import pytest
 from voluptuous import MultipleInvalid
-from conftest import add_permissions
 
-from pulsar.auth.api_keys import (
-    VIEW_ALL_API_KEYS_SCHEMA,
-    CREATE_API_KEY_SCHEMA,
-    REVOKE_API_KEY_SCHEMA, )
-from pulsar.auth.sessions import (
-    VIEW_ALL_SESSIONS_SCHEMA,
-    CREATE_SESSION_SCHEMA,
-    EXPIRE_SESSION_SCHEMA, )
+from conftest import add_permissions
+from pulsar.auth.api_keys import (CREATE_API_KEY_SCHEMA, REVOKE_API_KEY_SCHEMA,
+                                  VIEW_ALL_API_KEYS_SCHEMA)
+from pulsar.auth.sessions import (CREATE_SESSION_SCHEMA, EXPIRE_SESSION_SCHEMA,
+                                  VIEW_ALL_SESSIONS_SCHEMA)
 
 
 @pytest.mark.parametrize(

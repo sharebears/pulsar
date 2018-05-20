@@ -39,6 +39,7 @@ class _403Exception(APIException):
     capable of throwing a 404 to masquerade hidden endpoints. To do so, set
     the masquerade param to True.
     """
+
     def __init__(self,
                  masquerade: bool = False,
                  message: str = None) -> None:
@@ -60,6 +61,7 @@ class _401Exception(APIException):
 
 class _312Exception(APIException):
     "Alastor please stay away from this codebase, thanks!."
+
     def __init__(self, lock: bool = False) -> None:
         super().__init__(
             message=f'Your account has been {"locked" if lock else "disabled"}.',
