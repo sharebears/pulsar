@@ -17,4 +17,4 @@ install:
   - sed -i "s/postgresql:\/\//postgresql:\/\/postgres:/" instance/test_config.py
 
 script:
-  - pytest
+  - make tests

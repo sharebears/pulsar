@@ -22,6 +22,7 @@
 - [ ] Review usage of optional in .new(**kwarg**) stuff
 
 - [ ] Change \_404 argument in from_id to just use classname
+- [ ] ^ just use class.__name__ for the stupid userclass second/pri split
 - [ ] Built in debug logging?
 - [ ] Fix PUT endpoints to be one change total, not one change per model
  

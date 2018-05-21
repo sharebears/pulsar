@@ -1,6 +1,6 @@
 import secrets
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import pytz
 from sqlalchemy import func
@@ -8,10 +8,11 @@ from sqlalchemy.dialects.postgresql import ARRAY, INET
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import cache, db
+from pulsar.mixin import ModelMixin
 from pulsar.users.models import User
 
 
-class Session(db.Model):
+class Session(db.Model, ModelMixin):
     __tablename__ = 'sessions'
     __cache_key__ = 'sessions_{id}'
     __cache_key_of_user__ = 'sessions_user_{user_id}'
@@ -60,7 +61,7 @@ class Session(db.Model):
                 break
         csrf_token = secrets.token_hex(12)
         cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
-        return super().new(
+        return super()._new(
             user_id=user_id,
             id=id,
             csrf_token=csrf_token,
@@ -87,7 +88,7 @@ class Session(db.Model):
 
     @classmethod
     def ids_from_user(cls,
-                      user_id: int) -> List[str]:
+                      user_id: int) -> List[Union[int, str]]:
         return cls.get_ids_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)
@@ -105,7 +106,7 @@ class Session(db.Model):
         return False
 
 
-class APIKey(db.Model):
+class APIKey(db.Model, ModelMixin):
     __tablename__: str = 'api_keys'
     __cache_key__: str = 'api_keys_{id}'
     __cache_key_of_user__: str = 'api_keys_user_{user_id}'
@@ -155,7 +156,7 @@ class APIKey(db.Model):
                 break
         key = secrets.token_hex(8)
         cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
-        api_key = super().new(
+        api_key = super()._new(
             user_id=user_id,
             id=id,
             keyhashsalt=generate_password_hash(key),
@@ -183,7 +184,7 @@ class APIKey(db.Model):
 
     @classmethod
     def ids_from_user(cls,
-                      user_id: int) -> List[str]:
+                      user_id: int) -> List[Union[int, str]]:
         return cls.get_ids_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)

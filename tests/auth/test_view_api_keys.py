@@ -16,8 +16,8 @@ def hex_generator(_):
 @pytest.mark.parametrize(
     'key, expected', [
         ('abcdefghij', {'id': 'abcdefghij', 'revoked': False}),
-        ('1234567890', 'API Key 1234567890 does not exist.'),
-        ('notrealkey', 'API Key notrealkey does not exist.'),
+        ('1234567890', 'APIKey 1234567890 does not exist.'),
+        ('notrealkey', 'APIKey notrealkey does not exist.'),
     ])
 def test_view_api_key(app, authed_client, key, expected):
     add_permissions(app, 'view_api_keys')
@@ -95,10 +95,10 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
 
 @pytest.mark.parametrize(
     'identifier, message', [
-        ('abcdefghij', 'API Key abcdefghij has been revoked.'),
-        ('1234567890', 'API Key 1234567890 is already revoked.'),
+        ('abcdefghij', 'APIKey abcdefghij has been revoked.'),
+        ('1234567890', 'APIKey 1234567890 is already revoked.'),
         ('\x02\xb0\xc0AZ\xf2\x99\x22\x8b\xdc',
-         'API Key \x02\xb0\xc0AZ\xf2\x99\x22\x8b\xdc does not exist.'),
+         'APIKey \x02\xb0\xc0AZ\xf2\x99\x22\x8b\xdc does not exist.'),
     ])
 def test_revoke_api_key(app, authed_client, identifier, message):
     add_permissions(app, 'revoke_api_keys', 'revoke_api_keys_others')
@@ -109,7 +109,7 @@ def test_revoke_api_key(app, authed_client, identifier, message):
 def test_revoke_api_key_not_mine(app, authed_client):
     add_permissions(app, 'revoke_api_keys')
     response = authed_client.delete('/api_keys', data=json.dumps({'id': '1234567890'}))
-    check_json_response(response, 'API Key 1234567890 does not exist.')
+    check_json_response(response, 'APIKey 1234567890 does not exist.')
 
 
 @pytest.mark.parametrize(
@@ -164,7 +164,7 @@ def test_view_resource_with_api_key_restriction(app, client):
     response = client.get('/test_restricted_resource', headers={
         'Authorization': f'Token abcdefghij{CODE_1}'})
     check_json_response(
-        response, 'This API Key does not have permission to access this resource.')
+        response, 'This APIKey does not have permission to access this resource.')
 
 
 @pytest.mark.parametrize(

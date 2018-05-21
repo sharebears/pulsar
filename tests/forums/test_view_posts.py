@@ -86,7 +86,7 @@ def test_add_post_nonexistent_thread(app, authed_client):
         'thread_id': 100,
         'contents': 'New Post',
         }))
-    check_json_response(response, 'Forum thread 100 does not exist.')
+    check_json_response(response, 'ForumThread 100 does not exist.')
 
 
 def test_edit_post_self(app, authed_client):
@@ -166,13 +166,13 @@ def test_edit_post_nonexistent(app, authed_client):
     response = authed_client.put('/forums/posts/100', data=json.dumps({
         'sticky': True,
         }))
-    check_json_response(response, 'Forum post 100 does not exist.')
+    check_json_response(response, 'ForumPost 100 does not exist.')
 
 
 def test_delete_post(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_posts_advanced')
     response = authed_client.delete('/forums/posts/1')
-    check_json_response(response, 'Forum post 1 has been deleted.')
+    check_json_response(response, 'ForumPost 1 has been deleted.')
     post = ForumPost.from_id(1, include_dead=True)
     assert post.deleted
 
@@ -180,7 +180,7 @@ def test_delete_post(app, authed_client):
 def test_delete_post_nonexistent(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_posts_advanced')
     response = authed_client.delete('/forums/posts/100')
-    check_json_response(response, 'Forum post 100 does not exist.')
+    check_json_response(response, 'ForumPost 100 does not exist.')
 
 
 @pytest.mark.parametrize(

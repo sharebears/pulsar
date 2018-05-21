@@ -1,9 +1,9 @@
 from conftest import check_json_response
 
 
-def test_404_exception(app, client):
+def test_404_exception(app, authed_client):
     """Nonexistent route should return 404 API response."""
-    response = client.get('/nonexistent/endpoint')
+    response = authed_client.get('/nonexistent/endpoint')
     assert response.status_code == 404
     check_json_response(response, 'Resource does not exist.')
 

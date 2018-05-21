@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import select
 
 from pulsar import APIException, db
+from pulsar.mixin import ModelMixin
 from pulsar.users.models import User
 
 
@@ -42,7 +43,7 @@ class UserPermission(db.Model):
         return response
 
 
-class UserClass(db.Model):
+class UserClass(db.Model, ModelMixin):
     __tablename__ = 'user_classes'
     __cache_key__ = 'user_class_{id}'
     __cache_key_all__ = 'user_classes'
@@ -73,8 +74,8 @@ class UserClass(db.Model):
             name: str,
             permissions: Optional[List[str]] = None) -> 'UserClass':
         if cls.from_name(name):
-            raise APIException(f'Another user class already has the name {name}.')
-        return super().new(
+            raise APIException(f'Another UserClass already has the name {name}.')
+        return super()._new(
             name=name,
             permissions=permissions)
 
@@ -93,7 +94,7 @@ secondary_class_assoc_table = db.Table(
               nullable=False))
 
 
-class SecondaryClass(db.Model):
+class SecondaryClass(db.Model, ModelMixin):
     __tablename__ = 'secondary_classes'
     __cache_key__ = 'secondary_class_{id}'
     __cache_key_all__ = 'secondary_classes'
@@ -133,8 +134,8 @@ class SecondaryClass(db.Model):
             name: str,
             permissions: Optional[List[str]] = None) -> 'SecondaryClass':
         if cls.from_name(name):
-            raise APIException(f'Another secondary class already has the name {name}.')
-        return super().new(
+            raise APIException(f'Another SecondaryClass already has the name {name}.')
+        return super()._new(
             name=name,
             permissions=permissions)
 

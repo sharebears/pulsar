@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Any, Dict, List
+from typing import Dict, List, Any
 
 import flask
 from voluptuous import All, Length, Optional, Schema
@@ -67,8 +67,7 @@ def view_user_class(user_class_id: int,
     :statuscode 200: View successful
     """
     u_class: Any = SecondaryClass if secondary else UserClass
-    return flask.jsonify(u_class.from_id(
-        user_class_id, _404=f'{"Secondary" if secondary else "User"} class'))
+    return flask.jsonify(u_class.from_id(user_class_id, _404=True))
 
 
 @bp.route('/user_classes', methods=['GET'])
@@ -256,17 +255,16 @@ def delete_user_class(user_class_id: int) -> flask.Response:
     :statuscode 404: Userclass does not exist
     """
     # Determine secondary here because it's a query arg
-    request_args: dict = flask.request.args.to_dict()
-    secondary: bool = bool_get(request_args['secondary']) if 'secondary' in request_args else False
+    request_args = flask.request.args.to_dict()
+    secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
     u_class: Any = SecondaryClass if secondary else UserClass
 
-    user_class = u_class.from_id(
-        user_class_id, _404=f'{"Secondary" if secondary else "User"} class')
+    user_class = u_class.from_id(user_class_id, _404=True)
     if user_class.has_users():
-        raise APIException(f'You cannot delete a {"secondary" if secondary else "user"} '
-                           'class while users are assigned to it.')
+        raise APIException(f'You cannot delete a {u_class.__name__} '
+                           'while users are assigned to it.')
 
-    response = f'{"Secondary" if secondary else "User"} class {user_class.name} has been deleted.'
+    response = f'{u_class.__name__} {user_class.name} has been deleted.'
     db.session.delete(user_class)
     db.session.commit()
     return flask.jsonify(response)
@@ -340,9 +338,8 @@ def modify_user_class(user_class_id: int,
     :statuscode 400: Permissions cannot be applied
     :statuscode 404: Userclass does not exist
     """
-    c_name: str = f'{"Secondary" if secondary else "User"} class'
     u_class: Any = SecondaryClass if secondary else UserClass
-    user_class: 'UserClass' = u_class.from_id(user_class_id, _404=c_name)
+    user_class = u_class.from_id(user_class_id, _404=True)
 
     uc_perms = copy(user_class.permissions)
     to_add = {p for p, a in permissions.items() if a is True}
@@ -350,11 +347,13 @@ def modify_user_class(user_class_id: int,
 
     for perm in to_add:
         if perm in uc_perms:
-            raise APIException(f'{c_name} {user_class.name} already has the permission {perm}.')
+            raise APIException(
+                f'{u_class.__name__} {user_class.name} already has the permission {perm}.')
         uc_perms.append(perm)
     for perm in to_delete:
         if perm not in uc_perms:
-            raise APIException(f'{c_name} {user_class.name} does not have the permission {perm}.')
+            raise APIException(
+                f'{u_class.__name__} {user_class.name} does not have the permission {perm}.')
         uc_perms.remove(perm)
 
     # Permissions don't update if list reference doesn't change.

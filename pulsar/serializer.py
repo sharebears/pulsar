@@ -4,14 +4,14 @@ from typing import Optional
 import flask
 from flask.json import JSONEncoder
 
-from pulsar.base_model import BaseModel
+from pulsar.mixin import ModelMixin
 
 
 class NewJSONEncoder(JSONEncoder):
     """
     Custom JSON Encoder class to apply the _to_dict() function to
-    all BaseModels and turn timestamps into unixtime. This encoder
-    allows ``flask.jsonify`` to receive a ``BaseModel`` subclass
+    all ModelMixins and turn timestamps into unixtime. This encoder
+    allows ``flask.jsonify`` to receive a ``ModelMixin`` subclass
     as an argument, which will then be turned into a dictionary
     automatically.
     """
@@ -19,23 +19,22 @@ class NewJSONEncoder(JSONEncoder):
     def default(self, obj):
         """
         Overridden default method for the JSONEncoder. The JSON encoder will
-        now serialize all timestamps to POSIX time and turn BaseModels
+        now serialize all timestamps to POSIX time and turn ModelMixins
         into dictionaries.
         """
-        from pulsar import BaseModel
         if isinstance(obj, datetime):
             return int(obj.timestamp())
-        elif isinstance(obj, BaseModel):
+        elif isinstance(obj, ModelMixin):
             return self._to_dict(obj)
         else:
             return super().default(obj)
 
     def _to_dict(self,
-                 model: BaseModel,
+                 model: ModelMixin,
                  nested: bool = False) -> Optional[dict]:
         """
         Convert the model to a dictionary based on its defined serializable attributes.
-        ``BaseModel`` objects embedded in the dictionary or lists in the dictionary
+        ``ModelMixin`` objects embedded in the dictionary or lists in the dictionary
         will be replaced with the result of their ``_to_dict`` methods.
 
         :param detailed:      Whether or not to include detailed serializable attributes
@@ -62,7 +61,7 @@ class NewJSONEncoder(JSONEncoder):
         Iterate through all values inside a dictionary and "fix" a dictionary to be
         JSON serializable by applying the _to_dict() function to all embedded models.
         All datetime objects are converted to a POSIX timestamp (seconds since epoch).
-        This function only supports converting ``dict``s, ``list``s, ``BaseModel``s,
+        This function only supports converting ``dict``s, ``list``s, ``ModelMixin``s,
         and ``datetimes``. If the value was originally serializable, it will remain
         serializable. Keys are not modified, so they must be JSON serializable.
         If your serialization needs are more complex, feel free to add to the function.
@@ -80,7 +79,7 @@ class NewJSONEncoder(JSONEncoder):
                     if v2 is not None:
                         new_value.append(iter_handler(v2))
                 return new_value or None
-            elif isinstance(value, BaseModel):
+            elif isinstance(value, ModelMixin):
                 return self._to_dict(value, nested=True)
             elif isinstance(value, datetime):
                 return int(value.timestamp())

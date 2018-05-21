@@ -63,7 +63,7 @@ def view_forum(id: int,
     :statuscode 403: User does not have permission to view forum
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(id, _404='Forum')
+    forum = Forum.from_id(id, _404=True)
     forum.set_threads(
         page,
         limit,
@@ -193,7 +193,7 @@ def modify_forum(id: int,
     :statuscode 400: Editing unsuccessful
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(id, _404='Forum')
+    forum = Forum.from_id(id, _404=True)
     if name:
         forum.name = name
     if category_id and ForumCategory.is_valid(category_id, error=True):
@@ -245,7 +245,7 @@ def delete_forum(id: int) -> flask.Response:
     :statuscode 400: Deletion unsuccessful
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(id, _404='Forum')
+    forum = Forum.from_id(id, _404=True)
     forum.deleted = True
     ForumThread.update_many(
         ids=ForumThread.get_ids_from_forum(forum.id),

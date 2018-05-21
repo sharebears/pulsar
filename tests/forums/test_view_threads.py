@@ -87,14 +87,14 @@ def test_edit_thread_nonexistent(app, authed_client):
     response = authed_client.put('/forums/threads/100', data=json.dumps({
         'locked': True,
         }))
-    check_json_response(response, 'Forum thread 100 does not exist.')
+    check_json_response(response, 'ForumThread 100 does not exist.')
 
 
 def test_delete_thread(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
     post = ForumPost.from_id(3)  # Cache - post isn't deleted, belongs to thread
     response = authed_client.delete('/forums/threads/5')
-    check_json_response(response, 'Forum thread 5 (Donations?) has been deleted.')
+    check_json_response(response, 'ForumThread 5 (Donations?) has been deleted.')
     thread = ForumThread.from_id(5, include_dead=True)
     assert thread.deleted
     post = ForumPost.from_id(3, include_dead=True)
@@ -104,7 +104,7 @@ def test_delete_thread(app, authed_client):
 def test_delete_thread_no_posts(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
     response = authed_client.delete('/forums/threads/1')
-    check_json_response(response, 'Forum thread 1 (New Site) has been deleted.')
+    check_json_response(response, 'ForumThread 1 (New Site) has been deleted.')
     thread = ForumThread.from_id(1, include_dead=True)
     assert thread.deleted
 
@@ -112,7 +112,7 @@ def test_delete_thread_no_posts(app, authed_client):
 def test_delete_thread_nonexistent(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
     response = authed_client.delete('/forums/threads/100')
-    check_json_response(response, 'Forum thread 100 does not exist.')
+    check_json_response(response, 'ForumThread 100 does not exist.')
 
 
 @pytest.mark.parametrize(

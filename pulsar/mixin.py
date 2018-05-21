@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Type, TypeVar
 
 import flask
 from flask_sqlalchemy import BaseQuery, Model
@@ -7,10 +7,14 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
 
+from pulsar import _404Exception, db, cache, APIException
 
-class BaseModel(Model):
+CLS = TypeVar('CLS', bound='ModelMixin')
+
+
+class ModelMixin(Model):
     """
-    This is a custom model for the pulsar project, which adds caching
+    This is a custom model mixin for the pulsar project, which adds caching
     and JSON serialization functionality to the base model. Subclasses are
     expected to define their serializable attributes, permission restrictions,
     and cache key template with the following class attributes. They are required
@@ -82,11 +86,11 @@ class BaseModel(Model):
         return self.create_cache_key(id=self.id)
 
     @classmethod
-    def from_id(cls,
+    def from_id(cls: Type[CLS],
                 id: Union[str, int, None], *,
                 include_dead: bool = False,
                 _404: bool = False,
-                asrt: bool = False) -> Optional['BaseModel']:
+                asrt: Optional[str] = None) -> Any:  # FIXME
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -98,7 +102,7 @@ class BaseModel(Model):
         :param id:             The primary key ID of the object to query for
         :param include_dead:   Whether or not to return deleted/revoked/expired objects
         :param _404:           Whether or not to raise a _404Exception with the value of
-                               _404 and the given ID as the resource name if a model is not found
+                               _404 and the class name as the resource name if a model is not found
         :param asrt:           Whether or not to check for ownership of the model or a permission.
                                Can be a boolean to purely check for ownership, or a permission
                                string which can override ownership and access the model anyways.
@@ -106,26 +110,26 @@ class BaseModel(Model):
         :return:               The object corresponding to the given ID, if it exists
         :raises _404Exception: If ``_404`` is passed and a model is not found or accessible
         """
-        from pulsar import _404Exception
         if id:
             model = cls.from_cache(
                 key=cls.create_cache_key(id=id),
                 query=cls.query.filter(cls.id == id))
-            if model:
-                if include_dead or not (
-                        getattr(model, 'deleted', False)
-                        or getattr(model, 'revoked', False)
-                        or getattr(model, 'expired', False)):
-                    if not asrt or model.belongs_to_user() or flask.g.user.has_permission(asrt):
-                        return model
+            if (model is not None and (include_dead or not (
+                    getattr(model, 'deleted', False)
+                    or getattr(model, 'revoked', False)
+                    or getattr(model, 'expired', False)
+                    )) and (not asrt
+                            or model.belongs_to_user()
+                            or flask.g.user.has_permission(asrt))):
+                return model
         if _404:
-            raise _404Exception(f'{_404} {id}')
+            raise _404Exception(f'{cls.__name__} {id}')
         return None
 
     @classmethod
-    def from_cache(cls,
+    def from_cache(cls: Type[CLS],
                    key: str, *,
-                   query: Optional[BaseQuery] = None) -> Optional['BaseModel']:
+                   query: Optional[BaseQuery] = None) -> Optional[CLS]:
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -138,7 +142,6 @@ class BaseModel(Model):
 
         :return:      An instance of this class, if the cache key or query produced results
         """
-        from pulsar import db, cache
         data = cache.get(key)
         if data and isinstance(data, dict):
             if cls._valid_data(data):
@@ -155,10 +158,11 @@ class BaseModel(Model):
         return None
 
     @classmethod
-    def from_query(cls, *,
+    def from_query(cls: Type[CLS],
+                   *,
                    key: str,
                    filter: Optional[BinaryExpression] = None,
-                   order: Optional[BinaryExpression] = None) -> Optional['BaseModel']:
+                   order: Optional[BinaryExpression] = None) -> Optional[CLS]:
         """
         Function to get a single object from the database (via ``limit(1)``, ``query.first()``).
         Getting the object via the provided cache key will be attempted first; if
@@ -174,7 +178,6 @@ class BaseModel(Model):
 
         :return:       The queried model, if it exists
         """
-        from pulsar import cache
         cls_id = cache.get(key)
         if not cls_id or not isinstance(cls_id, int):
             query = cls._construct_query(cls.query, filter, order)
@@ -188,7 +191,8 @@ class BaseModel(Model):
         return cls.from_id(cls_id)
 
     @classmethod
-    def get_many(cls, *,
+    def get_many(cls: Type[CLS],
+                 *,
                  key: str,
                  filter: Optional[BinaryExpression] = None,
                  order: Optional[BinaryExpression] = None,
@@ -197,7 +201,7 @@ class BaseModel(Model):
                  page: Optional[int] = None,
                  limit: Optional[int] = None,
                  reverse: bool = False,
-                 expr_override: Optional[BinaryExpression] = None) -> List['BaseModel']:
+                 expr_override: Optional[BinaryExpression] = None) -> List[CLS]:
         """
         An abstracted function to get a list of IDs from the cache with a cache key,
         and query for those IDs if the key does not exist. If the query needs to be ran,
@@ -263,7 +267,6 @@ class BaseModel(Model):
 
         :return: A list of IDs
         """
-        from pulsar import db, cache
         ids = cache.get(key)
         if not ids or not isinstance(ids, list):
             if expr_override is not None:
@@ -286,7 +289,6 @@ class BaseModel(Model):
         :return:              Validity of the object
         :raises APIException: If error param is passed and ID is not valid
         """
-        from pulsar.exceptions import APIException
         obj = cls.from_id(id)
         valid = obj is not None and not (
             getattr(obj, 'deleted', False)
@@ -325,19 +327,6 @@ class BaseModel(Model):
         raise NameError('The cache key is undefined or improperly defined in this model.')
 
     @classmethod
-    def new(cls, **kwargs: dict) -> 'BaseModel':
-        """
-        Create a new instance of the model, add it to the instance, cache it, and return it.
-
-        :param kwargs: The new attributes of the model
-        """
-        from pulsar import db, cache
-        model = cls(**kwargs)
-        db.session.add(model)
-        db.session.commit()
-        cache.cache_model(model)
-        return model
-
     @classmethod
     def update_many(cls, *,
                     ids: List[Union[str, int]],
@@ -354,12 +343,23 @@ class BaseModel(Model):
                                     the query; should be True if the objects are
                                     going to be used after updating
         """
-        from pulsar import cache, db
         if ids:
             db.session.query(cls).filter(cls.id.in_(ids)).update(
                 update, synchronize_session=sychronize_session)
             db.session.commit()
             cache.delete_many(*(cls.create_cache_key(id=id) for id in ids))
+
+    def _new(cls: Type[CLS], **kwargs: Any) -> CLS:
+        """
+        Create a new instance of the model, add it to the instance, cache it, and return it.
+
+        :param kwargs: The new attributes of the model
+        """
+        model = cls(**kwargs)
+        db.session.add(model)
+        db.session.commit()
+        cache.cache_model(model)
+        return model
 
     def count(self, *,
               key: str,
@@ -376,7 +376,6 @@ class BaseModel(Model):
 
         :return: The number of rows matching the query element
         """
-        from pulsar import db, cache
         count = cache.get(key)
         if not isinstance(count, int):
             query = self._construct_query(db.session.query(func.count(attribute)), filter)

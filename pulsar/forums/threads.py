@@ -24,8 +24,8 @@ VIEW_FORUM_THREAD_SCHEMA = Schema({
 @require_permission('view_forums')
 @validate_data(VIEW_FORUM_THREAD_SCHEMA)
 def view_thread(id: int,
-                page: Optional_[int] = 1,
-                limit: Optional_[int] = 50,
+                page: int = 1,
+                limit: int = 50,
                 include_dead: bool = False) -> flask.Response:
     """
     This endpoint allows users to view details about a forum and its threads.
@@ -62,7 +62,7 @@ def view_thread(id: int,
     :statuscode 403: User does not have permission to view thread
     :statuscode 404: Thread does not exist
     """
-    thread = ForumThread.from_id(id, _404='Forum')
+    thread = ForumThread.from_id(id, _404=True)
     thread.set_posts(
         page,
         limit,
@@ -142,7 +142,7 @@ def modify_thread(id: int,
                   topic: Optional_[str] = None,
                   forum_id: Optional_[int] = None,
                   locked: Optional_[bool] = None,
-                  sticky: Optional_[bool] = None) -> flask.Response:
+                  sticky: bool = None) -> flask.Response:
     """
     This is the endpoint for forum thread editing. The ``modify_forum_threads``
     permission is required to access this endpoint. The topic, forum_id,
@@ -187,7 +187,7 @@ def modify_thread(id: int,
     :statuscode 400: Editing unsuccessful
     :statuscode 404: Forum thread does not exist
     """
-    thread = ForumThread.from_id(id, _404='Forum thread')
+    thread = ForumThread.from_id(id, _404=True)
     if topic:
         thread.topic = topic
     if forum_id and Forum.is_valid(forum_id, error=True):
@@ -239,9 +239,9 @@ def delete_thread(id: int) -> flask.Response:
     :statuscode 400: Deletion unsuccessful
     :statuscode 404: Forum thread does not exist
     """
-    thread = ForumThread.from_id(id, _404='Forum thread')
+    thread = ForumThread.from_id(id, _404=True)
     thread.deleted = True
     ForumPost.update_many(
         ids=ForumPost.get_ids_from_thread(thread.id),
         update={'deleted': True})
-    return flask.jsonify(f'Forum thread {id} ({thread.topic}) has been deleted.')
+    return flask.jsonify(f'ForumThread {id} ({thread.topic}) has been deleted.')

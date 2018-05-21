@@ -67,7 +67,7 @@ def test_edit_category_skips(app, authed_client):
 def test_delete_category(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forums')
     response = authed_client.delete('/forums/categories/5')
-    check_json_response(response, 'Forum category 5 (uWhatMate) has been deleted.')
+    check_json_response(response, 'ForumCategory 5 (uWhatMate) has been deleted.')
     category = ForumCategory.from_id(5, include_dead=True)
     assert category.deleted
 
@@ -82,7 +82,7 @@ def test_delete_category_with_forums(app, authed_client):
 def test_delete_category_nonexistent(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forums')
     response = authed_client.delete('/forums/categories/100')
-    check_json_response(response, 'Forum category 100 does not exist.')
+    check_json_response(response, 'ForumCategory 100 does not exist.')
 
 
 @pytest.mark.parametrize(

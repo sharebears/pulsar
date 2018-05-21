@@ -100,7 +100,7 @@ def test_user_expired_session(app, client):
 
 
 def test_api_key_auth_and_ip_override(app, client):
-    """User and API Key IP should be overridden with IP history override permissions."""
+    """User and APIKey IP should be overridden with IP history override permissions."""
     add_permissions(app, 'no_ip_history')
 
     @app.route('/test_api_key')

@@ -6,6 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from pulsar.mixin import ModelMixin
 from pulsar import APIException, cache, db
 
 if TYPE_CHECKING:
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 app = flask.current_app
 
 
-class User(db.Model):
+class User(db.Model, ModelMixin):
     __tablename__ = 'users'
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_{id}_permissions'
@@ -71,14 +72,17 @@ class User(db.Model):
         return user
 
     @classmethod
-    def new(cls, username: str, password: str, email: str) -> 'User':
+    def new(cls,
+            username: str,
+            password: str,
+            email: str) -> 'User':
         """
         Alternative constructor which generates a password hash and
         lowercases and strips leading and trailing spaces from the email.
         """
         if cls.from_username(username) is not None:
             raise APIException(f'The username {username} is already in use.')
-        return super().new(
+        return super()._new(
             username=username,
             passhash=generate_password_hash(password),
             email=email.lower().strip())

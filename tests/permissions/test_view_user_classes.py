@@ -27,7 +27,7 @@ def test_view_user_class_secondary(app, authed_client):
 def test_view_user_class_nonexistent(app, authed_client):
     response = authed_client.get('/user_classes/10').get_json()
     assert 'response' in response
-    assert response['response'] == 'User class 10 does not exist.'
+    assert response['response'] == 'UserClass 10 does not exist.'
 
 
 def test_view_multiple_user_classes(app, authed_client):
@@ -63,7 +63,7 @@ def test_create_user_class(app, authed_client):
 def test_create_user_class_duplicate(app, authed_client):
     response = authed_client.post('/user_classes', data=json.dumps({
         'name': 'user_v2', 'permissions': []})).get_json()
-    assert response['response'] == 'Another user class already has the name user_v2.'
+    assert response['response'] == 'Another UserClass already has the name user_v2.'
 
 
 def test_create_user_class_secondary(app, authed_client):
@@ -83,28 +83,34 @@ def test_create_user_class_secondary(app, authed_client):
     assert not UserClass.from_id(4)
 
 
+def test_create_secondary_class_duplicate(app, authed_client):
+    response = authed_client.post('/user_classes', data=json.dumps({
+        'name': 'user_v2', 'permissions': [], 'secondary': True})).get_json()
+    assert response['response'] == 'Another SecondaryClass already has the name user_v2.'
+
+
 def test_delete_user_class(app, authed_client):
     response = authed_client.delete('/user_classes/2').get_json()
-    assert response['response'] == 'User class user_v2 has been deleted.'
+    assert response['response'] == 'UserClass user_v2 has been deleted.'
     assert not UserClass.from_id(2)
     assert not UserClass.from_name('user_v2')
 
 
 def test_delete_user_class_nonexistent(app, authed_client):
     response = authed_client.delete('/user_classes/10').get_json()
-    assert response['response'] == 'User class 10 does not exist.'
+    assert response['response'] == 'UserClass 10 does not exist.'
 
 
 def test_delete_secondary_with_uc_name(app, authed_client):
     response = authed_client.delete('/user_classes/5', query_string={
         'secondary': True}).get_json()
-    assert response['response'] == 'Secondary class 5 does not exist.'
+    assert response['response'] == 'SecondaryClass 5 does not exist.'
 
 
 def test_delete_user_class_with_user(app, authed_client):
     response = authed_client.delete('/user_classes/1').get_json()
     assert response['response'] == \
-        'You cannot delete a user class while users are assigned to it.'
+        'You cannot delete a UserClass while users are assigned to it.'
     assert UserClass.from_id(1)
 
 
@@ -112,7 +118,7 @@ def test_delete_secondary_class_with_user(app, authed_client):
     response = authed_client.delete('/user_classes/1', query_string={
         'secondary': True}).get_json()
     assert response['response'] == \
-        'You cannot delete a secondary class while users are assigned to it.'
+        'You cannot delete a SecondaryClass while users are assigned to it.'
     assert SecondaryClass.from_id(1)
 
 
@@ -145,9 +151,9 @@ def test_modify_secondary_user_class(app, authed_client):
 @pytest.mark.parametrize(
     'permissions, error', [
         ({'edit_settings': True},
-         'User class User already has the permission edit_settings.'),
+         'UserClass User already has the permission edit_settings.'),
         ({'send_invites': False},
-         'User class User does not have the permission send_invites.'),
+         'UserClass User does not have the permission send_invites.'),
     ])
 def test_modify_user_class_failure(app, authed_client, permissions, error):
     response = authed_client.put('/user_classes/1', data=json.dumps({
@@ -158,7 +164,7 @@ def test_modify_user_class_failure(app, authed_client, permissions, error):
 def test_modify_user_class_nonexistent(app, authed_client):
     response = authed_client.put('/user_classes/3', data=json.dumps({
         'permissions': {'send_invites': True}})).get_json()
-    assert response['response'] == 'User class 3 does not exist.'
+    assert response['response'] == 'UserClass 3 does not exist.'
 
 
 @pytest.mark.parametrize(

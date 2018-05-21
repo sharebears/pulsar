@@ -5,7 +5,7 @@ from flask_sqlalchemy import SignallingSession
 from redis import Redis  # noqa
 from werkzeug.contrib.cache import RedisCache
 
-from pulsar.base_model import BaseModel
+from pulsar.mixin import ModelMixin
 
 
 class Cache(RedisCache):
@@ -134,7 +134,7 @@ class Cache(RedisCache):
         return value
 
     def cache_model(self,
-                    model: BaseModel,
+                    model: ModelMixin,
                     timeout: Optional[int] = None) -> Optional[str]:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
@@ -144,7 +144,7 @@ class Cache(RedisCache):
 
         :return: The cache key of the model
         """
-        if model and isinstance(model, BaseModel):
+        if model and isinstance(model, ModelMixin):
             data = {}
             try:
                 for attr in model.__table__.columns.keys():
@@ -165,5 +165,5 @@ def clear_cache_dirty(session: SignallingSession, _, __) -> None:
     """
     from pulsar import cache
     for obj in session.dirty.union(session.deleted):
-        if obj.__cache_key__:
+        if isinstance(obj, ModelMixin) and obj.__cache_key__:
             cache.delete(obj.cache_key)

@@ -10,11 +10,12 @@ from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import cache, db
 from pulsar.models import User
+from pulsar.mixin import ModelMixin
 
 app = flask.current_app
 
 
-class ForumCategory(db.Model):
+class ForumCategory(db.Model, ModelMixin):
     __tablename__ = 'forums_categories'
     __cache_key__ = 'forums_categories_{id}'
     __cache_key_all__ = 'forums_categories_all'
@@ -51,7 +52,7 @@ class ForumCategory(db.Model):
             name: str,
             description: Optional[str],
             position: Optional[int]) -> 'ForumCategory':
-        return super().new(
+        return super()._new(
             name=name,
             description=description,
             position=position)
@@ -61,7 +62,7 @@ class ForumCategory(db.Model):
         return Forum.from_category(self.id)
 
 
-class Forum(db.Model):
+class Forum(db.Model, ModelMixin):
     __tablename__ = 'forums'
     __cache_key__ = 'forums_{id}'
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
@@ -111,7 +112,7 @@ class Forum(db.Model):
             position: Optional[int]) -> Optional['Forum']:
         ForumCategory.is_valid(category_id, error=True)
         cache.delete(cls.__cache_key_of_category__.format(id=category_id))
-        return super().new(
+        return super()._new(
             name=name,
             category_id=category_id,
             description=description,
@@ -129,7 +130,7 @@ class Forum(db.Model):
             filter=and_(ForumThread.forum_id == self.id, ForumThread.deleted == 'f'))
 
     @property
-    def last_updated_thread(self) -> 'ForumThread':
+    def last_updated_thread(self) -> Optional['ForumThread']:
         return ForumThread.from_query(
             key=self.__cache_key_last_updated__.format(id=self.id),
             filter=(ForumThread.forum_id == self.id),
@@ -148,7 +149,7 @@ class Forum(db.Model):
         self._threads = ForumThread.from_forum(self.id, page, limit, include_dead)
 
 
-class ForumThread(db.Model):
+class ForumThread(db.Model, ModelMixin):
     __tablename__ = 'forums_threads'
     __cache_key__ = 'forums_threads_{id}'
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
@@ -177,7 +178,7 @@ class ForumThread(db.Model):
     _posts: List['ForumPost']
 
     id = db.Column(db.Integer, primary_key=True)
-    topic = db.Column(db.String(255), nullable=False)
+    topic = db.Column(db.String(150), nullable=False)
     forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), nullable=False)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     created_time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -210,7 +211,7 @@ class ForumThread(db.Model):
         Forum.is_valid(forum_id, error=True)
         User.is_valid(poster_id, error=True)
         cache.delete(cls.__cache_key_of_forum__.format(id=forum_id))
-        return super().new(
+        return super()._new(
             topic=topic,
             forum_id=forum_id,
             poster_id=poster_id)
@@ -223,7 +224,7 @@ class ForumThread(db.Model):
             order=cls.last_updated.desc())
 
     @property
-    def last_post(self) -> 'ForumPost':
+    def last_post(self) -> Optional['ForumPost']:
         return ForumPost.from_query(
             key=self.__cache_key_last_post__.format(id=self.id),
             filter=and_(
@@ -263,7 +264,7 @@ class ForumThread(db.Model):
         self._posts = ForumPost.from_thread(self.id, page, limit, include_dead)
 
 
-class ForumPost(db.Model):
+class ForumPost(db.Model, ModelMixin):
     __tablename__ = 'forums_posts'
     __cache_key__ = 'forums_posts_{id}'
     __cache_key_of_thread__ = 'forums_posts_threads_{id}'
@@ -325,7 +326,7 @@ class ForumPost(db.Model):
         if not thread or thread.deleted or not poster:
             return None
         cache.delete(cls.__cache_key_of_thread__.format(id=thread_id))
-        return super().new(
+        return super()._new(
             thread_id=thread_id,
             poster_id=poster_id,
             contents=contents)
@@ -343,7 +344,7 @@ class ForumPost(db.Model):
         return ForumPostEditHistory.from_post(self.id)
 
 
-class ForumPostEditHistory(db.Model):
+class ForumPostEditHistory(db.Model, ModelMixin):
     __tablename__ = 'forums_posts_edit_history'
     __cache_key__ = 'forums_posts_edit_history_{id}'
     __cache_key_of_post__ = 'forums_posts_edit_history_posts_{id}'
@@ -378,7 +379,7 @@ class ForumPostEditHistory(db.Model):
         ForumPost.is_valid(post_id, error=True)
         User.is_valid(editor_id, error=True)
         cache.delete(cls.__cache_key_of_post__.format(id=post_id))
-        return super().new(
+        return super()._new(
             post_id=post_id,
             editor_id=editor_id,
             contents=contents,

@@ -53,7 +53,7 @@ def view_post(id: int) -> flask.Response:
     :statuscode 403: User does not have permission to view post
     :statuscode 404: Post does not exist
     """
-    post = ForumPost.from_id(id, _404='Forum post')
+    post = ForumPost.from_id(id, _404=True)
     return flask.jsonify(post)
 
 
@@ -107,7 +107,7 @@ def create_post(contents: str,
     :statuscode 200: Creation successful
     :statuscode 400: Creation unsuccessful
     """
-    thread = ForumThread.from_id(thread_id, _404='Forum thread')
+    thread = ForumThread.from_id(thread_id, _404=True)
     if thread.locked and not flask.g.user.has_permission('forums_post_in_locked_threads'):
         raise APIException('You cannot post in a locked thread.')
     thread_last_post = thread.last_post
@@ -182,11 +182,11 @@ def modify_post(id: int,
     :statuscode 400: Modification unsuccessful
     :statuscode 404: Forum post does not exist
     """
-    post = ForumPost.from_id(id, _404='Forum post')
+    post = ForumPost.from_id(id, _404=True)
     assert_user(post.poster_id, 'modify_forum_posts')
     thread = ForumThread.from_id(post.thread_id)
     if not thread:
-        raise APIException(f'{ForumPost.__name__} {id} does not exist.')
+        raise APIException(f'ForumPost {id} does not exist.')
     if thread.locked and not flask.g.user.has_permission('modify_forum_posts'):
         raise APIException('You cannot modify posts in a locked thread.')
     if contents is not None:
@@ -244,7 +244,7 @@ def delete_post(id: int) -> flask.Response:
     :statuscode 400: Deletion unsuccessful
     :statuscode 404: Forum post does not exist
     """
-    post = ForumPost.from_id(id, _404='Forum post')
+    post = ForumPost.from_id(id, _404=True)
     post.deleted = True
     db.session.commit()
-    return flask.jsonify(f'Forum post {id} has been deleted.')
+    return flask.jsonify(f'ForumPost {id} has been deleted.')

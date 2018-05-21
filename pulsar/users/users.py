@@ -56,7 +56,7 @@ def get_user(user_id: int) -> flask.Response:
     :statuscode 200: User exists
     :statuscode 404: User does not exist
     """
-    return flask.jsonify(User.from_id(user_id, _404='User'))
+    return flask.jsonify(User.from_id(user_id, _404=True))
 
 
 CREATE_USER_SCHEMA = Schema({

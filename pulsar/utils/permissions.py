@@ -36,7 +36,7 @@ def require_permission(permission: str,
                 raise _403Exception(masquerade=masquerade)
 
             if flask.g.api_key and not flask.g.api_key.has_permission(permission):
-                raise _403Exception(message='This API Key does not have permission to '
+                raise _403Exception(message='This APIKey does not have permission to '
                                     'access this resource.')
             return func(*args, **kwargs)
         return new_function

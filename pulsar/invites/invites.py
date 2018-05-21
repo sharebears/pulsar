@@ -70,7 +70,7 @@ def view_invite(id: str) -> flask.Response:
     :statuscode 404: Invite does not exist or user cannot view invite
     """
     return flask.jsonify(Invite.from_id(
-        id, include_dead=True, _404='Invite', asrt='view_invites_others'))
+        id, include_dead=True, _404=True, asrt='view_invites_others'))
 
 
 VIEW_INVITES_SCHEMA = Schema({
@@ -282,7 +282,7 @@ def revoke_invite(id: str) -> flask.Response:
     :statuscode 403: Unauthorized to revoke invites
     :statuscode 404: Invite does not exist or user cannot view invite
     """
-    invite = Invite.from_id(id, _404='Invite', asrt='revoke_invites_others')
+    invite = Invite.from_id(id, _404=True, asrt='revoke_invites_others')
     invite.expired = True
     invite.inviter.invites += 1
     db.session.commit()

@@ -7,10 +7,11 @@ from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import INET
 
 from pulsar import cache, db
+from pulsar.mixin import ModelMixin
 from pulsar.users.models import User
 
 
-class Invite(db.Model):
+class Invite(db.Model, ModelMixin):
     __tablename__: str = 'invites'
     __cache_key__: str = 'invites_{id}'
     __cache_key_of_user__: str = 'invites_user_{user_id}'
@@ -55,7 +56,7 @@ class Invite(db.Model):
             if not cls.from_id(id, include_dead=True):
                 break
         cache.delete(cls.__cache_key_of_user__.format(user_id=inviter_id))
-        return super().new(
+        return super()._new(
             inviter_id=inviter_id,
             id=id,
             email=email.lower().strip(),

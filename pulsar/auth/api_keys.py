@@ -66,7 +66,7 @@ def view_api_key(id: str) -> flask.Response:
     :statuscode 404: API key does not exist.
     """
     return flask.jsonify(APIKey.from_id(
-        id, include_dead=True, _404='API Key', asrt='view_api_keys_others'))
+        id, include_dead=True, _404=True, asrt='view_api_keys_others'))
 
 
 VIEW_ALL_API_KEYS_SCHEMA = Schema({
@@ -257,12 +257,12 @@ def revoke_api_key(id: int) -> flask.Response:
         to revoke the API key
     """
     api_key = APIKey.from_id(
-        id, include_dead=True, _404='API Key', asrt='revoke_api_keys_others')
+        id, include_dead=True, _404=True, asrt='revoke_api_keys_others')
     if api_key.revoked:
-        raise APIException(f'API Key {id} is already revoked.')
+        raise APIException(f'APIKey {id} is already revoked.')
     api_key.revoked = True
     db.session.commit()
-    return flask.jsonify(f'API Key {id} has been revoked.')
+    return flask.jsonify(f'APIKey {id} has been revoked.')
 
 
 @bp.route('/api_keys/all', methods=['DELETE'])

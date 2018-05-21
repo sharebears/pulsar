@@ -64,7 +64,7 @@ def view_session(id: int) -> flask.Response:
     :statuscode 404: Session does not exist
     """
     return flask.jsonify(Session.from_id(
-        id, include_dead=True, _404='Session', asrt='view_sessions_others'))
+        id, include_dead=True, _404=True, asrt='view_sessions_others'))
 
 
 VIEW_ALL_SESSIONS_SCHEMA = Schema({
@@ -281,7 +281,7 @@ def expire_session(id: int) -> flask.Response:
     :statuscode 404: Session does not exist
     """
     session = Session.from_id(
-        id, include_dead=True, _404='Session', asrt='expire_sessions_others')
+        id, include_dead=True, _404=True, asrt='expire_sessions_others')
     if session.expired:
         raise APIException(f'Session {id} is already expired.')
     session.expired = True
