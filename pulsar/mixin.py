@@ -207,7 +207,7 @@ class ModelMixin(Model):
                  required_properties: tuple = (),
                  include_dead: bool = False,
                  page: int = None,
-                 limit: Optional[int] = None,
+                 limit: int = 50,
                  reverse: bool = False,
                  expr_override: BinaryExpression = None) -> List[CLS]:
         """
@@ -237,91 +237,59 @@ class ModelMixin(Model):
 
         :return:                    A list of objects matching the query specifications
         """
+        ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
         if page is not None:
-            limit = limit or 50
-
-        ids = cls.get_ids_of_many(key, filter, order, expr_override)
-        if not include_dead and cls.__deletion_attr__:
-            ids = [i for i in ids if i not in cls.get_deleted_ids_of_many(
-                key=f'{key}_deleted',
-                filter=filter,
-                order=order)]
-
-        if page is not None and limit is not None:
             ids = ids[(page - 1) * limit:page * limit]
 
-        models = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
-        # sub keys
-        for i, (k, v) in zip(ids, models.copy().items()):
-            del models[k]
-            models[i] = v
-        remaining_ids = [k for k, v in models.items() if v is None]
-        found_models = [cls._create_obj_from_cache(v)
-                        for k, v in models.items() if v is not None]
-        db_models = (cls._construct_query(cls.query, filter, order)
-                     .filter(cls.id.in_(remaining_ids)).all())
-        cache.cache_models(db_models)
-        model_list = found_models + db_models
+        cached_models, uncached_ids = [], []
+        cached_dict = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
+        for i, (k, v) in zip(ids, cached_dict.items()):
+            if v:
+                cached_models.append(cls._create_obj_from_cache(v))
+            else:
+                uncached_ids.append(i)
+
+        qry_models = cls._construct_query(cls.query, filter).filter(cls.id.in_(uncached_ids)).all()
+        cache.cache_models(qry_models)
+        models = cached_models + qry_models
         if required_properties:
-            model_list = [m for m in model_list if all(
-                getattr(m, rp) for rp in required_properties)]
-        return model_list
+            return [m for m in models if all(getattr(m, rp) for rp in required_properties)]
+        return models
 
     @classmethod
     def get_ids_of_many(cls,
                         key: str,
                         filter: BinaryExpression = None,
                         order: BinaryExpression = None,
+                        include_dead: bool = False,
                         expr_override: BinaryExpression = None) -> List[Union[int, str]]:
         """
         Get a list of object IDs meeting query criteria. Fetching from the
         cache with the provided cache key will be attempted first; if the cache
-        key does not exist then a query will be ran.
+        key does not exist then a query will be ran. Calls with ``include_dead=True`` are
+        saved under a different cache key. ``include_dead`` does not affect the query results
+        when passing ``expr_override``.
 
         :param key:                 The cache key to check (and return if present)
         :param filter:              A SQLAlchemy filter expression to be applied to the query
         :param order:               A SQLAlchemy order_by expression to be applied to the query
+        :param include_dead:        Whether or not to include dead results in the IDs list
         :param expr_override:       If passed, this will override filter and order, and be
                                     called verbatim in a ``db.session.execute`` if the cache
                                     key does not exist
 
         :return: A list of IDs
         """
+        key = f'{key}_incl_dead' if include_dead else key
         ids = cache.get(key)
         if not ids or not isinstance(ids, list):
             if expr_override is not None:
                 ids = [x[0] for x in db.session.execute(expr_override)]
             else:
                 query = cls._construct_query(db.session.query(cls.id), filter, order)
+                if not include_dead and cls.__deletion_attr__:
+                    query = query.filter(getattr(cls, cls.__deletion_attr__) == 'f')
                 ids = [x[0] for x in query.all()]
-            cache.set(key, ids)
-        return ids
-
-    @classmethod
-    def get_deleted_ids_of_many(cls,
-                                key: str,
-                                filter: BinaryExpression = None,
-                                order: BinaryExpression = None,
-                                ) -> List[Union[int, str]]:
-        """
-        Get a list of deleted object IDs meeting query criteria.  Fetching from the
-        cache with the provided cache key will be attempted first; if the cache key
-        does not exist then a query will be ran.
-
-        :param key:                 The cache key to check (and return if present)
-        :param filter:              A SQLAlchemy filter expression to be applied to the query
-        :param order:               A SQLAlchemy order_by expression to be applied to the query
-        :param expr_override:       If passed, this will override filter and order, and be
-                                    called verbatim in a ``db.session.execute`` if the cache
-                                    key does not exist
-
-        :return: A list of IDs
-        """
-        ids = cache.get(key)
-        if not ids or not isinstance(ids, list):
-            query = cls._construct_query(db.session.query(cls.id), filter, order).filter(
-                getattr(cls, cls.__deletion_attr__) == 't')
-            ids = [x[0] for x in query.all()]
             cache.set(key, ids)
         return ids
 

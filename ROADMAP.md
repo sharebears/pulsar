@@ -22,7 +22,7 @@
 - [x] Figure out a way to jiggle mypy
 - [x] Utilize redis get_many in ModelMixin.get_many and then query for all missing ones at once.
       Turn filling out empty lists into a two-step process instead of an overly large one.
-- [ ] Refactor the mess that I made in get_many making it efficient
+- [x] Refactor the mess that I made in get_many making it efficient
 - [ ] Hypothesis property testing for the schemas and validators
 - [ ] Fix PUT endpoints to be one change total, not one change per model (test SQLA profiling first)
 - [ ] Built in debug logging?

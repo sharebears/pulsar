@@ -53,7 +53,7 @@ def test_from_user(app, client):
 def test_from_user_cached(app, client):
     cache_key = Session.__cache_key_of_user__.format(user_id=1)
     sess = Session.from_id('1234567890')  # noqa cache it
-    cache.set(cache_key, ['1234567890'], timeout=60)
+    cache.set(f'{cache_key}_incl_dead', ['1234567890'], timeout=60)
     sessions = Session.from_user(1, include_dead=True)
     assert len(sessions) == 1
     assert sessions[0].user_id == 2

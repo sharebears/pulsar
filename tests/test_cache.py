@@ -123,6 +123,16 @@ def test_cache_get_dict(app, client):
         assert 'key_3' in flask.g.cache_keys['get_dict']
 
 
+def test_cache_get_dict_order(app, client):
+    cache.set('key_4', 4)
+    cache.set('key_3', 3)
+    cache.set('key_5', 5)
+    cache.set('key_1', 1)
+    cache.set('key_2', 2)
+    data = cache.get_dict(*('key_2', 'key_1', 'key_3', 'key_4', 'key_5'))
+    assert list(data.keys()) == ['key_2', 'key_1', 'key_3', 'key_4', 'key_5']
+
+
 def test_cache_set_many(app, client):
     cache.set_many({'key_1': 1, 'Key_2': 3})
     assert cache.get('key_1') == 1
