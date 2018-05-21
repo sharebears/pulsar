@@ -1,6 +1,6 @@
 import secrets
 from datetime import datetime
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 
 import pytz
 from sqlalchemy import func
@@ -87,8 +87,7 @@ class Session(db.Model, ModelMixin):
             include_dead=include_dead)
 
     @classmethod
-    def ids_from_user(cls,
-                      user_id: int) -> List[Union[int, str]]:
+    def ids_from_user(cls, user_id: int) -> List[Union[int, str]]:
         return cls.get_ids_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)
@@ -138,7 +137,7 @@ class APIKey(db.Model, ModelMixin):
             user_id: int,
             ip: str,
             user_agent: str,
-            permissions: Optional[List[str]] = None) -> Tuple[str, 'APIKey']:
+            permissions: List[str] = None) -> Tuple[str, 'APIKey']:
         """
         Create a new API Key with randomly generated secret keys and the
         user details passed in as params. Generated keys are hashed and
@@ -183,8 +182,7 @@ class APIKey(db.Model, ModelMixin):
             include_dead=include_dead)
 
     @classmethod
-    def ids_from_user(cls,
-                      user_id: int) -> List[Union[int, str]]:
+    def ids_from_user(cls, user_id: int) -> List[Union[int, str]]:
         return cls.get_ids_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)

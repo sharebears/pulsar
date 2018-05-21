@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import flask
 from voluptuous import All, Length, Optional, Schema
@@ -149,8 +149,8 @@ CREATE_USER_CLASS_SCHEMA = Schema({
 @require_permission('modify_user_classes')
 @validate_data(CREATE_USER_CLASS_SCHEMA)
 def create_user_class(name: str,
-                      secondary: bool,
-                      permissions: List[str]) -> flask.Response:
+                      permissions: List[str],
+                      secondary: bool = False) -> flask.Response:
     """
     Create a new user class. Requires the ``modify_user_classes`` permission.
 
@@ -281,7 +281,7 @@ MODIFY_USER_CLASS_SCHEMA = Schema({
 @validate_data(MODIFY_USER_CLASS_SCHEMA)
 def modify_user_class(user_class_id: int,
                       permissions: Dict[str, bool],
-                      secondary: bool) -> flask.Response:
+                      secondary: bool = False) -> flask.Response:
     """
     Modifies permissions for an existing user class.
     Requires the ``modify_user_classes`` permission.

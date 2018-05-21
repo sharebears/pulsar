@@ -1,5 +1,3 @@
-from typing import Optional as Optional_
-
 import flask
 from voluptuous import All, Any, Length, Optional, Range, Schema
 
@@ -67,8 +65,8 @@ ADD_FORUM_CATEGORY_SCHEMA = Schema({
 @require_permission('modify_forums')
 @validate_data(ADD_FORUM_CATEGORY_SCHEMA)
 def add_category(name: str,
-                 description: Optional_[str],
-                 position: int) -> flask.Response:
+                 description: str = None,
+                 position: int = 0) -> flask.Response:
     """
     This is the endpoint for forum category creation. The ``modify_forums`` permission
     is required to access this endpoint.
@@ -127,9 +125,9 @@ MODIFY_FORUM_CATEGORY_SCHEMA = Schema({
 @require_permission('modify_forums')
 @validate_data(MODIFY_FORUM_CATEGORY_SCHEMA)
 def edit_category(id: int,
-                  name: Optional_[str] = None,
-                  description: Optional_[str] = None,
-                  position: Optional_[int] = None) -> flask.Response:
+                  name: str = None,
+                  description: str = None,
+                  position: int = None) -> flask.Response:
     """
     This is the endpoint for forum category editing. The ``modify_forums`` permission
     is required to access this endpoint. The name, description, and position of a forum

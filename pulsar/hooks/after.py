@@ -6,7 +6,7 @@ from . import bp
 
 
 @bp.after_app_request
-def hook(response):
+def hook(response: flask.Response) -> flask.Response:
     wrap_response(response)
     return response
 

@@ -1,5 +1,3 @@
-from typing import Optional as Optional_
-
 import flask
 from voluptuous import All, In, Length, Range, Schema
 
@@ -139,9 +137,9 @@ MODIFY_FORUM_THREAD_SCHEMA = Schema({
 @require_permission('modify_forum_threads')
 @validate_data(MODIFY_FORUM_THREAD_SCHEMA)
 def modify_thread(id: int,
-                  topic: Optional_[str] = None,
-                  forum_id: Optional_[int] = None,
-                  locked: Optional_[bool] = None,
+                  topic: str = None,
+                  forum_id: int = None,
+                  locked: bool = None,
                   sticky: bool = None) -> flask.Response:
     """
     This is the endpoint for forum thread editing. The ``modify_forum_threads``

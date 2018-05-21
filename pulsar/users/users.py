@@ -1,5 +1,3 @@
-from typing import Optional as Optional_
-
 import flask
 from voluptuous import Any, Optional, Schema
 from voluptuous.validators import Email, Match
@@ -74,7 +72,7 @@ CREATE_USER_SCHEMA = Schema({
 def register(username: str,
              password: str,
              email: str,
-             code: Optional_[str]) -> flask.Response:
+             code: str = None) -> flask.Response:
     """
     Creates a user account with the provided credentials.
     An invite code may be required for registration.

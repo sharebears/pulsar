@@ -86,11 +86,11 @@ class Invite(db.Model, ModelMixin):
             include_dead=include_dead or used)
 
     @property
-    def invitee(self) -> 'User':
+    def invitee(self) -> User:
         return User.from_id(self.invitee_id)
 
     @property
-    def inviter(self) -> 'User':
+    def inviter(self) -> User:
         return User.from_id(self.inviter_id)
 
     def belongs_to_user(self) -> bool:

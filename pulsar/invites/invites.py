@@ -1,5 +1,3 @@
-from typing import Optional as Optional_
-
 import flask
 from voluptuous import Email, Optional, Schema
 
@@ -85,7 +83,7 @@ VIEW_INVITES_SCHEMA = Schema({
 @validate_data(VIEW_INVITES_SCHEMA)
 def view_invites(used: bool,
                  include_dead: bool,
-                 user_id: Optional_[int] = None) -> flask.Response:
+                 user_id: int = None) -> flask.Response:
     """
     View sent invites. If a user_id is specified, only invites sent by that user
     will be returned, otherwise only your invites are returned. If requester has

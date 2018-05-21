@@ -18,13 +18,11 @@
 
 - [ ] Typing Stubs
 - [ ] Hypothesis property testing for the schemas and validators
-- [ ] Review HTTP codes in documentation and the return values
-- [ ] Review usage of optional in .new(**kwarg**) stuff
+- [ ] Review HTTP codes in documentation and the return values (201 CREATE)
+- [-] Review usage of optional in .new(**kwarg**) stuff
 
-- [ ] Change \_404 argument in from_id to just use classname
-- [ ] ^ just use class.__name__ for the stupid userclass second/pri split
+- [ ] Fix PUT endpoints to be one change total, not one change per model (test SQLA profiling first)
 - [ ] Built in debug logging?
-- [ ] Fix PUT endpoints to be one change total, not one change per model
  
 
 # TODO

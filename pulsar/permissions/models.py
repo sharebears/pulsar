@@ -13,9 +13,9 @@ from pulsar.users.models import User
 class UserPermission(db.Model):
     __tablename__ = 'users_permissions'
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    permission = db.Column(db.String(32), primary_key=True)
-    granted = db.Column(db.Boolean, nullable=False, server_default='t')
+    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    permission: str = db.Column(db.String(32), primary_key=True)
+    granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
 
     @classmethod
     def from_attrs(cls,
@@ -56,9 +56,9 @@ class UserClass(db.Model, ModelMixin):
 
     __permission_detailed__ = 'modify_user_classes'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(24), nullable=False)
-    permissions = db.Column(ARRAY(db.String(32)))
+    id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(24), nullable=False)
+    permissions: List[str] = db.Column(ARRAY(db.String(32)), nullable=False, server_default='{}')
 
     @declared_attr
     def __table_args__(cls):
@@ -72,12 +72,12 @@ class UserClass(db.Model, ModelMixin):
     @classmethod
     def new(cls,
             name: str,
-            permissions: Optional[List[str]] = None) -> 'UserClass':
+            permissions: List[str] = None) -> 'UserClass':
         if cls.from_name(name):
             raise APIException(f'Another UserClass already has the name {name}.')
         return super()._new(
             name=name,
-            permissions=permissions)
+            permissions=permissions or [])
 
     @classmethod
     def get_all(cls) -> List['UserClass']:
@@ -108,9 +108,9 @@ class SecondaryClass(db.Model, ModelMixin):
 
     __permission_detailed__ = 'modify_user_classes'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(24), nullable=False)
-    permissions = db.Column(ARRAY(db.String(32)))
+    id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(24), nullable=False)
+    permissions: List[str] = db.Column(ARRAY(db.String(32)), nullable=False, server_default='{}')
 
     @declared_attr
     def __table_args__(cls):
@@ -132,12 +132,12 @@ class SecondaryClass(db.Model, ModelMixin):
     @classmethod
     def new(cls,
             name: str,
-            permissions: Optional[List[str]] = None) -> 'SecondaryClass':
+            permissions: List[str] = None) -> 'SecondaryClass':
         if cls.from_name(name):
             raise APIException(f'Another SecondaryClass already has the name {name}.')
         return super()._new(
             name=name,
-            permissions=permissions)
+            permissions=permissions or [])
 
     @classmethod
     def get_all(cls) -> List['SecondaryClass']:

@@ -9,8 +9,8 @@ from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import cache, db
-from pulsar.models import User
 from pulsar.mixin import ModelMixin
+from pulsar.models import User
 
 app = flask.current_app
 
@@ -33,25 +33,25 @@ class ForumCategory(db.Model, ModelMixin):
 
     __permission_very_detailed__ = 'modify_forums'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32), nullable=False)
-    description = db.Column(db.Text)
-    position = db.Column(db.SmallInteger, nullable=False, server_default='0')
-    deleted = db.Column(db.Boolean, nullable=False, server_default='f')
+    id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(32), nullable=False)
+    description: str = db.Column(db.Text)
+    position: int = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
     def get_all(cls, include_dead: bool = False) -> List['ForumCategory']:
         return cls.get_many(
             key=cls.__cache_key_all__,
-            order=cls.position.asc(),
+            order=cls.position.asc(),  # type: ignore
             include_dead=include_dead,
             required_properties=('forums', ))
 
     @classmethod
     def new(cls,
             name: str,
-            description: Optional[str],
-            position: Optional[int]) -> 'ForumCategory':
+            description: str = None,
+            position: int = 0) -> 'ForumCategory':
         return super()._new(
             name=name,
             description=description,
@@ -89,27 +89,27 @@ class Forum(db.Model, ModelMixin):
 
     _threads: List['ForumThread']
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32), nullable=False)
-    description = db.Column(db.Text)
-    category_id = db.Column(
+    id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(32), nullable=False)
+    description: str = db.Column(db.Text)
+    category_id: int = db.Column(
         db.Integer, db.ForeignKey('forums_categories.id'), nullable=False, index=True)
-    position = db.Column(db.SmallInteger, nullable=False, server_default='0')
-    deleted = db.Column(db.Boolean, nullable=False, server_default='f')
+    position: bool = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
     def from_category(cls, category_id: int) -> List['Forum']:
         return cls.get_many(
             key=cls.__cache_key_of_category__.format(id=category_id),
             filter=cls.category_id == category_id,
-            order=cls.position.asc())
+            order=cls.position.asc())  # type: ignore
 
     @classmethod
     def new(cls,
             name: str,
-            category_id: Optional[int],
-            description: Optional[str],
-            position: Optional[int]) -> Optional['Forum']:
+            category_id: int,
+            description: str = None,
+            position: int = 0) -> Optional['Forum']:
         ForumCategory.is_valid(category_id, error=True)
         cache.delete(cls.__cache_key_of_category__.format(id=category_id))
         return super()._new(
@@ -177,14 +177,15 @@ class ForumThread(db.Model, ModelMixin):
 
     _posts: List['ForumPost']
 
-    id = db.Column(db.Integer, primary_key=True)
-    topic = db.Column(db.String(150), nullable=False)
-    forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), nullable=False)
-    poster_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    created_time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    locked = db.Column(db.Boolean, nullable=False, server_default='f')
-    sticky = db.Column(db.Boolean, nullable=False, server_default='f')
-    deleted = db.Column(db.Boolean, nullable=False, server_default='f')
+    id: int = db.Column(db.Integer, primary_key=True)
+    topic: str = db.Column(db.String(150), nullable=False)
+    forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), nullable=False)  # type: int
+    poster_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    created_time: datetime = db.Column(
+        db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    locked: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    sticky: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @declared_attr
     def __table_args__(cls):
@@ -321,10 +322,8 @@ class ForumPost(db.Model, ModelMixin):
             thread_id: int,
             poster_id: int,
             contents: str) -> Optional['ForumPost']:
-        thread = ForumThread.from_id(thread_id)
-        poster = User.from_id(poster_id)
-        if not thread or thread.deleted or not poster:
-            return None
+        ForumThread.is_valid(thread_id, error=True)
+        User.is_valid(poster_id, error=True)
         cache.delete(cls.__cache_key_of_thread__.format(id=thread_id))
         return super()._new(
             thread_id=thread_id,

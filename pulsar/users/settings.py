@@ -1,5 +1,3 @@
-from typing import Optional
-
 import flask
 from voluptuous import All, Length, Match, Schema
 
@@ -26,8 +24,8 @@ SETTINGS_SCHEMA = Schema({
 @require_permission('edit_settings')
 @validate_data(SETTINGS_SCHEMA)
 def edit_settings(user_id: int =None,
-                  existing_password: Optional[str] =None,
-                  new_password: Optional[str] =None) -> flask.Response:
+                  existing_password: str =None,
+                  new_password: str =None) -> flask.Response:
     """
     Change a user's settings. Requires the ``edit_settings`` permission.
     Requires the ``moderate_users`` permission to change another user's

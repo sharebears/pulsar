@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict
 
 import flask
 from voluptuous import Schema
@@ -15,7 +15,7 @@ app = flask.current_app
 
 @bp.route('/permissions', methods=['GET'])
 @require_permission('modify_permissions')
-def view_permissions(user_id: Optional[int] = None,
+def view_permissions(user_id: int = None,
                      all: bool = False) -> flask.Response:
     """
     View all permissions available. Requires the ``modify_permissions`` permission.

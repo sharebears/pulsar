@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import add_permissions, check_dictionary
-from pulsar import NewJSONEncoder, cache
+from pulsar import APIException, NewJSONEncoder, cache
 from pulsar.models import ForumPost, ForumPostEditHistory
 
 
@@ -56,11 +56,11 @@ def test_new_post(app, authed_client):
     'thread_id, poster_id', [
         (10, 1), (2, 1), (1, 6)])
 def test_new_post_failure(app, authed_client, thread_id, poster_id):
-    assert ForumPost.new(
-        thread_id=thread_id,
-        poster_id=poster_id,
-        contents='NewForumPost'
-        ) is None
+    with pytest.raises(APIException):
+        assert ForumPost.new(
+            thread_id=thread_id,
+            poster_id=poster_id,
+            contents='NewForumPost')
 
 
 def test_post_edit_history_from_id(app, authed_client):

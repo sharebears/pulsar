@@ -1,4 +1,5 @@
-from typing import Optional as Optional_, Union
+from typing import Optional as Optional_
+from typing import Union
 
 import flask
 from voluptuous import All, Any, In, Length, Optional, Range, Schema
@@ -24,8 +25,8 @@ VIEW_FORUM_SCHEMA = Schema({
 @require_permission('view_forums')
 @validate_data(VIEW_FORUM_SCHEMA)
 def view_forum(id: int,
-               page: Optional_[int] = 1,
-               limit: Optional_[int] = 50,
+               page: int = 1,
+               limit: int = 50,
                include_dead: bool = False) -> flask.Response:
     """
     This endpoint allows users to view details about a forum and its threads.
@@ -84,8 +85,8 @@ CREATE_FORUM_SCHEMA = Schema({
 @validate_data(CREATE_FORUM_SCHEMA)
 def create_forum(name: str,
                  category_id: int,
-                 description: Optional_[str],
-                 position: int) -> flask.Response:
+                 description: str = None,
+                 position: int = 0) -> flask.Response:
     """
     This is the endpoint for forum creation. The ``modify_forums`` permission
     is required to access this endpoint.

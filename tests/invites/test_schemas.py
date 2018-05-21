@@ -1,7 +1,8 @@
 import pytest
 from voluptuous import MultipleInvalid
 
-from pulsar.invites.invites import USER_INVITE_SCHEMA, VIEW_INVITES_SCHEMA, VIEW_INVITE_SCHEMA
+from pulsar.invites.invites import (USER_INVITE_SCHEMA, VIEW_INVITE_SCHEMA,
+                                    VIEW_INVITES_SCHEMA)
 
 
 def test_view_invite_schema():

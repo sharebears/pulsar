@@ -1,5 +1,3 @@
-from typing import Optional as Optional_
-
 import flask
 from voluptuous import All, Length, Optional, Schema
 
@@ -77,7 +75,7 @@ VIEW_ALL_SESSIONS_SCHEMA = Schema({
 @require_permission('view_sessions')
 @validate_data(VIEW_ALL_SESSIONS_SCHEMA)
 def view_all_sessions(include_dead: bool,
-                      user_id: Optional_[int] = None) -> flask.Response:
+                      user_id: int = None) -> flask.Response:
     """
     View all sessions of a user. Requires the ``view_sessions`` permission
     to view one's own sessions, and the ``view_sessions_others`` permission to view
@@ -155,7 +153,9 @@ CREATE_SESSION_SCHEMA = Schema({
 
 @bp.route('/sessions', methods=['POST'])
 @validate_data(CREATE_SESSION_SCHEMA)
-def create_session(username: str, password: str, persistent: bool) -> flask.Response:
+def create_session(username: str,
+                   password: str,
+                   persistent: bool) -> flask.Response:
     """
     Login endpoint - generate a session and get a cookie. Yum!
 
@@ -292,7 +292,7 @@ def expire_session(id: int) -> flask.Response:
 @bp.route('/sessions/all', methods=['DELETE'])
 @bp.route('/sessions/all/user/<int:user_id>', methods=['DELETE'])
 @require_permission('expire_sessions')
-def expire_all_sessions(user_id: Optional_[int] = None) -> flask.Response:
+def expire_all_sessions(user_id: int = None) -> flask.Response:
     """
     Revoke all sessions of a user. Requires the ``expire_sessions`` permission to
     expire one's own sessions, and the ``expire_sessions_others`` permission to expire

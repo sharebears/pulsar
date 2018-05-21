@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import flask
 from flask.json import JSONEncoder
 
-from pulsar.mixin import ModelMixin
+if TYPE_CHECKING:
+    from pulsar.mixin import ModelMixin as ModelMixin_ # noqa
 
 
 class NewJSONEncoder(JSONEncoder):
@@ -22,6 +23,7 @@ class NewJSONEncoder(JSONEncoder):
         now serialize all timestamps to POSIX time and turn ModelMixins
         into dictionaries.
         """
+        from pulsar.mixin import ModelMixin
         if isinstance(obj, datetime):
             return int(obj.timestamp())
         elif isinstance(obj, ModelMixin):
@@ -30,7 +32,7 @@ class NewJSONEncoder(JSONEncoder):
             return super().default(obj)
 
     def _to_dict(self,
-                 model: ModelMixin,
+                 model: 'ModelMixin_',
                  nested: bool = False) -> Optional[dict]:
         """
         Convert the model to a dictionary based on its defined serializable attributes.
@@ -69,6 +71,7 @@ class NewJSONEncoder(JSONEncoder):
         :param dict_: The dictionary to iterate over and make JSON serializable
         :return:      A JSON serializable dict of all the elements inside the original dict
         """
+        from pulsar.mixin import ModelMixin
 
         def iter_handler(value):
             if isinstance(value, dict):

@@ -9,8 +9,8 @@ great. If that ever changes in the future, this script will need modifications
 made to it.
 """
 
-import re
 import os
+import re
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))

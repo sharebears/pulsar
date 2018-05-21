@@ -6,8 +6,8 @@ from sqlalchemy import func
 from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from pulsar.mixin import ModelMixin
 from pulsar import APIException, cache, db
+from pulsar.mixin import ModelMixin
 
 if TYPE_CHECKING:
     from pulsar.auth.models import APIKey as APIKey_, Session as Session_  # noqa
@@ -120,9 +120,9 @@ class User(db.Model, ModelMixin):
         cache_key = self.__cache_key_permissions__.format(id=self.id)
         permissions = cache.get(cache_key)
         if not permissions:
-            permissions = deepcopy(self.user_class_model.permissions) or []
+            permissions = deepcopy(self.user_class_model.permissions)
             for class_ in SecondaryClass.from_user(self.id):
-                permissions += class_.permissions or []
+                permissions += class_.permissions
             permissions = list(set(permissions))  # De-dupe
 
             for perm, granted in UserPermission.from_user(self.id).items():

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 import flask
 import pytz
@@ -139,8 +138,8 @@ MODIFY_FORUM_POST_SCHEMA = Schema({
 @require_permission('create_forum_posts')
 @validate_data(MODIFY_FORUM_POST_SCHEMA)
 def modify_post(id: int,
-                sticky: Optional[bool] = None,
-                contents: Optional[str] = None) -> flask.Response:
+                sticky: bool = None,
+                contents: str = None) -> flask.Response:
     """
     This is the endpoint for forum post editing. The ``modify_forum_posts``
     permission is required to access this endpoint. Posts can be marked

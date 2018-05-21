@@ -1,12 +1,10 @@
 class APIException(Exception):
     """General exception thrown by an API view, contains a message for the JSON response."""
-    message: str
-    status_code: int
 
     def __init__(self, message, status_code=400) -> None:
         super().__init__(self)
-        self.message = message
-        self.status_code = status_code
+        self.message: str = message
+        self.status_code: int = status_code
 
     def __repr__(self) -> str:
         return f'<APIException (Code: {self.status_code}) [Message: {self.message}]>'

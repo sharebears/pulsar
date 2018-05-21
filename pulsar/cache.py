@@ -1,11 +1,12 @@
-from typing import Any, Iterator, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
 import flask
 from flask_sqlalchemy import SignallingSession
 from redis import Redis  # noqa
 from werkzeug.contrib.cache import RedisCache
 
-from pulsar.mixin import ModelMixin
+if TYPE_CHECKING:
+    from pulsar.mixin import ModelMixin  # noqa
 
 
 class Cache(RedisCache):
@@ -28,7 +29,7 @@ class Cache(RedisCache):
     def inc(self,
             key: str,
             delta: int = 1,
-            timeout: Optional[int] = None) -> Optional[int]:
+            timeout: int = None) -> Optional[int]:
         """
         Increment a cache key if it exists, otherwise create it
         and optionally set a timeout.
@@ -134,8 +135,8 @@ class Cache(RedisCache):
         return value
 
     def cache_model(self,
-                    model: ModelMixin,
-                    timeout: Optional[int] = None) -> Optional[str]:
+                    model: Optional['ModelMixin'],
+                    timeout: int = None) -> Optional[str]:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
 
@@ -144,12 +145,12 @@ class Cache(RedisCache):
 
         :return: The cache key of the model
         """
-        if model and isinstance(model, ModelMixin):
+        if model:
             data = {}
             try:
                 for attr in model.__table__.columns.keys():
                     data[attr] = getattr(model, attr)
-            except AttributeError:  # Something went wrong
+            except AttributeError:  # pragma: no cover
                 # TODO: Log this
                 return None
             self.set(model.cache_key, data, timeout)
@@ -165,5 +166,5 @@ def clear_cache_dirty(session: SignallingSession, _, __) -> None:
     """
     from pulsar import cache
     for obj in session.dirty.union(session.deleted):
-        if isinstance(obj, ModelMixin) and obj.__cache_key__:
+        if getattr(obj, '__cache_key__', None):
             cache.delete(obj.cache_key)

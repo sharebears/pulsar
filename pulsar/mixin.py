@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union, Type, TypeVar
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import flask
 from flask_sqlalchemy import BaseQuery, Model
@@ -7,7 +7,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import _404Exception, db, cache, APIException
+from pulsar import APIException, _404Exception, cache, db
 
 CLS = TypeVar('CLS', bound='ModelMixin')
 
@@ -90,7 +90,7 @@ class ModelMixin(Model):
                 id: Union[str, int, None], *,
                 include_dead: bool = False,
                 _404: bool = False,
-                asrt: Optional[str] = None) -> Any:  # FIXME
+                asrt: str = None) -> Any:  # FIXME
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -129,7 +129,7 @@ class ModelMixin(Model):
     @classmethod
     def from_cache(cls: Type[CLS],
                    key: str, *,
-                   query: Optional[BaseQuery] = None) -> Optional[CLS]:
+                   query: BaseQuery = None) -> Optional[CLS]:
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -161,8 +161,8 @@ class ModelMixin(Model):
     def from_query(cls: Type[CLS],
                    *,
                    key: str,
-                   filter: Optional[BinaryExpression] = None,
-                   order: Optional[BinaryExpression] = None) -> Optional[CLS]:
+                   filter: BinaryExpression = None,
+                   order: BinaryExpression = None) -> Optional[CLS]:
         """
         Function to get a single object from the database (via ``limit(1)``, ``query.first()``).
         Getting the object via the provided cache key will be attempted first; if
@@ -194,11 +194,11 @@ class ModelMixin(Model):
     def get_many(cls: Type[CLS],
                  *,
                  key: str,
-                 filter: Optional[BinaryExpression] = None,
-                 order: Optional[BinaryExpression] = None,
+                 filter: BinaryExpression = None,
+                 order: BinaryExpression = None,
                  required_properties: tuple = (),
                  include_dead: bool = False,
-                 page: Optional[int] = None,
+                 page: int = None,
                  limit: Optional[int] = None,
                  reverse: bool = False,
                  expr_override: Optional[BinaryExpression] = None) -> List[CLS]:
@@ -249,9 +249,9 @@ class ModelMixin(Model):
     @classmethod
     def get_ids_of_many(cls,
                         key: str,
-                        filter: Optional[BinaryExpression] = None,
-                        order: Optional[BinaryExpression] = None,
-                        expr_override: Optional[BinaryExpression] = None
+                        filter: BinaryExpression = None,
+                        order: BinaryExpression = None,
+                        expr_override: BinaryExpression = None
                         ) -> List[Union[int, str]]:
         """
         Get a list of object IDs meeting query criteria. Fetching from the
@@ -327,7 +327,6 @@ class ModelMixin(Model):
         raise NameError('The cache key is undefined or improperly defined in this model.')
 
     @classmethod
-    @classmethod
     def update_many(cls, *,
                     ids: List[Union[str, int]],
                     update: Dict[str, Any],
@@ -349,6 +348,7 @@ class ModelMixin(Model):
             db.session.commit()
             cache.delete_many(*(cls.create_cache_key(id=id) for id in ids))
 
+    @classmethod
     def _new(cls: Type[CLS], **kwargs: Any) -> CLS:
         """
         Create a new instance of the model, add it to the instance, cache it, and return it.
@@ -398,8 +398,8 @@ class ModelMixin(Model):
 
     @staticmethod
     def _construct_query(query: BaseQuery,
-                         filter: Optional[BinaryExpression] = None,
-                         order: Optional[BinaryExpression] = None) -> BaseQuery:
+                         filter: BinaryExpression = None,
+                         order: BinaryExpression = None) -> BaseQuery:
         """
         A convenience function to save code space for query generations. Takes filters
         and order_bys and applies them to the query, returning a query ready to be ran.

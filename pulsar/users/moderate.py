@@ -1,5 +1,3 @@
-from typing import Optional
-
 import flask
 from voluptuous import All, Email, Range, Schema
 from voluptuous.validators import Match
@@ -28,11 +26,11 @@ MODERATE_USER_SCHEMA = Schema({
 @require_permission('moderate_users')
 @validate_data(MODERATE_USER_SCHEMA)
 def moderate_user(user_id: int,
-                  email: Optional[str] = None,
-                  password: Optional[str] = None,
-                  uploaded: Optional[int] = None,
-                  downloaded: Optional[int] = None,
-                  invites: Optional[int] = None) -> flask.Response:
+                  email: str = None,
+                  password: str = None,
+                  uploaded: int = None,
+                  downloaded: int = None,
+                  invites: int = None) -> flask.Response:
     """
     Moderate a user - change password for them, alter stats, modify basic permissions,
     etc.
