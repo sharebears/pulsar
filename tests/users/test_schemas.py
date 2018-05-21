@@ -3,6 +3,7 @@ import re
 import pytest
 from voluptuous import MultipleInvalid
 
+from conftest import add_permissions
 from pulsar.users.moderate import MODERATE_USER_SCHEMA
 from pulsar.users.settings import SETTINGS_SCHEMA
 from pulsar.users.users import CREATE_USER_SCHEMA
@@ -78,8 +79,10 @@ def test_create_user_schema_failure(data, error):
         {'email': 'new@ema.il'},
         {'email': 'new@ema.il', 'password': 'abcdefGHIfJK12#'},
         {'downloaded': 123123123, 'invites': 104392},
+        {'permissions': {'create_forum_posts': False}},
     ])
-def test_moderate_user_schema(schema):
+def test_moderate_user_schema(app, authed_client, schema):
+    add_permissions(app, 'moderate_users_advanced')
     assert schema == MODERATE_USER_SCHEMA(schema)
 
 
@@ -90,8 +93,10 @@ def test_moderate_user_schema(schema):
          "1 number, and 1 special character for dictionary value @ data['password']"),
         ({'uploaded': 12313, 'extra': 0},
          "extra keys not allowed @ data['extra']"),
+        ({'permissions': {'modify_permissions': True}},
+         "modify_permissions is not a valid permission for dictionary value @ data['permissions']"),
     ])
-def test_moderate_user_schema_failure(schema, error):
+def test_moderate_user_schema_failure(app, authed_client, schema, error):
     with pytest.raises(MultipleInvalid) as e:
         MODERATE_USER_SCHEMA(schema)
     assert str(e.value) == error

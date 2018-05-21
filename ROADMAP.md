@@ -13,13 +13,11 @@
 - [x] Script to analyse permission usage
 - [x] No authentication and no route should raise a 401
 
-- [ ] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
-- [ ] Need a way to serialize basic permissions for moderators
+- [x] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
+- [x] Need a way to serialize basic permissions for moderators
 
-- [ ] Typing Stubs
 - [ ] Hypothesis property testing for the schemas and validators
 - [ ] Review HTTP codes in documentation and the return values (201 CREATE)
-- [-] Review usage of optional in .new(**kwarg**) stuff
 
 - [ ] Fix PUT endpoints to be one change total, not one change per model (test SQLA profiling first)
 - [ ] Built in debug logging?
@@ -59,6 +57,7 @@
 - [x] Forum View
 - [x] Thread View
 - [x] Posts View
+- [ ] Documentation
 - [ ] Forum/Thread Permissions
 - [ ] Subscriptions
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread

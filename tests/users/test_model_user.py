@@ -84,6 +84,12 @@ def test_locked_account_permissions(app, client):
         'view_staff_pm', 'send_staff_pm', 'resolve_staff_pm'}
 
 
+def test_basic_permissions(app, client):
+    add_permissions(app, 'create_forum_posts', 'list_user_classes')
+    user = User.from_id(1)
+    assert user.basic_permissions == ['create_forum_posts']
+
+
 def test_locked_acc_perms_blocked(app, client):
     db.engine.execute("UPDATE users SET locked = 't' where id = 2")
     with client.session_transaction() as sess:
@@ -159,11 +165,39 @@ def test_serialize_detailed(app, authed_client):
         'invites': 1,
         'inviter': None,
         'sessions': None,
+        'basic_permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['id'] == 'abcdefghij')
-    assert len(data) == 13
+    assert len(data) == 14
+
+
+def test_serialize_very_detailed(app, authed_client):
+    add_permissions(app, 'moderate_users', 'moderate_users_advanced')
+    user = User.from_id(1)
+    data = NewJSONEncoder()._to_dict(user)
+    check_dictionary(data, {
+        'id': 1,
+        'username': 'lights',
+        'email': 'lights@puls.ar',
+        'enabled': True,
+        'locked': False,
+        'user_class': 'User',
+        'secondary_classes': ['FLS'],
+        'uploaded': 5368709120,
+        'downloaded': 0,
+        'invites': 1,
+        'inviter': None,
+        'sessions': None,
+        'basic_permissions': None,
+        })
+    assert ('api_keys' in data
+            and len(data['api_keys']) == 1
+            and data['api_keys'][0]['id'] == 'abcdefghij')
+    assert 'permissions' in data and set(data['permissions']) == {
+        'moderate_users', 'moderate_users_advanced'}
+    assert len(data) == 15
 
 
 def test_serialize_nested(app, authed_client):

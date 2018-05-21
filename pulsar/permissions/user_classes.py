@@ -7,7 +7,7 @@ from voluptuous import All, Length, Optional, Schema
 from pulsar import APIException, db
 from pulsar.models import SecondaryClass, UserClass
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import bool_get, permissions_dict, permissions_list
+from pulsar.validators import bool_get, PermissionsDict, permissions_list
 
 from . import bp
 
@@ -271,7 +271,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
 
 
 MODIFY_USER_CLASS_SCHEMA = Schema({
-    'permissions': permissions_dict,
+    'permissions': PermissionsDict(),
     Optional('secondary', default=False): bool_get,
     }, required=True)
 

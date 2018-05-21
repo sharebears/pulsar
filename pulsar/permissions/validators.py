@@ -7,6 +7,7 @@ from voluptuous import Invalid
 from pulsar import APIException
 from pulsar.models import User, UserPermission
 from pulsar.utils import get_all_permissions
+from pulsar.permissions import BASIC_PERMISSIONS
 
 
 def permissions_list(perm_list: List[str]) -> List[str]:
@@ -50,27 +51,38 @@ def permissions_list_of_user(perm_list: List[str]) -> List[str]:
     raise Invalid('permissions must be in the user\'s permissions list')
 
 
-def permissions_dict(permissions: dict) -> dict:
+class PermissionsDict:
     """
     Validates that a dictionary contains valid permission name keys
-    and has boolean values.
-
-    :param permissions:    Dictionary of permissions and booleans
-
-    :return:         The input value
-    :raises Invalid: A permission name is invalid or a value isn't a bool
+    and has boolean values. The available permissions can be restricted
+    to the BASIC_PERMISSIONS if a permission is passed. If the requesting
+    user does not have that permission, they will be restricted to the
+    BASIC_PERMISSIONS.
     """
-    all_permissions = get_all_permissions()
-    if isinstance(permissions, dict):
-        for perm_name, action in permissions.items():
-            if not isinstance(action, bool):
-                raise Invalid('permission actions must be booleans')
-            elif perm_name not in all_permissions and action is True:
-                # Do not disallow removal of non-existent permissions.
-                raise Invalid(f'{perm_name} is not a valid permission')
-    else:
-        raise Invalid('input value must be a dictionary')
-    return permissions
+
+    def __init__(self, restrict: str = None) -> None:
+        self.restrict = restrict
+
+    def __call__(self, permissions: dict) -> dict:
+        """
+        :param permissions:    Dictionary of permissions and booleans
+
+        :return:               The input value
+        :raises Invalid:       A permission name is invalid or a value isn't a bool
+        """
+        permissioned = self.restrict is None or flask.g.user.has_permission(self.restrict)
+        all_permissions = get_all_permissions() if permissioned else BASIC_PERMISSIONS
+
+        if isinstance(permissions, dict):
+            for perm_name, action in permissions.items():
+                if not isinstance(action, bool):
+                    raise Invalid('permission actions must be booleans')
+                elif perm_name not in all_permissions and (action is True or not permissioned):
+                    # Do not disallow removal of non-existent permissions.
+                    raise Invalid(f'{perm_name} is not a valid permission')
+        else:
+            raise Invalid('input value must be a dictionary')
+        return permissions
 
 
 def check_permissions(user: User,  # noqa: C901

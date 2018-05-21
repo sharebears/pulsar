@@ -8,6 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import APIException, cache, db
 from pulsar.mixin import ModelMixin
+from pulsar.permissions import BASIC_PERMISSIONS
 
 if TYPE_CHECKING:
     from pulsar.auth.models import APIKey as APIKey_, Session as Session_  # noqa
@@ -36,11 +37,16 @@ class User(db.Model, ModelMixin):
         'sessions',
         'api_keys')
     __serialize_detailed__ = __serialize_self__ + (
+        'basic_permissions',
         'inviter', )
+    __serialize_very_detailed__ = (
+        'permissions', )
     __serialize_nested_exclude__ = (
         'inviter',
         'sessions',
-        'api_keys')
+        'api_keys',
+        'basic_permissions',
+        'permissions', )
 
     __permission_detailed__ = 'moderate_users'
     __permission_very_detailed__ = 'moderate_users_advanced'
@@ -133,6 +139,10 @@ class User(db.Model, ModelMixin):
 
             cache.set(cache_key, permissions)
         return permissions
+
+    @property
+    def basic_permissions(self) -> List[str]:
+        return [p for p in self.permissions if p in BASIC_PERMISSIONS]
 
     @property
     def user_class_model(self) -> 'UserClass_':

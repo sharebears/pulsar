@@ -7,7 +7,7 @@ from voluptuous import Invalid
 from conftest import add_permissions, check_dupe_in_list, check_json_response
 from pulsar import APIException, db
 from pulsar.models import User
-from pulsar.permissions.validators import (check_permissions, permissions_dict,
+from pulsar.permissions.validators import (check_permissions, PermissionsDict,
                                            permissions_list, permissions_list_of_user)
 
 
@@ -61,13 +61,13 @@ def test_permissions_list_of_user_error(app, authed_client, permissions):
     check_json_response(response, 'completed')
 
 
-def test_permissions_dict():
+def test_PermissionsDict():
     permissions = {
         'modify_permissions': True,
         'view_invites': True,
         'shit_fake_perm': False,
     }
-    assert permissions == permissions_dict(permissions)
+    assert permissions == PermissionsDict().__call__(permissions)
 
 
 @pytest.mark.parametrize(
@@ -78,9 +78,9 @@ def test_permissions_dict():
          'change_wasspord is not a valid permission'),
         ('not-a-dict', 'input value must be a dictionary'),
     ])
-def test_permissions_dict_failure(permissions, expected):
+def test_PermissionsDict_failure(permissions, expected):
     with pytest.raises(Invalid) as e:
-        permissions_dict(permissions)
+        PermissionsDict().__call__(permissions)
     assert str(e.value) == expected
 
 
