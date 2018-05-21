@@ -14,7 +14,7 @@ migrate = Migrate()
 event.listen(db.session, 'before_flush', clear_cache_dirty)
 
 
-def create_app(config: str) -> 'flask.Flask':
+def create_app(config: str) -> flask.Flask:
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile(config)
     app.json_encoder = NewJSONEncoder
@@ -31,7 +31,7 @@ def create_app(config: str) -> 'flask.Flask':
     return app
 
 
-def register_blueprints(app: 'flask.Flask') -> None:
+def register_blueprints(app: flask.Flask) -> None:
     # Every sub-view needs to be imported to populate the blueprint.
     # If this is not done, we will have empty blueprints.
     # If we register every module with the ``bp`` attribute normally,
@@ -50,7 +50,7 @@ def register_blueprints(app: 'flask.Flask') -> None:
     # print(app.url_map)  # debug
 
 
-def register_error_handlers(app: 'flask.Flask') -> None:
+def register_error_handlers(app: flask.Flask) -> None:
     app.register_error_handler(APIException, lambda err: (
         flask.jsonify(err.message), err.status_code))
     app.register_error_handler(404, _404_handler)

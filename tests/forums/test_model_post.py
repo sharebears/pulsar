@@ -31,6 +31,7 @@ def test_post_get_from_thread(app, authed_client):
 
 def test_post_get_from_thread_cached(app, authed_client):
     cache.set(ForumPost.__cache_key_of_thread__.format(id=2), ['1', '6'], timeout=60)
+    ForumPost.from_id(1); ForumPost.from_id(6)  # noqa cache this
     posts = ForumPost.from_thread(2, page=1, limit=50)
     assert len(posts) == 2
 
@@ -86,6 +87,7 @@ def test_post_edit_history_from_post(app, authed_client):
 
 def test_post_edit_history_from_cache(app, authed_client):
     cache.set(ForumPostEditHistory.__cache_key_of_post__.format(id=3), [1])
+    ForumPostEditHistory.from_id(1)  # cache this
     history = ForumPostEditHistory.from_post(3)
     assert len(history) == 1
     assert any(h.contents == 'Why the fcuk is Gazelle in HPH?' for h in history)

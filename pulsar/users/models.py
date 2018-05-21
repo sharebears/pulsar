@@ -9,6 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from pulsar import APIException, cache, db
 from pulsar.mixin import ModelMixin
 from pulsar.permissions import BASIC_PERMISSIONS
+from pulsar.utils import cached_property
 
 if TYPE_CHECKING:
     from pulsar.auth.models import APIKey as APIKey_, Session as Session_  # noqa
@@ -93,31 +94,31 @@ class User(db.Model, ModelMixin):
             passhash=generate_password_hash(password),
             email=email.lower().strip())
 
-    @property
+    @cached_property
     def user_class(self):
         return self.user_class_model.name
 
-    @property
+    @cached_property
     def secondary_classes(self) -> List[str]:
         from pulsar.permissions.models import SecondaryClass
         secondary_classes = SecondaryClass.from_user(self.id)
         return [sc.name for sc in secondary_classes]
 
-    @property
+    @cached_property
     def inviter(self) -> Optional['User']:
         return User.from_id(self.inviter_id) if self.inviter_id else None
 
-    @property
+    @cached_property
     def api_keys(self) -> List['APIKey_']:
         from pulsar.auth.models import APIKey
         return APIKey.from_user(self.id)
 
-    @property
+    @cached_property
     def sessions(self) -> List['Session_']:
         from pulsar.auth.models import Session
         return Session.from_user(self.id)
 
-    @property
+    @cached_property
     def permissions(self) -> List[str]:
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
@@ -129,22 +130,22 @@ class User(db.Model, ModelMixin):
             permissions = deepcopy(self.user_class_model.permissions)
             for class_ in SecondaryClass.from_user(self.id):
                 permissions += class_.permissions
-            permissions = list(set(permissions))  # De-dupe
+            permissions = set(permissions)  # De-dupe
 
             for perm, granted in UserPermission.from_user(self.id).items():
                 if not granted and perm in permissions:
                     permissions.remove(perm)
                 if granted and perm not in permissions:
-                    permissions.append(perm)
+                    permissions.add(perm)
 
             cache.set(cache_key, permissions)
         return permissions
 
-    @property
+    @cached_property
     def basic_permissions(self) -> List[str]:
         return [p for p in self.permissions if p in BASIC_PERMISSIONS]
 
-    @property
+    @cached_property
     def user_class_model(self) -> 'UserClass_':
         from pulsar.permissions.models import UserClass
         return UserClass.from_id(self.user_class_id)

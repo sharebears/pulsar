@@ -4,11 +4,10 @@ import flask
 from voluptuous import All, Email, Range, Schema
 from voluptuous.validators import Match
 
-from pulsar import db, cache, APIException
+from pulsar import APIException, cache, db
 from pulsar.models import User, UserPermission
-from pulsar.utils import require_permission, validate_data, get_all_permissions
-from pulsar.validators import check_permissions, PermissionsDict, PASSWORD_REGEX
-
+from pulsar.utils import get_all_permissions, require_permission, validate_data
+from pulsar.validators import PASSWORD_REGEX, PermissionsDict, check_permissions
 
 from . import bp
 
@@ -138,3 +137,4 @@ def change_permissions(user: User,
             granted=False))
     db.session.commit()
     cache.delete(user.__cache_key_permissions__.format(id=user.id))
+    user.del_property_cache('permissions')

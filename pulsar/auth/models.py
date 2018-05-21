@@ -16,6 +16,7 @@ class Session(db.Model, ModelMixin):
     __tablename__ = 'sessions'
     __cache_key__ = 'sessions_{id}'
     __cache_key_of_user__ = 'sessions_user_{user_id}'
+    __deletion_attr__ = 'expired'
 
     __serialize_self__ = __serialize_detailed__ = (
         'id',
@@ -109,6 +110,7 @@ class APIKey(db.Model, ModelMixin):
     __tablename__: str = 'api_keys'
     __cache_key__: str = 'api_keys_{id}'
     __cache_key_of_user__: str = 'api_keys_user_{user_id}'
+    __deletion_attr__ = 'revoked'
 
     __serialize_self__: tuple = (
         'id',
@@ -129,7 +131,7 @@ class APIKey(db.Model, ModelMixin):
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent: str = db.Column(db.Text)
-    revoked: str = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
+    revoked: bool = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
     permissions: str = db.Column(ARRAY(db.String(32)))
 
     @classmethod
@@ -209,4 +211,4 @@ class APIKey(db.Model, ModelMixin):
             return permission in self.permissions
 
         user = User.from_id(self.user_id)
-        return permission in user.permissions
+        return user.has_permission(permission)

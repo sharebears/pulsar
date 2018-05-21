@@ -15,6 +15,21 @@ def test_view_categories(app, authed_client):
         'description': 'General site discussion',
         }, list_=True)
     assert response.status_code == 200
+    assert len(response.get_json()['response']) == 3
+
+
+def test_view_categories_include_dead(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forums')
+    response = authed_client.get('/forums/categories', query_string={'include_dead': True})
+    assert response.status_code == 200
+    assert len(response.get_json()['response']) == 4
+
+
+def test_view_categories_include_dead_no_permissions(app, authed_client):
+    add_permissions(app, 'view_forums')
+    response = authed_client.get('/forums/categories', query_string={'include_dead': True})
+    assert response.status_code == 200
+    assert len(response.get_json()['response']) == 3
 
 
 def test_add_category(app, authed_client):

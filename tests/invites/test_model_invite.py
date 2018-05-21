@@ -34,6 +34,7 @@ def test_invites_from_inviter(app, client, inviter_id, include_dead, used, invit
 def test_invites_from_inviter_cached(app, client):
     """Test the usage of the inviter cache key."""
     cache_key = Invite.__cache_key_of_user__.format(user_id=1)
+    _ = Invite.from_id(CODE_3)  # noqa cache this
     cache.set(cache_key, [CODE_3], timeout=60)
     invites = Invite.from_inviter(1)
     assert len(invites) == 1

@@ -6,8 +6,8 @@ from voluptuous import Invalid
 
 from pulsar import APIException
 from pulsar.models import User, UserPermission
-from pulsar.utils import get_all_permissions
 from pulsar.permissions import BASIC_PERMISSIONS
+from pulsar.utils import get_all_permissions
 
 
 def permissions_list(perm_list: List[str]) -> List[str]:
@@ -44,7 +44,7 @@ def permissions_list_of_user(perm_list: List[str]) -> List[str]:
     """
     if isinstance(perm_list, list):
         for perm in perm_list:
-            if perm not in flask.g.user.permissions:
+            if not flask.g.user.has_permission(perm):
                 break
         else:
             return perm_list

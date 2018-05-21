@@ -60,7 +60,10 @@ def view_thread(id: int,
     :statuscode 403: User does not have permission to view thread
     :statuscode 404: Thread does not exist
     """
-    thread = ForumThread.from_id(id, _404=True)
+    thread = ForumThread.from_id(
+        id,
+        _404=True,
+        include_dead=flask.g.user.has_permission('modify_forum_threads_advanced'))
     thread.set_posts(
         page,
         limit,

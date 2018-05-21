@@ -6,19 +6,24 @@
 - [x] Boilerplate Refactors & Typing (Issues)
 - [x] Forums
 - [ ] Rules
+- [ ] Forum Documentation
+- [ ] Profile the PUT queries and solve if need be
+- [ ] Thread permissions
+- [ ] Thread subscriptions
+- [ ] Thread last read post
+- [ ] Polls
 - [ ] News Posts
 - [ ] Index
 
 # Issues
-- [x] Script to analyse permission usage
-- [x] No authentication and no route should raise a 401
-
-- [x] Need basic permissions access split from advanced (forums, wiki, torrent edit, irc)
-- [x] Need a way to serialize basic permissions for moderators
-
+- [x] Add serialization case for sets--turn into list, then use sets instead of deduping lists
+- [x] Users can't view deleted threads even if they have the perm, can only view embedded in forum
+- [x] Cache function properties
+- [x] Figure out a way to jiggle mypy
+- [x] Utilize redis get_many in ModelMixin.get_many and then query for all missing ones at once.
+      Turn filling out empty lists into a two-step process instead of an overly large one.
+- [ ] Refactor the mess that I made in get_many making it efficient
 - [ ] Hypothesis property testing for the schemas and validators
-- [ ] Review HTTP codes in documentation and the return values (201 CREATE)
-
 - [ ] Fix PUT endpoints to be one change total, not one change per model (test SQLA profiling first)
 - [ ] Built in debug logging?
  
@@ -31,6 +36,7 @@
 - [ ] Docker/Vagrant environment
 - [ ] More inventive and free serialization - Define objects for serialization and have them
       use custom kwarg arguments which are passed down to all nested models?
+      Mixins! The sauce of life!
      
 
 ## Users
@@ -62,12 +68,10 @@
 - [ ] Subscriptions
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis
-- [ ] Can view deleted threads themselves if have special perm
 - [ ] Polls
 
 ## Rules
-- [ ] Fuck it, we're going to make these dictionaries and serve them
-- [ ] Built in git versioning
+- [ ] Dictionary files to be imported - enable reload of import without restarting site
 
 ## Index
 (All of these get their own endpoint too)
@@ -159,6 +163,9 @@
 
 ## Production Debugging Features
 - [ ] Hook into existing libs?
+
+## Type Checking
+- [ ] Stub files for used interfaces of libraries?
 
 ## User Stats & History
 - [ ] Community Stats

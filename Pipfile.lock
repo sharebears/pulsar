@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1f62b8c2df7299a1e2ead8ae21f8509b415ebba4c9cb8350f07557217dad8d38"
+            "sha256": "8e78309ae6720a855a129b6979feb577a7b2779273f9f41f42fc6f2ad7aa89e5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -178,13 +178,6 @@
             ],
             "version": "==0.7.10"
         },
-        "apipkg": {
-            "hashes": [
-                "sha256:2e38399dbe842891fe85392601aab8f40a8f4cc5a9053c326de35a1cc0297ac6",
-                "sha256:65d2aa68b28e7d31233bb2ba8eb31cda40e4671f8ac2d6b241e358c9652a74b9"
-            ],
-            "version": "==1.4"
-        },
         "attrs": {
             "hashes": [
                 "sha256:4b90b09eeeb9b88c35bc642cbac057e45a5fd85367b985bd2809c62b7b939265",
@@ -262,13 +255,6 @@
                 "sha256:7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6"
             ],
             "version": "==0.14"
-        },
-        "execnet": {
-            "hashes": [
-                "sha256:a7a84d5fa07a089186a329528f127c9d73b9de57f1a1131b82bb5320ee651f6a",
-                "sha256:fc155a6b553c66c838d1a22dba1dc9f5f505c43285a878c6f74a79c024750b83"
-            ],
-            "version": "==1.5.0"
         },
         "idna": {
             "hashes": [
@@ -394,12 +380,6 @@
             "index": "pypi",
             "version": "==3.5.1"
         },
-        "pytest-cache": {
-            "hashes": [
-                "sha256:be7468edd4d3d83f1e844959fd6e3fd28e77a481440a7118d430130ea31b07a9"
-            ],
-            "version": "==1.0"
-        },
         "pytest-cov": {
             "hashes": [
                 "sha256:03aa752cf11db41d281ea1d807d954c4eda35cfa1b21d6971966cc041bbf6e2d",
@@ -407,14 +387,6 @@
             ],
             "index": "pypi",
             "version": "==2.5.1"
-        },
-        "pytest-flakes": {
-            "hashes": [
-                "sha256:62511b188227c6cbd663327cbd37afc05b41ab80de6ec6556193e7bed31e13a8",
-                "sha256:763ec290b89e2dc8f25f49d71cb9b869b8df843697b730233f61c78f847f2e57"
-            ],
-            "index": "pypi",
-            "version": "==3.0.2"
         },
         "pytz": {
             "hashes": [

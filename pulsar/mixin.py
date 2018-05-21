@@ -60,7 +60,8 @@ class ModelMixin(Model):
     that the cache key only accepts an ID kwarg.
     """
 
-    __cache_key__: Optional[str] = None
+    __cache_key__: str = None
+    __deletion_attr__: str = None
 
     __serialize__: tuple = ()
     __serialize_self__: tuple = ()
@@ -90,7 +91,7 @@ class ModelMixin(Model):
                 id: Union[str, int, None], *,
                 include_dead: bool = False,
                 _404: bool = False,
-                asrt: str = None) -> Any:  # FIXME
+                asrt: str = None) -> Optional[CLS]:  # FIXME
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -114,13 +115,13 @@ class ModelMixin(Model):
             model = cls.from_cache(
                 key=cls.create_cache_key(id=id),
                 query=cls.query.filter(cls.id == id))
-            if (model is not None and (include_dead or not (
-                    getattr(model, 'deleted', False)
-                    or getattr(model, 'revoked', False)
-                    or getattr(model, 'expired', False)
-                    )) and (not asrt
-                            or model.belongs_to_user()
-                            or flask.g.user.has_permission(asrt))):
+            if (model is not None
+                    and (include_dead
+                         or not cls.__deletion_attr__
+                         or not getattr(model, cls.__deletion_attr__, False))
+                    and (not asrt
+                         or model.belongs_to_user()
+                         or flask.g.user.has_permission(asrt))):
                 return model
         if _404:
             raise _404Exception(f'{cls.__name__} {id}')
@@ -143,17 +144,24 @@ class ModelMixin(Model):
         :return:      An instance of this class, if the cache key or query produced results
         """
         data = cache.get(key)
-        if data and isinstance(data, dict):
-            if cls._valid_data(data):
-                obj = cls(**data)
-                make_transient_to_detached(obj)
-                obj = db.session.merge(obj, load=False)
-                return obj
-            else:
-                cache.delete(key)
+        obj = cls._create_obj_from_cache(data)
+        if obj:
+            return obj
+        else:
+            cache.delete(key)
         if query:
             obj = query.first()
             cache.cache_model(obj)
+            return obj
+        return None
+
+    @classmethod
+    def _create_obj_from_cache(cls: Type[CLS],
+                               data: Any) -> Optional[CLS]:
+        if cls._valid_data(data):
+            obj = cls(**data)
+            make_transient_to_detached(obj)
+            obj = db.session.merge(obj, load=False)
             return obj
         return None
 
@@ -201,7 +209,7 @@ class ModelMixin(Model):
                  page: int = None,
                  limit: Optional[int] = None,
                  reverse: bool = False,
-                 expr_override: Optional[BinaryExpression] = None) -> List[CLS]:
+                 expr_override: BinaryExpression = None) -> List[CLS]:
         """
         An abstracted function to get a list of IDs from the cache with a cache key,
         and query for those IDs if the key does not exist. If the query needs to be ran,
@@ -215,7 +223,8 @@ class ModelMixin(Model):
         :param key:                 The cache key to check (and return if present)
         :param filter:              A SQLAlchemy filter expression to be applied to the query
         :param order:               A SQLAlchemy order_by expression to be applied to the query
-        :param required_properties: Properties required to validate to ``True``
+        :param required_properties: Properties required to validate to ``True``. This can break
+                                    pagination (varying # on one page)
                                     for a retrieved item to be included in the returned list
         :param include_dead:        Whether or not to include deleted/revoked/expired models
         :param page:                The page number of results to return
@@ -228,31 +237,42 @@ class ModelMixin(Model):
 
         :return:                    A list of objects matching the query specifications
         """
-        ids = cls.get_ids_of_many(key, filter, order, expr_override)
-
         if page is not None:
             limit = limit or 50
 
-        models = []
-        for id in (ids if not reverse else reversed(ids)):
-            model = cls.from_id(id, include_dead=include_dead)
-            if model:
-                for prop in required_properties:
-                    if not getattr(model, prop, False):
-                        break
-                else:
-                    models.append(model)
-                    if limit and len(models) >= limit:
-                        break
-        return models
+        ids = cls.get_ids_of_many(key, filter, order, expr_override)
+        if not include_dead and cls.__deletion_attr__:
+            ids = [i for i in ids if i not in cls.get_deleted_ids_of_many(
+                key=f'{key}_deleted',
+                filter=filter,
+                order=order)]
+
+        if page is not None and limit is not None:
+            ids = ids[(page - 1) * limit:page * limit]
+
+        models = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
+        # sub keys
+        for i, (k, v) in zip(ids, models.copy().items()):
+            del models[k]
+            models[i] = v
+        remaining_ids = [k for k, v in models.items() if v is None]
+        found_models = [cls._create_obj_from_cache(v)
+                        for k, v in models.items() if v is not None]
+        db_models = (cls._construct_query(cls.query, filter, order)
+                     .filter(cls.id.in_(remaining_ids)).all())
+        cache.cache_models(db_models)
+        model_list = found_models + db_models
+        if required_properties:
+            model_list = [m for m in model_list if all(
+                getattr(m, rp) for rp in required_properties)]
+        return model_list
 
     @classmethod
     def get_ids_of_many(cls,
                         key: str,
                         filter: BinaryExpression = None,
                         order: BinaryExpression = None,
-                        expr_override: BinaryExpression = None
-                        ) -> List[Union[int, str]]:
+                        expr_override: BinaryExpression = None) -> List[Union[int, str]]:
         """
         Get a list of object IDs meeting query criteria. Fetching from the
         cache with the provided cache key will be attempted first; if the cache
@@ -274,6 +294,34 @@ class ModelMixin(Model):
             else:
                 query = cls._construct_query(db.session.query(cls.id), filter, order)
                 ids = [x[0] for x in query.all()]
+            cache.set(key, ids)
+        return ids
+
+    @classmethod
+    def get_deleted_ids_of_many(cls,
+                                key: str,
+                                filter: BinaryExpression = None,
+                                order: BinaryExpression = None,
+                                ) -> List[Union[int, str]]:
+        """
+        Get a list of deleted object IDs meeting query criteria.  Fetching from the
+        cache with the provided cache key will be attempted first; if the cache key
+        does not exist then a query will be ran.
+
+        :param key:                 The cache key to check (and return if present)
+        :param filter:              A SQLAlchemy filter expression to be applied to the query
+        :param order:               A SQLAlchemy order_by expression to be applied to the query
+        :param expr_override:       If passed, this will override filter and order, and be
+                                    called verbatim in a ``db.session.execute`` if the cache
+                                    key does not exist
+
+        :return: A list of IDs
+        """
+        ids = cache.get(key)
+        if not ids or not isinstance(ids, list):
+            query = cls._construct_query(db.session.query(cls.id), filter, order).filter(
+                getattr(cls, cls.__deletion_attr__) == 't')
+            ids = [x[0] for x in query.all()]
             cache.set(key, ids)
         return ids
 
@@ -307,7 +355,9 @@ class ModelMixin(Model):
         :param data: The stored object data from the cache to validate
         :return:     Whether or not the data is valid
         """
-        return isinstance(data, dict) and set(data.keys()) == set(cls.__table__.columns.keys())
+        return (bool(data)
+                and isinstance(data, dict)
+                and set(data.keys()) == set(cls.__table__.columns.keys()))
 
     @classmethod
     def create_cache_key(cls, **kwargs) -> str:
@@ -395,6 +445,17 @@ class ModelMixin(Model):
         return (flask.g.user
                 and flask.g.user.id
                 and flask.g.user.id == getattr(self, 'user_id', None))
+
+    def del_property_cache(self, prop: str) -> None:
+        """
+        Delete a property from the property cache.
+
+        :param prop: The property to delete
+        """
+        try:
+            del self._property_cache[prop]
+        except (AttributeError, KeyError):
+            pass
 
     @staticmethod
     def _construct_query(query: BaseQuery,

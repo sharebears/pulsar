@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union, List
 
 import flask
 from flask_sqlalchemy import SignallingSession
@@ -58,9 +58,24 @@ class Cache(RedisCache):
         """
         key = key.lower()
         value = super().get(key)
-        if value is not None:
+        if value is not None:  # pragma: no cover
             flask.g.cache_keys['get'].add(key)
         return value
+
+    def get_dict(self, *keys: str) -> Optional[dict]:
+        """
+        Look up multiple keys in the cache and return their values for it.
+
+        :param keys: The keys to be looked up
+        :returns:    The values if they exist and are readable, else ``None``
+        """
+        lower_keys = [key.lower() for key in keys]
+        if not lower_keys:
+            return {}
+        values = super().get_dict(*lower_keys)
+        if values is not None:  # pragma: no cover
+            flask.g.cache_keys['get_dict'] |= set(lower_keys)
+        return values
 
     def has(self, key: str) -> bool:
         """
@@ -93,8 +108,28 @@ class Cache(RedisCache):
         """
         key = key.lower()
         result = super().set(key, value, timeout)
-        if result:
+        if result:  # pragma: no cover
             flask.g.cache_keys['set'].add(key)
+        return result
+
+    def set_many(self,
+                 mapping: Dict[str, Any],
+                 timeout: int = None) -> bool:
+        """
+        Add multiple new key/value pairs to the cache (overwrites value,
+        if key already exists in the cache).
+
+        :param mapping: The key/value pairs to set
+        :param timeout: The cache timeout for the key in seconds
+                        (if not specified, it uses the default timeout).
+                        A timeout of 0 indicates that the cache never expires.
+
+        :return:        True if all the keys have been updated, ``False`` for errors
+        """
+        lower_mapping = {key.lower(): value for key, value in mapping.items()}
+        result = super().set_many(lower_mapping, timeout)
+        if result:  # pragma: no cover
+            flask.g.cache_keys['set_many'] |= set(lower_mapping.keys())
         return result
 
     def delete(self, key: str) -> bool:
@@ -106,7 +141,7 @@ class Cache(RedisCache):
         """
         key = key.lower()
         result = super().delete(key)
-        if result:
+        if result:  # pragma: no cover
             flask.g.cache_keys['delete'].add(key)
         return result
 
@@ -117,7 +152,7 @@ class Cache(RedisCache):
         :param keys: The keys to delete
         :return:     Whether or not all keys have been deleted
         """
-        lower_keys: Iterator[str] = (key.lower() for key in keys)
+        lower_keys = [key.lower() for key in keys]
         result = super().delete_many(*lower_keys)
         flask.g.cache_keys['delete_many'] |= set(lower_keys)
         return result
@@ -130,7 +165,7 @@ class Cache(RedisCache):
         :return:    The seconds left until a key expires
         """
         value = self._client.ttl((self.key_prefix + key).lower())
-        if value is not None:
+        if value is not None:  # pragma: no cover
             flask.g.cache_keys['ttl'].add(key)
         return value
 
@@ -156,6 +191,29 @@ class Cache(RedisCache):
             self.set(model.cache_key, data, timeout)
             return model.cache_key
         return None
+
+    def cache_models(self,
+                     models: List[Optional['ModelMixin']],
+                     timeout: int = None) -> None:
+        """
+        Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
+
+        :param model:   The model we want to cache
+        :param timeout: The number of seconds to persist the cached value for
+
+        :return: The cache key of the model
+        """
+        to_cache = {}
+        for model in models:
+            if model:
+                data = {}
+                try:
+                    for attr in model.__table__.columns.keys():
+                        data[attr] = getattr(model, attr)
+                except AttributeError:  # pragma: no cover
+                    continue  # TODO: Log this
+                to_cache[model.cache_key] = data
+        self.set_many(to_cache, timeout)
 
 
 def clear_cache_dirty(session: SignallingSession, _, __) -> None:

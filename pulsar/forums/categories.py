@@ -4,15 +4,22 @@ from voluptuous import All, Any, Length, Optional, Range, Schema
 from pulsar import APIException, db
 from pulsar.models import ForumCategory
 from pulsar.utils import require_permission, validate_data
+from pulsar.validators import bool_get
 
 from . import bp
 
 app = flask.current_app
 
 
+VIEW_FORUM_CATEGORY_SCHEMA = Schema({
+    'include_dead': bool_get,
+    })
+
+
 @bp.route('/forums/categories', methods=['GET'])
 @require_permission('view_forums')
-def view_categories() -> flask.Response:
+@validate_data(VIEW_FORUM_CATEGORY_SCHEMA)
+def view_categories(include_dead: bool = False) -> flask.Response:
     """
     This endpoint allows users to view the available forum categories
     and the forums in each category, along with some information about
@@ -50,7 +57,8 @@ def view_categories() -> flask.Response:
     :statuscode 200: View successful
     :statuscode 401: View unsuccessful
     """
-    categories = ForumCategory.get_all()
+    categories = ForumCategory.get_all(
+        include_dead=include_dead and flask.g.user.has_permission('modify_forums'))
     return flask.jsonify(categories)
 
 

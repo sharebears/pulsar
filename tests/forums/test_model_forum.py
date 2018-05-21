@@ -33,6 +33,7 @@ def test_forum_get_from_category(app, authed_client):
 
 def test_forum_get_from_category_cached(app, authed_client):
     cache.set(Forum.__cache_key_of_category__.format(id=2), ['1', '5'], timeout=60)
+    Forum.from_id(1); Forum.from_id(5)  # noqa: cache these
     forums = Forum.from_category(2)
     assert len(forums) == 2
 
@@ -52,7 +53,7 @@ def test_new_forum(app, authed_client):
     assert forum.name == 'NewForum'
     assert forum.description is None
     assert forum.position == 100
-    assert Forum.from_cache(forum.cache_key).id == forum.id == 6
+    assert Forum.from_cache(forum.cache_key).id == forum.id == 7
 
 
 @pytest.mark.parametrize(

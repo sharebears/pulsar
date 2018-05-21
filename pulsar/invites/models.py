@@ -9,12 +9,14 @@ from sqlalchemy.dialects.postgresql import INET
 from pulsar import cache, db
 from pulsar.mixin import ModelMixin
 from pulsar.users.models import User
+from pulsar.utils import cached_property
 
 
 class Invite(db.Model, ModelMixin):
     __tablename__: str = 'invites'
     __cache_key__: str = 'invites_{id}'
     __cache_key_of_user__: str = 'invites_user_{user_id}'
+    __deletion_attr__ = 'expired'
 
     __serialize_self__: tuple = (
         'id',
@@ -85,11 +87,11 @@ class Invite(db.Model, ModelMixin):
             order=cls.time_sent.desc(),  # type: ignore
             include_dead=include_dead or used)
 
-    @property
+    @cached_property
     def invitee(self) -> User:
         return User.from_id(self.invitee_id)
 
-    @property
+    @cached_property
     def inviter(self) -> User:
         return User.from_id(self.inviter_id)
 

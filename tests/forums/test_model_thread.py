@@ -36,7 +36,8 @@ def test_thread_get_from_forum(app, authed_client):
 
 
 def test_thread_get_from_forum_cached(app, authed_client):
-    cache.set(ForumThread.__cache_key_of_forum__.format(id=2), ['1', '5'], timeout=60)
+    cache.set(ForumThread.__cache_key_of_forum__.format(id=2), [1, 5], timeout=60)
+    ForumThread.from_id(1); ForumThread.from_id(5)  # noqa cache these
     threads = ForumThread.from_forum(2, page=1, limit=50)
     assert len(threads) == 2
 

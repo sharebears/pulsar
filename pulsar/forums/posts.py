@@ -52,8 +52,10 @@ def view_post(id: int) -> flask.Response:
     :statuscode 403: User does not have permission to view post
     :statuscode 404: Post does not exist
     """
-    post = ForumPost.from_id(id, _404=True)
-    return flask.jsonify(post)
+    return flask.jsonify(ForumPost.from_id(
+        id,
+        _404=True,
+        include_dead=flask.g.user.has_permission('modify_forum_posts_advanced')))
 
 
 CREATE_FORUM_POST_SCHEMA = Schema({

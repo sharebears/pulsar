@@ -1,8 +1,9 @@
+import mock
 import pytest
 from sqlalchemy.exc import IntegrityError
 
 from conftest import add_permissions, check_dictionary, check_json_response
-from pulsar import APIException, NewJSONEncoder, db
+from pulsar import APIException, NewJSONEncoder, cache, db
 from pulsar.users.models import User
 
 
@@ -67,6 +68,18 @@ def test_user_permissions_property(app, client):
     db.session.execute("""INSERT INTO users_permissions VALUES (1, 'six', 'f')""")
     user = User.from_id(1)
     assert set(user.permissions) == {'four', 'one', 'two', 'five', 'three'}
+
+
+def test_user_permissions_property_cached(app, client, monkeypatch):
+    """Permissions property should properly handle differences in userclasses and custom perms."""
+    add_permissions(app, 'one', 'three', 'four')
+    user = User.from_id(1)
+    assert set(user.permissions) == {'four', 'one', 'three'}
+    assert cache.has(user.__cache_key_permissions__.format(id=user.id))
+    del user
+    with mock.patch('pulsar.users.models.User.user_class_model', None):
+        user = User.from_id(1)
+        assert set(user.permissions) == {'four', 'one', 'three'}
 
 
 @pytest.mark.parametrize('uid, result', [(1, True), (2, False)])

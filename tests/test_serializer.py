@@ -42,6 +42,14 @@ def test_serialization_of_datetimes():
     assert posix_time == NewJSONEncoder().default(time)
 
 
+def test_serialization_of_sets():
+    """Make sure that datetimes are properly serialized in the new encoder."""
+    set_ = {1, 2, 3, 4, 5}
+    list_ = NewJSONEncoder().default(set_)
+    assert isinstance(list_, list)
+    assert all(s in list_ for s in set_)
+
+
 def test_serialization_of_datetimes_in_models(app, authed_client):
     """Make sure that the JSON Encoder can convert datetimes in models."""
     time = datetime.utcnow().replace(tzinfo=pytz.utc)

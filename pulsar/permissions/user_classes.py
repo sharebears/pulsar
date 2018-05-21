@@ -7,7 +7,7 @@ from voluptuous import All, Length, Optional, Schema
 from pulsar import APIException, db
 from pulsar.models import SecondaryClass, UserClass
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import bool_get, PermissionsDict, permissions_list
+from pulsar.validators import PermissionsDict, bool_get, permissions_list
 
 from . import bp
 

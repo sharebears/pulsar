@@ -11,6 +11,7 @@ from sqlalchemy.sql.elements import BinaryExpression
 from pulsar import cache, db
 from pulsar.mixin import ModelMixin
 from pulsar.models import User
+from pulsar.utils import cached_property
 
 app = flask.current_app
 
@@ -19,6 +20,7 @@ class ForumCategory(db.Model, ModelMixin):
     __tablename__ = 'forums_categories'
     __cache_key__ = 'forums_categories_{id}'
     __cache_key_all__ = 'forums_categories_all'
+    __deletion_attr__ = 'deleted'
 
     __serialize__ = (
         'id',
@@ -35,7 +37,7 @@ class ForumCategory(db.Model, ModelMixin):
 
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
-    description: str = db.Column(db.Text)
+    description: Optional[str] = db.Column(db.Text)
     position: int = db.Column(db.SmallInteger, nullable=False, server_default='0')
     deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
 
@@ -57,7 +59,7 @@ class ForumCategory(db.Model, ModelMixin):
             description=description,
             position=position)
 
-    @property
+    @cached_property
     def forums(self) -> List['Forum']:
         return Forum.from_category(self.id)
 
@@ -68,6 +70,7 @@ class Forum(db.Model, ModelMixin):
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
     __cache_key_thread_count__ = 'forums_{id}_thread_count'
     __cache_key_of_category__ = 'forums_forums_of_categories_{id}'
+    __deletion_attr__ = 'deleted'
 
     __serialize__ = (
         'id',
@@ -91,10 +94,10 @@ class Forum(db.Model, ModelMixin):
 
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
-    description: str = db.Column(db.Text)
+    description: Optional[str] = db.Column(db.Text)
     category_id: int = db.Column(
         db.Integer, db.ForeignKey('forums_categories.id'), nullable=False, index=True)
-    position: bool = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    position: int = db.Column(db.SmallInteger, nullable=False, server_default='0')
     deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
@@ -118,25 +121,25 @@ class Forum(db.Model, ModelMixin):
             description=description,
             position=position)
 
-    @property
+    @cached_property
     def category(self) -> 'ForumCategory':
         return ForumCategory.from_id(self.category_id)
 
-    @property
+    @cached_property
     def thread_count(self) -> 'int':
         return self.count(
             key=self.__cache_key_thread_count__.format(id=self.id),
             attribute=ForumThread.id,
             filter=and_(ForumThread.forum_id == self.id, ForumThread.deleted == 'f'))
 
-    @property
+    @cached_property
     def last_updated_thread(self) -> Optional['ForumThread']:
         return ForumThread.from_query(
             key=self.__cache_key_last_updated__.format(id=self.id),
             filter=(ForumThread.forum_id == self.id),
             order=ForumThread.last_updated.desc())
 
-    @property
+    @cached_property
     def threads(self) -> List['ForumThread']:
         if hasattr(self, '_threads'):
             return self._threads
@@ -155,6 +158,7 @@ class ForumThread(db.Model, ModelMixin):
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
+    __deletion_attr__ = 'deleted'
 
     __serialize__ = (
         'id',
@@ -202,7 +206,8 @@ class ForumThread(db.Model, ModelMixin):
             filter=cls.forum_id == forum_id,
             order=cls.last_updated.desc(),
             page=page,
-            limit=limit)
+            limit=limit,
+            include_dead=include_dead)
 
     @classmethod
     def new(cls,
@@ -224,35 +229,35 @@ class ForumThread(db.Model, ModelMixin):
             filter=cls.forum_id == id,
             order=cls.last_updated.desc())
 
-    @property
+    @cached_property
     def last_post(self) -> Optional['ForumPost']:
         return ForumPost.from_query(
             key=self.__cache_key_last_post__.format(id=self.id),
             filter=and_(
                 ForumPost.thread_id == self.id,
                 ForumPost.deleted == 'f'),
-            order=ForumPost.id.desc())
+            order=ForumPost.id.desc())  # type: ignore
 
     @hybrid_property
     def last_updated(cls) -> BinaryExpression:
         return select([func.max(ForumPost.time)]).where(ForumPost.thread_id == cls.id).as_scalar()
 
-    @property
+    @cached_property
     def forum(self) -> 'Forum':
         return Forum.from_id(self.forum_id)
 
-    @property
+    @cached_property
     def poster(self) -> User:
         return User.from_id(self.poster_id)
 
-    @property
+    @cached_property
     def post_count(self) -> int:
         return self.count(
             key=self.__cache_key_post_count__.format(id=self.id),
             attribute=ForumPost.id,
             filter=and_(ForumPost.thread_id == self.id, ForumPost.deleted == 'f',))
 
-    @property
+    @cached_property
     def posts(self) -> List['ForumPost']:
         if hasattr(self, '_posts'):
             return self._posts
@@ -269,6 +274,7 @@ class ForumPost(db.Model, ModelMixin):
     __tablename__ = 'forums_posts'
     __cache_key__ = 'forums_posts_{id}'
     __cache_key_of_thread__ = 'forums_posts_threads_{id}'
+    __deletion_attr__ = 'deleted'
 
     __serialize__ = (
         'id',
@@ -287,15 +293,16 @@ class ForumPost(db.Model, ModelMixin):
 
     __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
-    id = db.Column(db.Integer, primary_key=True)
-    thread_id = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), nullable=False)
-    poster_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    contents = db.Column(db.Text, nullable=False)
-    time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    sticky = db.Column(db.Boolean, nullable=False, server_default='f')
-    edited_user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    edited_time = db.Column(db.DateTime(timezone=True))
-    deleted = db.Column(db.Boolean, nullable=False, server_default='f')
+    id: int = db.Column(db.Integer, primary_key=True)
+    thread_id: int = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), nullable=False)
+    poster_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    contents: str = db.Column(db.Text, nullable=False)
+    time: datetime = db.Column(
+        db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    sticky: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    edited_user_id: Optional[int] = db.Column(db.Integer, db.ForeignKey('users.id'))
+    edited_time: Optional[datetime] = db.Column(db.DateTime(timezone=True))
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
 
     @classmethod
     def from_thread(cls,
@@ -306,9 +313,10 @@ class ForumPost(db.Model, ModelMixin):
         return cls.get_many(
             key=cls.__cache_key_of_thread__.format(id=thread_id),
             filter=cls.thread_id == thread_id,
-            order=cls.id.asc(),
+            order=cls.id.asc(),  # type: ignore
             page=page,
-            limit=limit)
+            limit=limit,
+            include_dead=include_dead)
 
     @classmethod
     def get_ids_from_thread(cls, id):
@@ -330,15 +338,15 @@ class ForumPost(db.Model, ModelMixin):
             poster_id=poster_id,
             contents=contents)
 
-    @property
+    @cached_property
     def poster(self) -> User:
         return User.from_id(self.poster_id)
 
-    @property
+    @cached_property
     def editor(self) -> Optional[User]:
         return User.from_id(self.edited_user_id)
 
-    @property
+    @cached_property
     def edit_history(self) -> List['ForumPostEditHistory']:
         return ForumPostEditHistory.from_post(self.id)
 
@@ -356,18 +364,19 @@ class ForumPostEditHistory(db.Model, ModelMixin):
 
     __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
-    id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey('forums_posts.id'), nullable=False)
-    editor_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    contents = db.Column(db.Text, nullable=False)
-    time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
+    id: int = db.Column(db.Integer, primary_key=True)
+    post_id: int = db.Column(db.Integer, db.ForeignKey('forums_posts.id'), nullable=False)
+    editor_id: int = db.Column(db.Integer, db.ForeignKey('users.id'))
+    contents: str = db.Column(db.Text, nullable=False)
+    time: datetime = db.Column(
+        db.DateTime(timezone=True), nullable=False, server_default=func.now())
 
     @classmethod
     def from_post(cls, post_id: int) -> List['ForumPostEditHistory']:
         return cls.get_many(
             key=cls.__cache_key_of_post__.format(id=post_id),
             filter=cls.post_id == post_id,
-            order=cls.id.desc())
+            order=cls.id.desc())  # type: ignore
 
     @classmethod
     def new(cls,
@@ -384,6 +393,6 @@ class ForumPostEditHistory(db.Model, ModelMixin):
             contents=contents,
             time=time)
 
-    @property
+    @cached_property
     def editor(self) -> User:
         return User.from_id(self.editor_id)

@@ -30,7 +30,7 @@ def test_category_get_all(app, authed_client):
 
 
 def test_category_get_all_cached(app, authed_client):
-    cache.set(ForumCategory.__cache_key_all__, ['1', '2', '3'], timeout=60)
+    cache.set(ForumCategory.__cache_key_all__, [1, 2, 3], timeout=60)
     categories = ForumCategory.get_all()
     assert len(categories) == 2
 

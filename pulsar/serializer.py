@@ -26,6 +26,8 @@ class NewJSONEncoder(JSONEncoder):
         from pulsar.mixin import ModelMixin
         if isinstance(obj, datetime):
             return int(obj.timestamp())
+        if isinstance(obj, set):
+            return list(obj)
         elif isinstance(obj, ModelMixin):
             return self._to_dict(obj)
         else:

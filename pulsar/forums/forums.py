@@ -64,7 +64,10 @@ def view_forum(id: int,
     :statuscode 403: User does not have permission to view forum
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(id, _404=True)
+    forum = Forum.from_id(
+        id,
+        _404=True,
+        include_dead=flask.g.user.has_permission('modify_forums'))
     forum.set_threads(
         page,
         limit,
@@ -200,6 +203,7 @@ def modify_forum(id: int,
     if category_id and ForumCategory.is_valid(category_id, error=True):
         forum.category_id = category_id
     if description is not False:
+        assert not isinstance(description, bool)
         forum.description = description
     if position is not None:
         forum.position = position

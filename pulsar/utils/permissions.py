@@ -1,11 +1,13 @@
 from functools import wraps
-from typing import Callable, List, Optional
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 import flask
 from werkzeug import find_modules, import_string
 
 from pulsar import _401Exception, _403Exception, _404Exception
-from pulsar.models import User
+
+if TYPE_CHECKING:
+    from pulsar.users.models import User as User_  # noqa
 
 app = flask.current_app
 
@@ -61,7 +63,7 @@ def get_all_permissions() -> List[str]:
 
 
 def choose_user(user_id: Optional[int],
-                permission: str) -> 'User':
+                permission: str) -> 'User_':
     """
     Takes a user_id and a permission. If the user_id is specified, the user with that
     user id is fetched and then returned if the requesting user has the given permission.
@@ -75,6 +77,7 @@ def choose_user(user_id: Optional[int],
     :raises _403Exception: The requesting user does not have the specified permission
     :raises _404Exception: The requested user does not exist
     """
+    from pulsar.users.models import User
     if user_id and flask.g.user.id != user_id:
         if flask.g.user.has_permission(permission):
             user = User.from_id(user_id)

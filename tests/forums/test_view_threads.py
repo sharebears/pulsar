@@ -16,6 +16,36 @@ def test_view_thread(app, authed_client):
     assert response.status_code == 200
 
 
+def test_view_thread_deleted(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
+    response = authed_client.get('/forums/threads/2')
+    check_json_response(response, {
+        'id': 2,
+        })
+    assert response.status_code == 200
+
+
+def test_view_thread_deleted_failure(app, authed_client):
+    add_permissions(app, 'view_forums')
+    response = authed_client.get('/forums/threads/2')
+    check_json_response(response, 'ForumThread 2 does not exist.')
+    assert response.status_code == 404
+
+
+def test_view_thread_posts_include_dead(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forum_posts_advanced')
+    response = authed_client.get('/forums/threads/5', query_string={'include_dead': True})
+    assert response.status_code == 200
+    assert len(response.get_json()['response']['posts']) == 2
+
+
+def test_view_thread_posts_include_dead_no_perm(app, authed_client):
+    add_permissions(app, 'view_forums')
+    response = authed_client.get('/forums/threads/5', query_string={'include_dead': True})
+    assert response.status_code == 200
+    assert len(response.get_json()['response']['posts']) == 1
+
+
 def test_add_thread(app, authed_client):
     add_permissions(app, 'view_forums', 'create_forum_threads')
     response = authed_client.post('/forums/threads', data=json.dumps({

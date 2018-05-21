@@ -17,6 +17,37 @@ def test_view_forum(app, authed_client):
     assert response.status_code == 200
 
 
+def test_view_forum_deleted(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forums')
+    response = authed_client.get('/forums/3')
+    check_json_response(response, {
+        'id': 3,
+        'name': 'Bitsu Fan Club',
+        })
+    assert response.status_code == 200
+
+
+def test_view_forum_deleted_fail(app, authed_client):
+    add_permissions(app, 'view_forums')
+    response = authed_client.get('/forums/3')
+    check_json_response(response, 'Forum 3 does not exist.')
+    assert response.status_code == 404
+
+
+def test_view_forum_threads_include_dead(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
+    response = authed_client.get('/forums/1', query_string={'include_dead': True})
+    assert response.status_code == 200
+    assert len(response.get_json()['response']['threads']) == 2
+
+
+def test_view_forum_threads_include_dead_no_perm(app, authed_client):
+    add_permissions(app, 'view_forums')
+    response = authed_client.get('/forums/1', query_string={'include_dead': True})
+    assert response.status_code == 200
+    assert len(response.get_json()['response']['threads']) == 1
+
+
 def test_add_forum(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forums')
     response = authed_client.post('/forums', data=json.dumps({
@@ -26,7 +57,7 @@ def test_add_forum(app, authed_client):
         'position': 99,
         }))
     check_json_response(response, {
-        'id': 6,
+        'id': 7,
         'name': 'New Forum',
         'description': 'New Description',
         })

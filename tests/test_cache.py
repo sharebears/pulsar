@@ -108,6 +108,40 @@ def test_cache_has_key(app, client):
     assert not cache.has('test_2')
 
 
+def test_cache_get_dict(app, client):
+    cache.set('key_1', 1)
+    cache.set('key_2', 2)
+    data = cache.get_dict(*('keY_1', 'kEy_2', 'key_3'))
+    assert data == {
+        'key_1': 1,
+        'key_2': 2,
+        'key_3': None,
+    }
+    with app.test_request_context('/test'):
+        assert 'key_1' in flask.g.cache_keys['get_dict']
+        assert 'key_2' in flask.g.cache_keys['get_dict']
+        assert 'key_3' in flask.g.cache_keys['get_dict']
+
+
+def test_cache_set_many(app, client):
+    cache.set_many({'key_1': 1, 'Key_2': 3})
+    assert cache.get('key_1') == 1
+    assert cache.get('key_2') == 3
+    with app.test_request_context('/test'):
+        assert 'key_1' in flask.g.cache_keys['set_many']
+        assert 'key_2' in flask.g.cache_keys['set_many']
+
+
+def test_cache_delete_many(app, client):
+    cache.set('key_1', 1)
+    cache.set('key_2', 2)
+    assert cache.delete_many('key_1', 'key_2', 'key_3')
+    with app.test_request_context('/test'):
+        assert 'key_1' in flask.g.cache_keys['delete_many']
+        assert 'key_2' in flask.g.cache_keys['delete_many']
+        assert 'key_3' in flask.g.cache_keys['delete_many']
+
+
 def test_cache_sets_globals(app, authed_client):
     """Modifying cache values should add them to the global variables."""
     @app.route('/test_route')
