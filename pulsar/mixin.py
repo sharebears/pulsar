@@ -312,7 +312,9 @@ class ModelMixin(Model):
         :raises APIException: If error param is passed and ID is not valid
         """
         obj = cls.from_id(id)
-        valid = obj is not None and not getattr(obj, cls.__deletion_attr__, False)
+        valid = (obj is not None and (
+            cls.__deletion_attr__ is None
+            or not getattr(obj, cls.__deletion_attr__, False)))
         if error and not valid:
             raise APIException(f'Invalid {cls.__name__} ID.')
         return valid
