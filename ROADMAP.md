@@ -5,12 +5,12 @@
 - [x] Permissioned Serialization
 - [x] Boilerplate Refactors & Typing (Issues)
 - [x] Forums
-- [ ] Forum Documentation
-- [ ] Profile the PUT queries and solve if need be
+- [ ] Hypothesis property testing for the schemas and validators
 - [ ] Thread permissions
 - [ ] Thread subscriptions
 - [ ] Thread last read post
 - [ ] Polls
+- [ ] Forum Documentation
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
@@ -51,10 +51,7 @@
 - [x] Schema Completion
 - [x] Registration
 - [x] Invites
-- [ ] User Stats model
-- [ ] User Settings -- Define constant defaults and save user overrides of those defaults,
-      creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2)
-      user settings
+- [ ] User Stats model - [ ] User Settings -- Define constant defaults and save user overrides of those defaults, creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2) user settings
 - [ ] Email blacklist
 - [ ] Invite Trees
 
@@ -71,7 +68,8 @@
 - [x] Thread View
 - [x] Posts View
 - [ ] Documentation
-- [ ] Forum/Thread Permissions
+- [ ] Forum/Thread Permissions -- For forums/threads subclass ModelMixin and override get_many
+      to use a for loop with the pagination until it's complete ForumMixin stored in forums/models.py
 - [ ] Subscriptions
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis
@@ -89,14 +87,15 @@
 
 ## Wiki
 - [ ] Wiki Pages
-- [ ] ID 1 Default Landing Page
-- [ ] Permissions System
+- [ ] /wiki returns page ID 1
+- [ ] Permissions System - how to Elasticsearch permissions?
 - [ ] Wiki Versioning (save history, let frontends do diffing)
 - [ ] Wiki Log
 
 ## Site Log
-- [ ] Table for log categories
 - [ ] Site log table, insert-deletion function helpers
+- [ ] Store some metadata fields - torrent ID, group ID, user ID use where applicable
+- [ ] string for log type? is that normalized?
 
 ## Staff Tools
 - [ ] Basic Site-Level Administration Tools
@@ -147,9 +146,11 @@
 - [ ] View
 - [ ] Search
 
-## Collages - Collection of Groups
-- [ ] Pagination
+## Collections - Collages / Bookmarks / Labels
+Create a generic collections base similar to torrents --> categories
+wet_torrents from a table with certain criteria
 - [ ] View
+- [ ] Create/Add/Edit/Delete
 - [ ] Search
 
 ## Popular (Top 10)
