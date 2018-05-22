@@ -88,7 +88,8 @@ class ModelMixin(Model):
 
     @classmethod
     def from_id(cls: Type[CLS],
-                id: Union[str, int, None], *,
+                id: Union[str, int, None],
+                *,
                 include_dead: bool = False,
                 _404: bool = False,
                 asrt: str = None) -> Optional[CLS]:  # FIXME
@@ -129,7 +130,8 @@ class ModelMixin(Model):
 
     @classmethod
     def from_cache(cls: Type[CLS],
-                   key: str, *,
+                   key: str,
+                   *,
                    query: BaseQuery = None) -> Optional[CLS]:
         """
         Check the cache for an instance of this model and attempt to load
@@ -238,23 +240,27 @@ class ModelMixin(Model):
         :return:                    A list of objects matching the query specifications
         """
         ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
+        if reverse:
+            ids.reverse()
         if page is not None:
             ids = ids[(page - 1) * limit:page * limit]
 
-        cached_models, uncached_ids = [], []
+        models, uncached_ids = {}, []
         cached_dict = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
         for i, (k, v) in zip(ids, cached_dict.items()):
             if v:
-                cached_models.append(cls._create_obj_from_cache(v))
+                models[i] = cls._create_obj_from_cache(v)
             else:
                 uncached_ids.append(i)
 
         qry_models = cls._construct_query(cls.query, filter).filter(cls.id.in_(uncached_ids)).all()
         cache.cache_models(qry_models)
-        models = cached_models + qry_models
+        for model in qry_models:
+            models[model.id] = model
         if required_properties:
-            return [m for m in models if all(getattr(m, rp) for rp in required_properties)]
-        return models
+            return [m for m in models.values() if all(
+                getattr(m, rp, False) for rp in required_properties)]
+        return list(models.values())
 
     @classmethod
     def get_ids_of_many(cls,
@@ -278,7 +284,7 @@ class ModelMixin(Model):
                                     called verbatim in a ``db.session.execute`` if the cache
                                     key does not exist
 
-        :return: A list of IDs
+        :return:                    A list of IDs
         """
         key = f'{key}_incl_dead' if include_dead else key
         ids = cache.get(key)
@@ -306,29 +312,13 @@ class ModelMixin(Model):
         :raises APIException: If error param is passed and ID is not valid
         """
         obj = cls.from_id(id)
-        valid = obj is not None and not (
-            getattr(obj, 'deleted', False)
-            or getattr(obj, 'revoked', False)
-            or getattr(obj, 'expired', False))
+        valid = obj is not None and not getattr(obj, cls.__deletion_attr__, False)
         if error and not valid:
             raise APIException(f'Invalid {cls.__name__} ID.')
         return valid
 
     @classmethod
-    def _valid_data(cls, data: dict) -> bool:
-        """
-        Validate the data returned from the cache by ensuring that it is a dictionary
-        and that the returned values match the columns of the object.
-
-        :param data: The stored object data from the cache to validate
-        :return:     Whether or not the data is valid
-        """
-        return (bool(data)
-                and isinstance(data, dict)
-                and set(data.keys()) == set(cls.__table__.columns.keys()))
-
-    @classmethod
-    def create_cache_key(cls, **kwargs) -> str:
+    def create_cache_key(cls, **kwargs: Union[int, str]) -> str:
         """
         Populate the ``__cache_key__`` class attribute with the kwargs.
 
@@ -367,7 +357,8 @@ class ModelMixin(Model):
             cache.delete_many(*(cls.create_cache_key(id=id) for id in ids))
 
     @classmethod
-    def _new(cls: Type[CLS], **kwargs: Any) -> CLS:
+    def _new(cls: Type[CLS],
+             **kwargs: Any) -> CLS:
         """
         Create a new instance of the model, add it to the instance, cache it, and return it.
 
@@ -379,7 +370,21 @@ class ModelMixin(Model):
         cache.cache_model(model)
         return model
 
-    def count(self, *,
+    @classmethod
+    def _valid_data(cls, data: dict) -> bool:
+        """
+        Validate the data returned from the cache by ensuring that it is a dictionary
+        and that the returned values match the columns of the object.
+
+        :param data: The stored object data from the cache to validate
+        :return:     Whether or not the data is valid
+        """
+        return (bool(data)
+                and isinstance(data, dict)
+                and set(data.keys()) == set(cls.__table__.columns.keys()))
+
+    def count(self,
+              *,
               key: str,
               attribute: InstrumentedAttribute,
               filter: BinaryExpression = None) -> int:

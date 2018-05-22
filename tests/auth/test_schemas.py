@@ -8,6 +8,10 @@ from pulsar.auth.sessions import (CREATE_SESSION_SCHEMA, EXPIRE_SESSION_SCHEMA,
                                   VIEW_ALL_SESSIONS_SCHEMA)
 
 
+def test_view_all_api_keys_schema_():
+    pass
+
+
 @pytest.mark.parametrize(
     'input_', ['1', 'true', False])
 def test_view_all_api_keys_schema(input_):

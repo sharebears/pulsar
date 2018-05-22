@@ -78,6 +78,8 @@ class NewJSONEncoder(JSONEncoder):
         def iter_handler(value):
             if isinstance(value, dict):
                 return self._objects_to_dict(value)
+            elif isinstance(value, set):
+                return list(value)
             elif isinstance(value, list):
                 new_value = []
                 for i, v2 in enumerate(value):

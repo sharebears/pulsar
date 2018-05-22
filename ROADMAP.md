@@ -5,13 +5,13 @@
 - [x] Permissioned Serialization
 - [x] Boilerplate Refactors & Typing (Issues)
 - [x] Forums
-- [ ] Rules
 - [ ] Forum Documentation
 - [ ] Profile the PUT queries and solve if need be
 - [ ] Thread permissions
 - [ ] Thread subscriptions
 - [ ] Thread last read post
 - [ ] Polls
+- [ ] Rules
 - [ ] News Posts
 - [ ] Index
 
@@ -24,8 +24,14 @@
       Turn filling out empty lists into a two-step process instead of an overly large one.
 - [x] Refactor the mess that I made in get_many making it efficient
 - [ ] Hypothesis property testing for the schemas and validators
-- [ ] Fix PUT endpoints to be one change total, not one change per model (test SQLA profiling first)
-- [ ] Built in debug logging?
+
+## Hypothesis
+- [ ] Refactor schemas to move default values to function parameters
+- [ ] Auth
+- [ ] Invites
+- [ ] Permissions
+- [ ] Users
+- [ ] Forums
  
 
 # TODO
@@ -35,8 +41,9 @@
 - [x] Permissioned Serialization
 - [ ] Docker/Vagrant environment
 - [ ] More inventive and free serialization - Define objects for serialization and have them
-      use custom kwarg arguments which are passed down to all nested models?
-      Mixins! The sauce of life!
+      use custom kwarg arguments which are passed down to all nested models? General function
+      to process kwarg arguments and compare to defined serializations? Remove default
+      ignores and adds in nested serialization and define those manually in each serialization.
      
 
 ## Users
@@ -69,6 +76,7 @@
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis
 - [ ] Polls
+- [ ] Individual category view with 8 threads per sub-forum
 
 ## Rules
 - [ ] Dictionary files to be imported - enable reload of import without restarting site
@@ -78,7 +86,6 @@
 - [ ] News Posts
 - [ ] Blog Posts
 - [ ] Site Stats
-- [ ] (delay) Featured Torrents (Leave Vanity House as RED fork implementation)
 
 ## Wiki
 - [ ] Wiki Pages
@@ -96,6 +103,13 @@
 - [ ] Separate Repository * .gitignored
 - [ ] Cache Key Clearing
 
+## Scheduler
+- [ ] Schedule tasks with Celery
+- [ ] schedule.py per-module
+- [ ] Session expiry
+- [ ] Invite expiry
+- [ ] Inactivity disables
+
 ## Tors
 - [ ] Global Base Torrent
 - [ ] Global Base Group
@@ -105,6 +119,11 @@
 - [ ] Get Group/Torrent
 - [ ] Search Group/Torrent
 - [ ] Delete
+
+## Search
+- [ ] Elasticsearch
+- [ ] Search 1+ Categories Simultaneously
+- [ ] Torrents, Collections, Requests, Forums, Wiki
 
 ## Music
 - [ ] Implement Torrent
@@ -133,21 +152,10 @@
 - [ ] View
 - [ ] Search
 
-## Search
-- [ ] Search 1+ Categories Simultaneously
-- [ ] Torrents, Collections, Requests, Forums, Wiki
-
 ## Popular (Top 10)
 - [ ] Generated via scheduler
 - [ ] Preserve history
 - [ ] Filtering
-
-## Scheduler
-- [ ] Schedule tasks with Celery
-- [ ] schedule.py per-module
-- [ ] Session expiry
-- [ ] Invite expiry
-- [ ] Inactivity disables
 
 ## RSS Feeds
 - [ ] Later
@@ -163,6 +171,10 @@
 
 ## Production Debugging Features
 - [ ] Hook into existing libs?
+- [ ] Query information in production?
+
+## Index
+- [ ] Featured Torrent Groups
 
 ## Type Checking
 - [ ] Stub files for used interfaces of libraries?
