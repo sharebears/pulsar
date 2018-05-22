@@ -5,7 +5,7 @@ import flask
 from flask.json import JSONEncoder
 
 if TYPE_CHECKING:
-    from pulsar.mixin import ModelMixin as ModelMixin_ # noqa
+    from pulsar.mixins import ModelMixin as ModelMixin_ # noqa
 
 
 class NewJSONEncoder(JSONEncoder):
@@ -23,7 +23,7 @@ class NewJSONEncoder(JSONEncoder):
         now serialize all timestamps to POSIX time and turn ModelMixins
         into dictionaries.
         """
-        from pulsar.mixin import ModelMixin
+        from pulsar.mixins import ModelMixin
         if isinstance(obj, datetime):
             return int(obj.timestamp())
         if isinstance(obj, set):
@@ -73,7 +73,7 @@ class NewJSONEncoder(JSONEncoder):
         :param dict_: The dictionary to iterate over and make JSON serializable
         :return:      A JSON serializable dict of all the elements inside the original dict
         """
-        from pulsar.mixin import ModelMixin
+        from pulsar.mixins import ModelMixin
 
         def iter_handler(value):
             if isinstance(value, dict):

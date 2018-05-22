@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy
 from typing import TYPE_CHECKING, List, Optional
 
 import flask
@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import APIException, cache, db
-from pulsar.mixin import ModelMixin
+from pulsar.mixins import ModelMixin
 from pulsar.permissions import BASIC_PERMISSIONS
 from pulsar.utils import cached_property
 
@@ -22,6 +22,7 @@ class User(db.Model, ModelMixin):
     __tablename__ = 'users'
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_{id}_permissions'
+    __cache_key_forum_permissions__ = 'users_{id}_forums_permissions'
 
     __serialize__ = (
         'id',
@@ -122,23 +123,47 @@ class User(db.Model, ModelMixin):
     def permissions(self) -> List[str]:
         if self.locked:  # Locked accounts have restricted permissions.
             return app.config['LOCKED_ACCOUNT_PERMISSIONS']
+        from pulsar.permissions.models import UserPermission
+        return self._get_permissions(
+            key=self.__cache_key_permissions__.format(id=self.id),
+            model=UserPermission,
+            attr='permissions')
 
-        from pulsar.permissions.models import SecondaryClass, UserPermission
-        cache_key = self.__cache_key_permissions__.format(id=self.id)
-        permissions = cache.get(cache_key)
+    @cached_property
+    def forum_permissions(self) -> List[str]:
+        from pulsar.forums.models import ForumPermission
+        return self._get_permissions(
+            key=self.__cache_key_forum_permissions__.format(id=self.id),
+            model=ForumPermission,
+            attr='forum_permissions')
+
+    def _get_permissions(self,
+                         key: str,
+                         model: db.Model,
+                         attr: str) -> List[str]:
+        """
+        A general function to get the permissions of a user from a permission
+        model and attributes of their user classes.
+
+        :param key:   The cache key to cache the permissions under
+        :param model: The model to query custom permissions from
+        :param attr:  The attribute of the userclasses that should be queried
+        """
+        from pulsar.permissions.models import SecondaryClass
+        permissions = cache.get(key)
         if not permissions:
-            permissions = deepcopy(self.user_class_model.permissions)
+            permissions = copy(getattr(self.user_class_model, attr))
             for class_ in SecondaryClass.from_user(self.id):
-                permissions += class_.permissions
+                permissions += getattr(class_, attr)
             permissions = set(permissions)  # De-dupe
 
-            for perm, granted in UserPermission.from_user(self.id).items():
+            for perm, granted in model.from_user(self.id).items():
                 if not granted and perm in permissions:
                     permissions.remove(perm)
                 if granted and perm not in permissions:
                     permissions.add(perm)
 
-            cache.set(cache_key, permissions)
+            cache.set(key, permissions)
         return permissions
 
     @cached_property
@@ -150,7 +175,7 @@ class User(db.Model, ModelMixin):
         from pulsar.permissions.models import UserClass
         return UserClass.from_id(self.user_class_id)
 
-    def belongs_to_user(self):
+    def belongs_to_user(self) -> bool:
         """Check whether or not the requesting user matches this user."""
         return flask.g.user == self
 

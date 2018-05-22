@@ -5,25 +5,21 @@
 - [x] Permissioned Serialization
 - [x] Boilerplate Refactors & Typing (Issues)
 - [x] Forums
-- [ ] Hypothesis property testing for the schemas and validators
 - [ ] Thread permissions
 - [ ] Thread subscriptions
 - [ ] Thread last read post
 - [ ] Polls
 - [ ] Forum Documentation
+- [ ] Hypothesis property testing for validators
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
 
 # Issues
-- [x] Add serialization case for sets--turn into list, then use sets instead of deduping lists
-- [x] Users can't view deleted threads even if they have the perm, can only view embedded in forum
-- [x] Cache function properties
-- [x] Figure out a way to jiggle mypy
-- [x] Utilize redis get_many in ModelMixin.get_many and then query for all missing ones at once.
-      Turn filling out empty lists into a two-step process instead of an overly large one.
-- [x] Refactor the mess that I made in get_many making it efficient
-- [ ] Hypothesis property testing for the schemas and validators
+- [ ] Hypothesis property testing for validators
+- [x] Permissions mixin
+- [ ] UserClass mixin - dedupe code
+- [ ] Combine invites/permissions into users?
 
 ## Hypothesis
 - [ ] Refactor schemas to move default values to function parameters
@@ -39,11 +35,11 @@
 ## General
 - [x] Form validation with voluptuous
 - [x] Permissioned Serialization
-- [ ] Docker/Vagrant environment
 - [ ] More inventive and free serialization - Define objects for serialization and have them
       use custom kwarg arguments which are passed down to all nested models? General function
       to process kwarg arguments and compare to defined serializations? Remove default
       ignores and adds in nested serialization and define those manually in each serialization.
+- [ ] Docker/Vagrant environment
      
 
 ## Users
@@ -67,7 +63,6 @@
 - [x] Forum View
 - [x] Thread View
 - [x] Posts View
-- [ ] Documentation
 - [ ] Forum/Thread Permissions -- For forums/threads subclass ModelMixin and override get_many
       to use a for loop with the pagination until it's complete ForumMixin stored in forums/models.py
 - [ ] Subscriptions
@@ -75,6 +70,7 @@
 - [ ] Max post lengths on a per-user basis
 - [ ] Polls
 - [ ] Individual category view with 8 threads per sub-forum
+- [ ] Documentation
 
 ## Rules
 - [ ] Dictionary files to be imported - enable reload of import without restarting site

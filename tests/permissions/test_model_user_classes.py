@@ -72,23 +72,5 @@ def test_serialize_user_class_detailed(app, authed_client):
         'id': 1,
         'name': 'User',
         'permissions': ['modify_permissions', 'edit_settings'],
-        }, strict=True)
-
-
-def test_serialize_secondary_class_permless(app, client):
-    user_class = SecondaryClass.from_id(1)
-    data = NewJSONEncoder()._to_dict(user_class)
-    check_dictionary(data, {
-        'id': 1,
-        'name': 'FLS',
-        }, strict=True)
-
-
-def test_serialize_secondary_class_detailed(app, authed_client):
-    user_class = SecondaryClass.from_id(1)
-    data = NewJSONEncoder()._to_dict(user_class)
-    check_dictionary(data, {
-        'id': 1,
-        'name': 'FLS',
-        'permissions': ['send_invites'],
+        'forum_permissions': None,
         }, strict=True)

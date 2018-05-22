@@ -65,7 +65,8 @@ def test_user_permissions_property(app, client):
     add_permissions(app, 'one', 'three', 'four')
     db.session.execute("""UPDATE user_classes SET permissions = '{"one", "five", "six", "four"}'""")
     db.session.execute("""UPDATE secondary_classes SET permissions = '{"five", "two", "one"}'""")
-    db.session.execute("""INSERT INTO users_permissions VALUES (1, 'six', 'f')""")
+    db.session.execute("""INSERT INTO users_permissions (user_id, permission, granted)
+                       VALUES (1, 'six', 'f')""")
     user = User.from_id(1)
     assert set(user.permissions) == {'four', 'one', 'two', 'five', 'three'}
 

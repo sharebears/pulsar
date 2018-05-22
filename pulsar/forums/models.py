@@ -9,7 +9,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import cache, db
-from pulsar.mixin import ModelMixin
+from pulsar.mixins import ModelMixin, PermissionMixin
 from pulsar.models import User
 from pulsar.utils import cached_property
 
@@ -396,3 +396,9 @@ class ForumPostEditHistory(db.Model, ModelMixin):
     @cached_property
     def editor(self) -> User:
         return User.from_id(self.editor_id)
+
+
+class ForumPermission(db.Model, PermissionMixin):
+    __tablename__ = 'forums_permissions'
+    __permission_forum__ = 'forums_forums_permission_{id}'
+    __permission_thread__ = 'forums_threads_permission_{id}'

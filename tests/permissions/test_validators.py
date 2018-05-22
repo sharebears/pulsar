@@ -111,7 +111,8 @@ def test_PermissionsDict_failure(permissions, expected):
     ])
 def test_check_permission(app, authed_client, permissions, expected):
     add_permissions(app, 'sample_one', 'sample_two', 'shared_perm')
-    db.engine.execute("INSERT INTO users_permissions VALUES (1, 'sample_three', 'f')")
+    db.engine.execute("""INSERT INTO users_permissions (user_id, permission, granted)
+                      VALUES (1, 'sample_three', 'f')""")
     db.engine.execute("""UPDATE user_classes
                       SET permissions = '{"sample_four", "sample_five", "shared_perm"}'
                       WHERE name = 'User'""")
@@ -133,7 +134,8 @@ def test_check_permission(app, authed_client, permissions, expected):
     ])
 def test_check_permission_error(app, authed_client, permissions, error):
     add_permissions(app, 'sample_one', 'sample_two')
-    db.engine.execute("INSERT INTO users_permissions VALUES (1, 'sample_three', 'f')")
+    db.engine.execute("""INSERT INTO users_permissions (user_id, permission, granted)
+                      VALUES (1, 'sample_three', 'f')""")
     db.engine.execute("""UPDATE user_classes
                       SET permissions = '{"sample_four", "sample_five"}'
                       WHERE name = 'User'""")

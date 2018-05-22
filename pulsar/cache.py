@@ -6,7 +6,7 @@ from redis import Redis  # noqa
 from werkzeug.contrib.cache import RedisCache
 
 if TYPE_CHECKING:
-    from pulsar.mixin import ModelMixin  # noqa
+    from pulsar.mixins import ModelMixin  # noqa
 
 
 class Cache(RedisCache):

@@ -1,14 +1,14 @@
 import pytest
 
 import pulsar.models as models
-from pulsar.mixin import ModelMixin
+from pulsar.mixins import ModelMixin
 from pulsar.models import UserClass
 from pulsar.utils.permissions import get_all_permissions
 
 
 def test_default_cache_key_property(app, client, monkeypatch):
     """The cache key property should correctly format the key."""
-    monkeypatch.setattr('pulsar.mixin.ModelMixin.__cache_key__', 'basemodel_{id}')
+    monkeypatch.setattr('pulsar.mixins.ModelMixin.__cache_key__', 'basemodel_{id}')
     mixin = ModelMixin()
     setattr(mixin, 'id', 2)
     assert 'basemodel_2' == mixin.cache_key
@@ -18,7 +18,7 @@ def test_default_cache_key_property(app, client, monkeypatch):
 def test_default_cache_key_property_failure(app, client, monkeypatch, patch):
     """The cache key property should raise a NameError when cache key generation is invalid."""
     if patch:
-        monkeypatch.setattr('pulsar.mixin.ModelMixin.__cache_key__', 'basemodel_{invalidkwarg}')
+        monkeypatch.setattr('pulsar.mixins.ModelMixin.__cache_key__', 'basemodel_{invalidkwarg}')
     mixin = ModelMixin()
     setattr(mixin, 'id', 2)
     with pytest.raises(NameError):
@@ -52,7 +52,7 @@ def test_belongs_to_user_fails_unauthed(app, client):
     'data, result', [
         ('not-a-dict', False),
         ({'id': 1, 'name': 'User'}, False),
-        ({'id': 1, 'name': 'User', 'permissions': ['a-perm']}, True),
+        ({'id': 1, 'name': 'User', 'permissions': ['a-perm'], 'forum_permissions': None}, True),
         ({'id': 1, 'name': 'User', 'permissions': ['a-perm'], 'has_users': False}, False),
      ])
 def test_is_valid_data(app, client, data, result):

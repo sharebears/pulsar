@@ -1,87 +1,20 @@
-from typing import Dict, List, Optional
+from typing import List
 
-from sqlalchemy import and_, func
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import select
 
-from pulsar import APIException, db
-from pulsar.mixin import ModelMixin
+from pulsar import db
+from pulsar.mixins import ClassMixin, PermissionMixin
 from pulsar.users.models import User
 
 
-class UserPermission(db.Model):
+class UserPermission(db.Model, PermissionMixin):
     __tablename__ = 'users_permissions'
 
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    permission: str = db.Column(db.String(32), primary_key=True)
-    granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
 
-    @classmethod
-    def from_attrs(cls,
-                   user_id: int,
-                   permission: str) -> Optional['UserPermission']:
-        return cls.query.filter(and_(
-            (cls.user_id == user_id),
-            (cls.permission == permission),
-            )).one_or_none()
-
-    @classmethod
-    def from_user(cls, user_id: int) -> Dict[str, bool]:
-        """
-        Gets a dict of all custom permissions assigned to a user.
-
-        :param user_id: User ID the permissions belong to
-
-        :return:        Dict of permissions with the name as the
-                        key and the ``granted`` value as the value
-        """
-        permissions = cls.query.filter(cls.user_id == user_id).all()
-        response = {}
-        for perm in permissions:
-            response[perm.permission] = perm.granted
-        return response
-
-
-class UserClass(db.Model, ModelMixin):
+class UserClass(db.Model, ClassMixin):
     __tablename__ = 'user_classes'
     __cache_key__ = 'user_class_{id}'
     __cache_key_all__ = 'user_classes'
-
-    __serialize__ = (
-        'id',
-        'name', )
-    __serialize_detailed__ = (
-        'permissions', )
-
-    __permission_detailed__ = 'modify_user_classes'
-
-    id: int = db.Column(db.Integer, primary_key=True)
-    name: str = db.Column(db.String(24), nullable=False)
-    permissions: List[str] = db.Column(ARRAY(db.String(32)), nullable=False, server_default='{}')
-
-    @declared_attr
-    def __table_args__(cls):
-        return db.Index('ix_user_classes_name', func.lower(cls.name), unique=True),
-
-    @classmethod
-    def from_name(cls, name: str) -> Optional['UserClass']:
-        name = name.lower()
-        return cls.query.filter(func.lower(cls.name) == name).first()
-
-    @classmethod
-    def new(cls,
-            name: str,
-            permissions: List[str] = None) -> 'UserClass':
-        if cls.from_name(name):
-            raise APIException(f'Another UserClass already has the name {name}.')
-        return super()._new(
-            name=name,
-            permissions=permissions or [])
-
-    @classmethod
-    def get_all(cls) -> List['UserClass']:
-        return cls.get_many(key=cls.__cache_key_all__)
 
     def has_users(self) -> bool:
         return bool(User.query.filter(User.user_class_id == self.id).limit(1).first())
@@ -94,32 +27,11 @@ secondary_class_assoc_table = db.Table(
               nullable=False))
 
 
-class SecondaryClass(db.Model, ModelMixin):
+class SecondaryClass(db.Model, ClassMixin):
     __tablename__ = 'secondary_classes'
     __cache_key__ = 'secondary_class_{id}'
     __cache_key_all__ = 'secondary_classes'
     __cache_key_of_user__ = 'secondary_classes_users_{id}'
-
-    __serialize__ = (
-        'id',
-        'name', )
-    __serialize_detailed__ = (
-        'permissions', )
-
-    __permission_detailed__ = 'modify_user_classes'
-
-    id: int = db.Column(db.Integer, primary_key=True)
-    name: str = db.Column(db.String(24), nullable=False)
-    permissions: List[str] = db.Column(ARRAY(db.String(32)), nullable=False, server_default='{}')
-
-    @declared_attr
-    def __table_args__(cls):
-        return db.Index('ix_secondary_classes_name', func.lower(cls.name), unique=True),
-
-    @classmethod
-    def from_name(cls, name: str) -> Optional['SecondaryClass']:
-        name = name.lower()
-        return cls.query.filter(func.lower(cls.name) == name).first()
 
     @classmethod
     def from_user(cls, user_id: int) -> List['SecondaryClass']:
@@ -128,20 +40,6 @@ class SecondaryClass(db.Model, ModelMixin):
             expr_override=select(
                 [secondary_class_assoc_table.c.secondary_class_id]).where(
                     secondary_class_assoc_table.c.user_id == user_id))
-
-    @classmethod
-    def new(cls,
-            name: str,
-            permissions: List[str] = None) -> 'SecondaryClass':
-        if cls.from_name(name):
-            raise APIException(f'Another SecondaryClass already has the name {name}.')
-        return super()._new(
-            name=name,
-            permissions=permissions or [])
-
-    @classmethod
-    def get_all(cls) -> List['SecondaryClass']:
-        return cls.get_many(key=cls.__cache_key_all__)
 
     def has_users(self) -> bool:
         return bool(db.session.execute(

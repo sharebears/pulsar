@@ -5,7 +5,8 @@ from pulsar.models import User, UserPermission
 
 def test_permissions_from_user(app, client):
     add_permissions(app, 'perm_one', 'perm_two')
-    db.engine.execute("INSERT INTO users_permissions VALUES (1, 'perm_three', 'f')")
+    db.engine.execute("""INSERT INTO users_permissions (user_id, permission, granted)
+                      VALUES (1, 'perm_three', 'f')""")
     perms = UserPermission.from_user(1)
     assert perms == {
         'perm_one': True,

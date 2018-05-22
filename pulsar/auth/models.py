@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, INET
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import cache, db
-from pulsar.mixin import ModelMixin
+from pulsar.mixins import ModelMixin
 from pulsar.users.models import User
 
 
@@ -132,7 +132,7 @@ class APIKey(db.Model, ModelMixin):
     ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent: str = db.Column(db.Text)
     revoked: bool = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
-    permissions: str = db.Column(ARRAY(db.String(32)))
+    permissions: str = db.Column(ARRAY(db.String(36)))
 
     @classmethod
     def new(cls,

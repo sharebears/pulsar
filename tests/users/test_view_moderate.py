@@ -60,7 +60,8 @@ def test_moderate_user_not_found(app, authed_client):
 
 def test_change_permissions(app, authed_client):
     add_permissions(app, 'change_password', 'list_user_classes', 'modify_user_classes')
-    db.engine.execute("INSERT INTO users_permissions VALUES (1, 'send_invites', 'f')")
+    db.engine.execute("""INSERT INTO users_permissions (user_id, permission, granted)
+                      VALUES (1, 'send_invites', 'f')""")
     db.engine.execute(
         """UPDATE user_classes
         SET permissions = '{"moderate_users", "moderate_users_advanced", "view_invites"}'""")

@@ -2,14 +2,18 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import flask
 from flask_sqlalchemy import BaseQuery, Model
-from sqlalchemy import func
+from sqlalchemy import and_, func
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import APIException, _404Exception, cache, db
 
-CLS = TypeVar('CLS', bound='ModelMixin')
+MDL = TypeVar('MDL', bound='ModelMixin')
+PMS = TypeVar('PMS', bound='PermissionMixin')
+UC = TypeVar('UC', bound='ClassMixin')
 
 
 class ModelMixin(Model):
@@ -87,12 +91,12 @@ class ModelMixin(Model):
         return self.create_cache_key(id=self.id)
 
     @classmethod
-    def from_id(cls: Type[CLS],
+    def from_id(cls: Type[MDL],
                 id: Union[str, int, None],
                 *,
                 include_dead: bool = False,
                 _404: bool = False,
-                asrt: str = None) -> Optional[CLS]:  # FIXME
+                asrt: str = None) -> Optional[MDL]:  # FIXME
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -117,22 +121,20 @@ class ModelMixin(Model):
                 key=cls.create_cache_key(id=id),
                 query=cls.query.filter(cls.id == id))
             if (model is not None
+                    and model.can_access(asrt)
                     and (include_dead
                          or not cls.__deletion_attr__
-                         or not getattr(model, cls.__deletion_attr__, False))
-                    and (not asrt
-                         or model.belongs_to_user()
-                         or flask.g.user.has_permission(asrt))):
+                         or not getattr(model, cls.__deletion_attr__, False))):
                 return model
         if _404:
             raise _404Exception(f'{cls.__name__} {id}')
         return None
 
     @classmethod
-    def from_cache(cls: Type[CLS],
+    def from_cache(cls: Type[MDL],
                    key: str,
                    *,
-                   query: BaseQuery = None) -> Optional[CLS]:
+                   query: BaseQuery = None) -> Optional[MDL]:
         """
         Check the cache for an instance of this model and attempt to load
         its attributes from the cache instead of from the database.
@@ -158,8 +160,8 @@ class ModelMixin(Model):
         return None
 
     @classmethod
-    def _create_obj_from_cache(cls: Type[CLS],
-                               data: Any) -> Optional[CLS]:
+    def _create_obj_from_cache(cls: Type[MDL],
+                               data: Any) -> Optional[MDL]:
         if cls._valid_data(data):
             obj = cls(**data)
             make_transient_to_detached(obj)
@@ -168,11 +170,11 @@ class ModelMixin(Model):
         return None
 
     @classmethod
-    def from_query(cls: Type[CLS],
+    def from_query(cls: Type[MDL],
                    *,
                    key: str,
                    filter: BinaryExpression = None,
-                   order: BinaryExpression = None) -> Optional[CLS]:
+                   order: BinaryExpression = None) -> Optional[MDL]:
         """
         Function to get a single object from the database (via ``limit(1)``, ``query.first()``).
         Getting the object via the provided cache key will be attempted first; if
@@ -201,7 +203,7 @@ class ModelMixin(Model):
         return cls.from_id(cls_id)
 
     @classmethod
-    def get_many(cls: Type[CLS],
+    def get_many(cls: Type[MDL],
                  *,
                  key: str,
                  filter: BinaryExpression = None,
@@ -211,7 +213,7 @@ class ModelMixin(Model):
                  page: int = None,
                  limit: int = 50,
                  reverse: bool = False,
-                 expr_override: BinaryExpression = None) -> List[CLS]:
+                 expr_override: BinaryExpression = None) -> List[MDL]:
         """
         An abstracted function to get a list of IDs from the cache with a cache key,
         and query for those IDs if the key does not exist. If the query needs to be ran,
@@ -359,8 +361,8 @@ class ModelMixin(Model):
             cache.delete_many(*(cls.create_cache_key(id=id) for id in ids))
 
     @classmethod
-    def _new(cls: Type[CLS],
-             **kwargs: Any) -> CLS:
+    def _new(cls: Type[MDL],
+             **kwargs: Any) -> MDL:
         """
         Create a new instance of the model, add it to the instance, cache it, and return it.
 
@@ -408,6 +410,20 @@ class ModelMixin(Model):
             cache.set(key, count)
         return count
 
+    def can_access(self, permission: str = None) -> bool:
+        """
+        Determines whether or not the requesting user can access the following resource.
+        If no permission is specified, any user can access the resource. If a permission is
+        specified, then access is restricted to users with that permission or "ownership"
+        of this object. Ownership is determined with the ``belongs_to_user`` method.
+
+        :param permission: Permission to restrict access to
+        :return:           Whether or not the requesting user can access the resource
+        """
+        return (permission is None
+                or self.belongs_to_user()
+                or flask.g.user.has_permission(permission))
+
     def belongs_to_user(self) -> bool:
         """
         Function to determine whether or not the model "belongs" to a user by comparing
@@ -417,9 +433,7 @@ class ModelMixin(Model):
 
         :return: Whether or not the object "belongs" to the user
         """
-        return (flask.g.user
-                and flask.g.user.id
-                and flask.g.user.id == getattr(self, 'user_id', None))
+        return flask.g.user is not None and flask.g.user.id == getattr(self, 'user_id', False)
 
     def del_property_cache(self, prop: str) -> None:
         """
@@ -451,3 +465,83 @@ class ModelMixin(Model):
         if order is not None:
             query = query.order_by(order)
         return query
+
+
+class PermissionMixin:
+    @declared_attr
+    def user_id(cls) -> int:
+        return db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    permission: str = db.Column(db.String(36), primary_key=True)
+    granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
+
+    @classmethod
+    def from_attrs(cls: Type[PMS],
+                   user_id: int,
+                   permission: str) -> Optional[PMS]:
+        """
+        Get a permission from its user_id and permission name attributes.
+
+        :param user_id:    The user ID the permission belongs to
+        :param permission: The name of the permission
+
+        :return:           The permission object
+        """
+        return cls.query.filter(and_(  # type: ignore
+            (cls.user_id == user_id),
+            (cls.permission == permission),
+            )).first()
+
+    @classmethod
+    def from_user(cls, user_id: int) -> Dict[str, bool]:
+        """
+        Gets a dict of all custom permissions assigned to a user.
+
+        :param user_id: User ID the permissions belong to
+
+        :return:        Dict of permissions with the name as the
+                        key and the ``granted`` value as the value
+        """
+        return {p.permission: p.granted for p in cls.query.filter(  # type: ignore
+                    cls.user_id == user_id).all()}
+
+
+class ClassMixin(ModelMixin):
+    __serialize__ = (
+        'id',
+        'name', )
+    __serialize_detailed__ = (
+        'permissions',
+        'forum_permissions', )
+
+    __permission_detailed__ = 'modify_user_classes'
+
+    id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(24), nullable=False)
+    permissions: List[str] = db.Column(ARRAY(db.String(36)), nullable=False, server_default='{}')
+    forum_permissions: List[str] = db.Column(  # noqa TODO: Why E701?
+        ARRAY(db.String(36)), nullable=False, server_default='{}')
+
+    @declared_attr
+    def __table_args__(cls):
+        return db.Index(f'ix_{cls.__tablename__}_name', func.lower(cls.name), unique=True),
+
+    @classmethod
+    def from_name(cls: Type[UC],
+                  name: str) -> Optional[UC]:
+        name = name.lower()
+        return cls.query.filter(func.lower(cls.name) == name).first()
+
+    @classmethod
+    def new(cls: Type[UC],
+            name: str,
+            permissions: List[str] = None) -> UC:
+        if cls.from_name(name):
+            raise APIException(f'Another {cls.__name__} already has the name {name}.')
+        return super()._new(
+            name=name,
+            permissions=permissions or [])
+
+    @classmethod
+    def get_all(cls: Type[UC]) -> List[UC]:
+        return cls.get_many(key=cls.__cache_key_all__)

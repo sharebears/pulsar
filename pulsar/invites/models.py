@@ -7,7 +7,7 @@ from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import INET
 
 from pulsar import cache, db
-from pulsar.mixin import ModelMixin
+from pulsar.mixins import ModelMixin
 from pulsar.users.models import User
 from pulsar.utils import cached_property
 
