@@ -2,9 +2,7 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 import flask
 from flask_sqlalchemy import BaseQuery, Model
-from sqlalchemy import and_, func
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import func
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
@@ -12,8 +10,6 @@ from sqlalchemy.sql.elements import BinaryExpression
 from pulsar import APIException, _404Exception, cache, db
 
 MDL = TypeVar('MDL', bound='ModelMixin')
-PMS = TypeVar('PMS', bound='PermissionMixin')
-UC = TypeVar('UC', bound='ClassMixin')
 
 
 class ModelMixin(Model):
@@ -465,83 +461,3 @@ class ModelMixin(Model):
         if order is not None:
             query = query.order_by(order)
         return query
-
-
-class PermissionMixin:
-    @declared_attr
-    def user_id(cls) -> int:
-        return db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-
-    permission: str = db.Column(db.String(36), primary_key=True)
-    granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
-
-    @classmethod
-    def from_attrs(cls: Type[PMS],
-                   user_id: int,
-                   permission: str) -> Optional[PMS]:
-        """
-        Get a permission from its user_id and permission name attributes.
-
-        :param user_id:    The user ID the permission belongs to
-        :param permission: The name of the permission
-
-        :return:           The permission object
-        """
-        return cls.query.filter(and_(  # type: ignore
-            (cls.user_id == user_id),
-            (cls.permission == permission),
-            )).first()
-
-    @classmethod
-    def from_user(cls, user_id: int) -> Dict[str, bool]:
-        """
-        Gets a dict of all custom permissions assigned to a user.
-
-        :param user_id: User ID the permissions belong to
-
-        :return:        Dict of permissions with the name as the
-                        key and the ``granted`` value as the value
-        """
-        return {p.permission: p.granted for p in cls.query.filter(  # type: ignore
-                    cls.user_id == user_id).all()}
-
-
-class ClassMixin(ModelMixin):
-    __serialize__ = (
-        'id',
-        'name', )
-    __serialize_detailed__ = (
-        'permissions',
-        'forum_permissions', )
-
-    __permission_detailed__ = 'modify_user_classes'
-
-    id: int = db.Column(db.Integer, primary_key=True)
-    name: str = db.Column(db.String(24), nullable=False)
-    permissions: List[str] = db.Column(ARRAY(db.String(36)), nullable=False, server_default='{}')
-    forum_permissions: List[str] = db.Column(  # noqa TODO: Why E701?
-        ARRAY(db.String(36)), nullable=False, server_default='{}')
-
-    @declared_attr
-    def __table_args__(cls):
-        return db.Index(f'ix_{cls.__tablename__}_name', func.lower(cls.name), unique=True),
-
-    @classmethod
-    def from_name(cls: Type[UC],
-                  name: str) -> Optional[UC]:
-        name = name.lower()
-        return cls.query.filter(func.lower(cls.name) == name).first()
-
-    @classmethod
-    def new(cls: Type[UC],
-            name: str,
-            permissions: List[str] = None) -> UC:
-        if cls.from_name(name):
-            raise APIException(f'Another {cls.__name__} already has the name {name}.')
-        return super()._new(
-            name=name,
-            permissions=permissions or [])
-
-    @classmethod
-    def get_all(cls: Type[UC]) -> List[UC]:
-        return cls.get_many(key=cls.__cache_key_all__)

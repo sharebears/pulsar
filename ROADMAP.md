@@ -17,8 +17,6 @@
 
 # Issues
 - [ ] Hypothesis property testing for validators
-- [x] Permissions mixin
-- [ ] UserClass mixin - dedupe code
 - [ ] Combine invites/permissions into users?
 
 ## Hypothesis
@@ -47,7 +45,8 @@
 - [x] Schema Completion
 - [x] Registration
 - [x] Invites
-- [ ] User Stats model - [ ] User Settings -- Define constant defaults and save user overrides of those defaults, creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2) user settings
+- [ ] User Stats model
+- [ ] User Settings -- Define constant defaults and save user overrides of those defaults, creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2) user settings
 - [ ] Email blacklist
 - [ ] Invite Trees
 
