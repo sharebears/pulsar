@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import add_permissions, check_dictionary
-from pulsar import APIException, NewJSONEncoder, cache
+from pulsar import APIException, NewJSONEncoder, cache, db, _403Exception
 from pulsar.models import Forum
 
 
@@ -20,6 +20,12 @@ def test_forum_cache(app, authed_client):
     assert cache.ttl(forum.cache_key) < 61
 
 
+def test_forum_no_permission(app, authed_client):
+    db.session.execute("DELETE FROM forums_permissions")
+    with pytest.raises(_403Exception):
+        Forum.from_id(1)
+
+
 def test_forum_get_from_category(app, authed_client):
     forums = Forum.from_category(1)
     assert len([f for f in forums if f]) == 2
@@ -29,6 +35,12 @@ def test_forum_get_from_category(app, authed_client):
             break
     else:
         raise AssertionError('A real forum not called')
+
+
+def test_forum_get_from_category_no_permissions(app, authed_client):
+    db.session.execute("DELETE FROM forums_permissions")
+    forums = Forum.from_category(1)
+    assert len(forums) == 0
 
 
 def test_forum_get_from_category_cached(app, authed_client):

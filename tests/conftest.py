@@ -154,6 +154,7 @@ def unpopulate_db():
     db.engine.execute("DELETE FROM forums")
     db.engine.execute("DELETE FROM forums_categories")
     db.engine.execute("DELETE FROM secondary_class_assoc")
+    db.engine.execute("DELETE FROM forums_permissions")
     db.engine.execute("DELETE FROM users_permissions")
     db.engine.execute("DELETE FROM sessions")
     db.engine.execute("DELETE FROM api_keys")

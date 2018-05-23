@@ -37,9 +37,16 @@ class User(db.Model, ModelMixin):
         'locked',
         'invites',
         'sessions',
-        'api_keys')
-    __serialize_detailed__ = __serialize_self__ + (
+        'api_keys',
+        'permissions', )
+    __serialize_detailed__ = (
+        'email',
+        'locked',
+        'invites',
+        'sessions',
+        'api_keys',
         'basic_permissions',
+        'forum_permissions',
         'inviter', )
     __serialize_very_detailed__ = (
         'permissions', )
@@ -48,6 +55,7 @@ class User(db.Model, ModelMixin):
         'sessions',
         'api_keys',
         'basic_permissions',
+        'forum_permissions',
         'permissions', )
 
     __permission_detailed__ = 'moderate_users'

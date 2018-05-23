@@ -1,7 +1,13 @@
 import pytest
 
-from conftest import add_permissions
 from pulsar import db
+
+
+def add_forum_permissions(app_, *permissions):
+    "Insert forum permissions into database for user_id 1 (authed user)."
+    db.engine.execute(
+        """INSERT INTO forums_permissions (user_id, permission) VALUES
+        (1, '""" + "'), (1, '".join(permissions) + "')")
 
 
 @pytest.fixture(autouse=True)
@@ -51,7 +57,7 @@ def populate_db(app, client):
         (4, 3, 2, 'New typo', NOW() - INTERVAL '1 HOUR'),
         (2, 2, 1, 'Why the shit is Pizzelle in GPG?', NOW() - INTERVAL '12 HOURS')""")
     db.engine.execute("ALTER SEQUENCE forums_posts_edit_history_id_seq RESTART WITH 5")
-    add_permissions(
+    add_forum_permissions(
         app,
         'forums_forums_permission_1',
         'forums_forums_permission_2',

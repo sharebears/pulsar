@@ -155,11 +155,12 @@ def test_serialize_self(app, authed_client):
         'downloaded': 0,
         'invites': 1,
         'sessions': None,
+        'permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['id'] == 'abcdefghij')
-    assert len(data) == 12
+    assert len(data) == 13
 
 
 def test_serialize_detailed(app, authed_client):
@@ -180,11 +181,12 @@ def test_serialize_detailed(app, authed_client):
         'inviter': None,
         'sessions': None,
         'basic_permissions': None,
+        'forum_permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['id'] == 'abcdefghij')
-    assert len(data) == 14
+    assert len(data) == 16
 
 
 def test_serialize_very_detailed(app, authed_client):
@@ -205,13 +207,14 @@ def test_serialize_very_detailed(app, authed_client):
         'inviter': None,
         'sessions': None,
         'basic_permissions': None,
+        'forum_permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['id'] == 'abcdefghij')
     assert 'permissions' in data and set(data['permissions']) == {
         'moderate_users', 'moderate_users_advanced'}
-    assert len(data) == 15
+    assert len(data) == 16
 
 
 def test_serialize_nested(app, authed_client):

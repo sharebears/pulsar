@@ -52,7 +52,7 @@ def test_new_category(app, authed_client):
     assert ForumCategory.from_cache(category.cache_key).id == category.id == 6
 
 
-def test_serialize_no_perms(app, client):
+def test_serialize_no_perms(app, authed_client):
     category = ForumCategory.from_id(1)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {

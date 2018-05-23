@@ -271,8 +271,7 @@ class ModelMixin(Model):
             if required_properties:
                 models = {k: m for k, m in models.items() if all(
                     getattr(m, rp, False) for rp in required_properties)}
-            if asrt:
-                models = {k: m for k, m in models.items() if m.can_access(asrt)}
+            models = {k: m for k, m in models.items() if m.can_access(asrt)}
             if not page or not extra_ids:
                 break
             ids = extra_ids[:abs(limit - len(models))]

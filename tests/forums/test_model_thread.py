@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import add_permissions, check_dictionary
-from pulsar import APIException, NewJSONEncoder, cache
+from pulsar import APIException, NewJSONEncoder, cache, db, _403Exception
 from pulsar.models import ForumPost, ForumThread
 
 
@@ -13,6 +13,12 @@ def test_thread_from_id(app, authed_client):
 
 def test_thread_from_id_deleted(app, authed_client):
     assert ForumThread.from_id(2) is None
+
+
+def test_thread_no_permissions(app, authed_client):
+    db.session.execute("DELETE FROM forums_permissions")
+    with pytest.raises(_403Exception):
+        ForumThread.from_id(1)
 
 
 def test_thread_cache(app, authed_client):
@@ -33,6 +39,12 @@ def test_thread_get_from_forum(app, authed_client):
             break
     else:
         raise AssertionError('A real thread not called')
+
+
+def test_thread_get_from_forum_no_perms(app, authed_client):
+    db.session.execute("DELETE FROM forums_permissions")
+    threads = ForumThread.from_forum(1, page=1, limit=50)
+    assert len(threads) == 0
 
 
 def test_thread_get_from_forum_cached(app, authed_client):
