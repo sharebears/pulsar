@@ -120,7 +120,7 @@ class ModelMixin(Model):
                 key=cls.create_cache_key(id=id),
                 query=cls.query.filter(cls.id == id))
             if (model is not None
-                    and model.can_access(asrt, error=True)
+                    and model.can_access(asrt, error=not _404)
                     and (include_dead
                          or not cls.__deletion_attr__
                          or not getattr(model, cls.__deletion_attr__, False))):

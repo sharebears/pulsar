@@ -6,7 +6,8 @@ import flask
 from voluptuous import Invalid
 
 from pulsar import APIException
-from pulsar.models import User, UserPermission
+from pulsar.users.models import User
+from pulsar.permissions.models import UserPermission
 from pulsar.permissions import BASIC_PERMISSIONS
 from pulsar.utils import get_all_permissions
 
@@ -102,11 +103,14 @@ def ForumPermissionsDict(value):
     """
     if isinstance(value, dict):
         for key, val in value.items():
-            if (not isinstance(key, str)
-                    or isinstance(val, bool)
-                    or FORUM_PERMISSION.match(key)
-                    or THREAD_PERMISSION.match(key)):
-                    break
+            if not (isinstance(key, str)
+                    and isinstance(val, bool)
+                    and FORUM_PERMISSION.match(key)
+                    and THREAD_PERMISSION.match(key)):
+                break
+        else:
+            return value
+    raise Invalid('data must be a dict with valid forums permission keys and boolean values')
 
 
 def check_permissions(user: User,  # noqa: C901 (McCabe complexity)

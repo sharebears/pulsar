@@ -4,7 +4,6 @@ from typing import Optional
 
 import flask
 import pytz
-from sqlalchemy import func
 from voluptuous import Invalid
 
 from pulsar import APIException
@@ -36,8 +35,7 @@ def val_username(username: str) -> str:
                       'underscores, hyphens, and periods; and be 32 characters '
                       'or less')
 
-    lower_name = username.lower()
-    if User.query.filter(func.lower(User.username) == lower_name).one_or_none():
+    if User.from_username(username):
         raise Invalid(f'another user already has the username {username}')
     return username
 

@@ -2,8 +2,8 @@ from typing import Union
 
 from voluptuous import Invalid
 
-from pulsar.permissions.validators import *  # noqa
-from pulsar.users.validators import *  # noqa
+from .permissions import *  # noqa
+from .users import *  # noqa
 
 
 def bool_get(val: Union[bool, str, None]):

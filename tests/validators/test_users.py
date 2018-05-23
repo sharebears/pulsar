@@ -2,7 +2,7 @@ import pytest
 from voluptuous import Invalid
 
 from pulsar import APIException
-from pulsar.users.validators import val_invite_code, val_username
+from pulsar.validators import val_invite_code, val_username
 
 
 @pytest.mark.parametrize(

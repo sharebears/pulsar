@@ -3,7 +3,7 @@ from voluptuous import Any, Optional, Schema
 from voluptuous.validators import Email, Match
 
 from pulsar.models import User
-from pulsar.users.validators import PASSWORD_REGEX, val_invite_code, val_username
+from pulsar.validators import PASSWORD_REGEX, val_invite_code, val_username
 from pulsar.utils import require_permission, validate_data
 
 from . import bp
