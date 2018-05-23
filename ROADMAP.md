@@ -1,27 +1,25 @@
 # Current Path
 
-- [x] Rate Limiting
-- [x] Caching
-- [x] Permissioned Serialization
-- [x] Boilerplate Refactors & Typing (Issues)
 - [x] Forums
 - [ ] Forum Glitter
-- [ ] Hypothesis property testing for validators
+- [ ] Review Documentation
 - [ ] Rules
 - [ ] News Posts
 - [ ] Index
 
 # Issues
-- [ ] Hypothesis property testing for validators
 - [ ] Combine invites into users?
 - [ ] ForumPermission belongs in permissions
+- [ ] CamelCase validator names
+- [ ] Hypothesis property testing for validators?
 
 
 # TODO
 
 ## General
-- [x] Form validation with voluptuous
-- [x] Permissioned Serialization
+- [x] Form validation
+- [x] Response wrapper
+- [x] Model caching
 - [ ] More inventive and free serialization - Define objects for serialization and have them
       use custom kwarg arguments which are passed down to all nested models? General function
       to process kwarg arguments and compare to defined serializations? Remove default
@@ -35,15 +33,21 @@
 - [x] Registration
 - [x] Invites
 - [ ] User Stats model
-- [ ] User Settings -- Define constant defaults and save user overrides of those defaults, creating a user property that caches the overrides and returns a dict of boolean/(0, 1, 2) user settings
+- [ ] User Settings -- Define constant defaults and save user overrides of those defaults,
+      creating a user property that caches the overrides and returns a dict of (0, 1, 2) user settings
 - [ ] Email blacklist
 - [ ] Invite Trees
+
+## Authentication
+- [ ] 
 
 ## Permissions
 - [x] Primary User Classes
 - [x] Individual Permissions
 - [x] Turn every endpoint into a permission?
 - [x] Secondary User Classes
+- [x] Forum Permissions
+- [ ] Wiki Permissions
 
 ## Forums
 - [x] Models
@@ -51,7 +55,6 @@
 - [x] Forum View
 - [x] Thread View
 - [x] Posts View
-- [x] Forum/Thread Permissions
 - [ ] Subscriptions
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis
