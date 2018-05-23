@@ -153,7 +153,7 @@ class ModelMixin(Model):
         else:
             cache.delete(key)
         if query:
-            obj = query.first()
+            obj = query.scalar()
             cache.cache_model(obj)
             return obj
         return None
@@ -192,7 +192,7 @@ class ModelMixin(Model):
         cls_id = cache.get(key) if key else None
         if not cls_id or not isinstance(cls_id, int):
             query = cls._construct_query(cls.query, filter, order)
-            model = query.limit(1).first()
+            model = query.first()
             if model:
                 if not cache.has(model.cache_key):
                     cache.cache_model(model)
@@ -421,7 +421,7 @@ class ModelMixin(Model):
         count = cache.get(key)
         if not isinstance(count, int):
             query = self._construct_query(db.session.query(func.count(attribute)), filter)
-            count = query.first()[0]
+            count = query.scalar()
             cache.set(key, count)
         return count
 

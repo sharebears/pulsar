@@ -31,7 +31,7 @@ class PermissionMixin:
         return cls.query.filter(and_(  # type: ignore
             (cls.user_id == user_id),
             (cls.permission == permission),
-            )).first()
+            )).scalar()
 
     @classmethod
     def from_user(cls, user_id: int) -> Dict[str, bool]:

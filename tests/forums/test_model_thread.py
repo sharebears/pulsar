@@ -2,7 +2,7 @@ import pytest
 
 from conftest import add_permissions, check_dictionary
 from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
-from pulsar.models import ForumPost, ForumThread
+from pulsar.forums.models import ForumPost, ForumThread, ForumLastViewedPost
 
 
 def test_thread_from_id(app, authed_client):
@@ -171,7 +171,8 @@ def test_thread_subscriptions(app, authed_client):
 def test_thread_last_viewed_post_none(app, authed_client):
     thread = ForumThread.from_id(1)
     assert thread.last_viewed_post is None
-    assert not cache.get(ForumThread.__cache_key_last_viewed_post__.format(id=1, user_id=1))
+    assert not cache.get(
+        ForumLastViewedPost.__cache_key__.format(thread_id=1, user_id=1))
 
 
 def test_thread_last_viewed_post(app, authed_client):
@@ -179,19 +180,19 @@ def test_thread_last_viewed_post(app, authed_client):
     last_post = thread.last_viewed_post
     assert last_post.id == 2
     assert last_post.thread_id == 3
-    assert 2 == cache.get(ForumThread.__cache_key_last_viewed_post__.format(
-        id=3, user_id=1))
+    assert 2 == cache.get(ForumLastViewedPost.__cache_key__.format(
+        thread_id=3, user_id=1))
 
 
 def test_thread_last_viewed_post_cached(app, authed_client):
-    cache.set(ForumThread.__cache_key_last_viewed_post__.format(
-        id=1, user_id=1), 2)
+    cache.set(ForumLastViewedPost.__cache_key__.format(
+        thread_id=1, user_id=1), 2)
     thread = ForumThread.from_id(1)
     last_post = thread.last_viewed_post
     assert last_post.id == 2
     assert last_post.thread_id == 3
-    assert 2 == cache.get(ForumThread.__cache_key_last_viewed_post__.format(
-        id=1, user_id=1))
+    assert 2 == cache.get(ForumLastViewedPost.__cache_key__.format(
+        thread_id=1, user_id=1))
 
 
 def test_thread_last_viewed_post_deleted(app, authed_client):
@@ -199,8 +200,8 @@ def test_thread_last_viewed_post_deleted(app, authed_client):
     last_post = thread.last_viewed_post
     assert last_post.id == 3
     assert last_post.thread_id == 5
-    assert 3 == cache.get(ForumThread.__cache_key_last_viewed_post__.format(
-        id=5, user_id=1))
+    assert 3 == cache.get(ForumLastViewedPost.__cache_key__.format(
+        thread_id=5, user_id=1))
 
 
 def test_thread_last_viewed_none_available(app, authed_client):

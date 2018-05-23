@@ -13,7 +13,7 @@ class UserClass(db.Model, ClassMixin):
     __cache_key_all__ = 'user_classes'
 
     def has_users(self) -> bool:
-        return bool(User.query.filter(User.user_class_id == self.id).limit(1).first())
+        return bool(User.query.filter(User.user_class_id == self.id).first())
 
 
 class SecondaryClass(db.Model, ClassMixin):

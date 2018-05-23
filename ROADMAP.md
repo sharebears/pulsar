@@ -10,7 +10,6 @@
 # Issues
 - [ ] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
-- [ ] @setter instead of set_threads() ?
 
 
 # TODO
@@ -58,9 +57,9 @@
 - [x] Last viewed post in a thread
 - [ ] Subscriptions
 - [ ] Polls
-- [ ] Max post lengths on a per-user basis
 - [ ] Individual category view with 8 threads per sub-forum
 - [ ] Documentation
+- [ ] Max post lengths on a per-user basis
 
 ## Rules
 - [ ] Dictionary files to be imported - enable reload of import without restarting site

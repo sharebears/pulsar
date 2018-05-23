@@ -84,7 +84,7 @@ class User(db.Model, ModelMixin):
     @classmethod
     def from_username(cls, username: str) -> 'User':
         username = username.lower()
-        user = cls.query.filter(func.lower(cls.username) == username).first()
+        user = cls.query.filter(func.lower(cls.username) == username).scalar()
         cache.cache_model(user)
         return user
 

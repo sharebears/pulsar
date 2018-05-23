@@ -1,6 +1,6 @@
 from conftest import add_permissions, check_dictionary
 from pulsar import NewJSONEncoder, cache
-from pulsar.models import ForumCategory
+from pulsar.forums.models import ForumCategory
 
 
 def test_category_from_id(app, authed_client):

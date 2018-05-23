@@ -2,7 +2,7 @@ import pytest
 
 from conftest import add_permissions, check_dictionary
 from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
-from pulsar.models import Forum
+from pulsar.forums.models import Forum
 
 
 def test_forum_from_id(app, authed_client):

@@ -184,7 +184,6 @@ class ForumThread(db.Model, ModelMixin):
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
     __cache_key_of_subscribed__ = 'forums_threads_subscriptions_{user_id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
-    __cache_key_last_viewed_post__ = 'forums_threads_{id}_last_viewed_post_{user_id}'
     __permission_key__ = 'forums_threads_permission_{id}'
     __deletion_attr__ = 'deleted'
 
@@ -222,7 +221,7 @@ class ForumThread(db.Model, ModelMixin):
 
     @declared_attr
     def __table_args__(cls):
-        return db.Index('ix_forums_threads_topic', func.lower(cls.topic), unique=True),
+        return db.Index('ix_forums_threads_topic', func.lower(cls.topic)),
 
     @classmethod
     def from_forum(cls,
@@ -285,43 +284,9 @@ class ForumThread(db.Model, ModelMixin):
 
     @cached_property
     def last_viewed_post(self) -> Optional['ForumPost']:
-        # TODO: Clean-up review
-        if not flask.g.user:
-            return None
-        cache_key = self.__cache_key_last_viewed_post__.format(
-            id=self.id, user_id=flask.g.user.id)
-        post_id = cache.get(cache_key)
-        if not post_id:
-            post_id = (db.session.execute(select(
-                [last_viewed_posts_table.c.post_id]).where(and_(
-                    (last_viewed_posts_table.c.user_id == flask.g.user.id),
-                    (last_viewed_posts_table.c.thread_id == self.id),
-                ))).fetchone() or [None])[0]
-            if post_id:  # Initial set of the cache key, will be re-set if the post is invalid.
-                cache.set(cache_key, post_id)
-        if post_id:
-            post = ForumPost.from_id(post_id)
-            if not post:
-                # Get the latest undeleted post prior to the last viewed post.
-                post = ForumPost.from_query(
-                    filter=and_(
-                        (ForumPost.thread_id == self.id),
-                        (ForumPost.id < post_id),
-                        (ForumPost.deleted == 'f')),
-                    order=ForumPost.id.desc())  # type: ignore
-                if post:
-                    self.set_last_viewed_post(post.id)
-                    cache.set(cache_key, post.id)
-            return post
-        return None
-
-    def set_last_viewed_post(self, post_id: int) -> None:
-        db.session.execute(last_viewed_posts_table.update().where(and_(
-            (last_viewed_posts_table.c.user_id == flask.g.user.id),
-            (last_viewed_posts_table.c.thread_id == self.id)
-            )).values(post_id=post_id))
-        cache.delete(self.__cache_key_last_viewed_post__.format(
-            id=self.id, user_id=flask.g.user.id))
+        return ForumLastViewedPost.post_from_attrs(
+            thread_id=self.id,
+            user_id=flask.g.user.id) if flask.g.user else None
 
     @cached_property
     def forum(self) -> 'Forum':
@@ -505,11 +470,35 @@ class ForumPostEditHistory(db.Model, ModelMixin):
 
 
 # Denormalized thread id and post id for efficiency's sake
-last_viewed_posts_table = db.Table(
-    'last_viewed_forum_posts', db.metadata,
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('thread_id', db.Integer, db.ForeignKey('forums_threads.id'), nullable=False),
-    db.Column('post_id', db.Integer, db.ForeignKey('forums_posts.id'), nullable=False))
+class ForumLastViewedPost(db.Model):
+    __tablename__ = 'last_viewed_forum_posts'
+    __cache_key__ = 'last_viewed_forum_post_{thread_id}_{user_id}'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    thread_id = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('forums_posts.id'))
+
+    @classmethod
+    def post_from_attrs(cls, thread_id, user_id):
+        cache_key = cls.__cache_key__.format(thread_id=thread_id, user_id=user_id)
+        post_id = cache.get(cache_key)
+        if not post_id:
+            last_viewed = cls.query.filter(and_(
+                (cls.thread_id == thread_id),
+                (cls.user_id == user_id))).scalar()
+            post_id = last_viewed.post_id if last_viewed else None
+        post = ForumPost.from_id(post_id, include_dead=True)
+        if not post:
+            return None
+        if post.deleted:  # Get the last non-deleted and read post.
+            post = ForumPost.from_query(
+                filter=and_(
+                    (ForumPost.thread_id == thread_id),
+                    (ForumPost.id < post.id),
+                    (ForumPost.deleted == 'f')),
+                order=ForumPost.id.desc())  # type: ignore
+        cache.set(cache_key, post.id if post else None)
+        return post
 
 
 forum_subscriptions_table = db.Table(

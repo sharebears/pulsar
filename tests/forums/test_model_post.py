@@ -2,7 +2,7 @@ import pytest
 
 from conftest import add_permissions, check_dictionary
 from pulsar import APIException, NewJSONEncoder, cache
-from pulsar.models import ForumPost, ForumPostEditHistory
+from pulsar.forums.models import ForumPost, ForumPostEditHistory
 
 
 def test_post_from_id_deleted(app, authed_client):

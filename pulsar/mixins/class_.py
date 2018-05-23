@@ -34,7 +34,7 @@ class ClassMixin(ModelMixin):
     def from_name(cls: Type[UC],
                   name: str) -> Optional[UC]:
         name = name.lower()
-        return cls.query.filter(func.lower(cls.name) == name).first()
+        return cls.query.filter(func.lower(cls.name) == name).scalar()
 
     @classmethod
     def new(cls: Type[UC],
