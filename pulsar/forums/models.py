@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import cache, db, _403Exception
+from pulsar import _403Exception, cache, db
 from pulsar.mixins import ModelMixin, PermissionMixin
 from pulsar.models import User
 from pulsar.utils import cached_property

@@ -112,7 +112,7 @@ def test_forum_threads_with_deleted(app, authed_client):
     assert threads[0].topic != 'New Site Borked'
 
 
-def test_serialize_no_perms(app, client):
+def test_serialize_no_perms(app, authed_client):
     category = Forum.from_id(1)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {

@@ -1,5 +1,6 @@
 import pytest
 
+from conftest import add_permissions
 from pulsar import db
 
 
@@ -50,3 +51,17 @@ def populate_db(app, client):
         (4, 3, 2, 'New typo', NOW() - INTERVAL '1 HOUR'),
         (2, 2, 1, 'Why the shit is Pizzelle in GPG?', NOW() - INTERVAL '12 HOURS')""")
     db.engine.execute("ALTER SEQUENCE forums_posts_edit_history_id_seq RESTART WITH 5")
+    add_permissions(
+        app,
+        'forums_forums_permission_1',
+        'forums_forums_permission_2',
+        'forums_forums_permission_3',
+        'forums_forums_permission_4',
+        'forums_forums_permission_5',
+        'forums_forums_permission_6',
+        'forums_threads_permission_1',
+        'forums_threads_permission_2',
+        'forums_threads_permission_3',
+        'forums_threads_permission_4',
+        'forums_threads_permission_5',
+        )

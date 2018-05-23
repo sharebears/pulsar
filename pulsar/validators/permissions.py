@@ -6,9 +6,9 @@ import flask
 from voluptuous import Invalid
 
 from pulsar import APIException
-from pulsar.users.models import User
-from pulsar.permissions.models import UserPermission
 from pulsar.permissions import BASIC_PERMISSIONS
+from pulsar.permissions.models import UserPermission
+from pulsar.users.models import User
 from pulsar.utils import get_all_permissions
 
 

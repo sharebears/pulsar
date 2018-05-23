@@ -131,7 +131,7 @@ def test_thread_last_post_already_cached(app, authed_client):
     assert cache.ttl(post.cache_key) < 61
 
 
-def test_serialize_no_perms(app, client):
+def test_serialize_no_perms(app, authed_client):
     category = ForumThread.from_id(3)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {

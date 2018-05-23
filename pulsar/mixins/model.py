@@ -7,7 +7,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import APIException, _404Exception, _403Exception, cache, db
+from pulsar import APIException, _403Exception, _404Exception, cache, db
 
 MDL = TypeVar('MDL', bound='ModelMixin')
 

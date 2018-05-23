@@ -7,8 +7,8 @@ from voluptuous.validators import Match
 from pulsar import APIException, cache, db
 from pulsar.models import User, UserPermission
 from pulsar.utils import get_all_permissions, require_permission, validate_data
-from pulsar.validators import (PASSWORD_REGEX, PermissionsDict, check_permissions,
-                               ForumPermissionsDict)
+from pulsar.validators import (PASSWORD_REGEX, ForumPermissionsDict, PermissionsDict,
+                               check_permissions)
 
 from . import bp
 

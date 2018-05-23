@@ -5,7 +5,6 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from pulsar import db
 
-
 PMS = TypeVar('PMS', bound='PermissionMixin')
 
 

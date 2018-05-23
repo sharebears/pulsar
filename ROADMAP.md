@@ -14,7 +14,6 @@
 # Issues
 - [ ] Hypothesis property testing for validators
 - [ ] Combine invites/permissions into users?
-- [ ] Why am I checking session age when I am not setting permanent...?
 
 
 # TODO
@@ -51,8 +50,7 @@
 - [x] Forum View
 - [x] Thread View
 - [x] Posts View
-- [ ] Forum/Thread Permissions -- For forums/threads subclass ModelMixin and override get_many
-      to use a for loop with the pagination until it's complete ForumMixin stored in forums/models.py
+- [ ] Forum/Thread Permissions
 - [ ] Subscriptions
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis
