@@ -13,7 +13,8 @@
 
 # Issues
 - [ ] Hypothesis property testing for validators
-- [ ] Combine invites/permissions into users?
+- [ ] Combine invites into users?
+- [ ] ForumPermission belongs in permissions
 
 
 # TODO
@@ -50,7 +51,7 @@
 - [x] Forum View
 - [x] Thread View
 - [x] Posts View
-- [ ] Forum/Thread Permissions
+- [x] Forum/Thread Permissions
 - [ ] Subscriptions
 - [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
 - [ ] Max post lengths on a per-user basis

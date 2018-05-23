@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import add_permissions, check_dictionary
-from pulsar import APIException, NewJSONEncoder, cache, db, _403Exception
+from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
 from pulsar.models import ForumPost, ForumThread
 
 
@@ -17,6 +17,23 @@ def test_thread_from_id_deleted(app, authed_client):
 
 def test_thread_no_permissions(app, authed_client):
     db.session.execute("DELETE FROM forums_permissions")
+    with pytest.raises(_403Exception):
+        ForumThread.from_id(1)
+
+
+def test_thread_can_access_implicit_forum(app, authed_client):
+    db.session.execute("DELETE FROM forums_permissions")
+    add_permissions(app, 'forums_forums_permission_1')
+    thread = ForumThread.from_id(1)
+    assert thread.id == 1
+    assert thread.topic == 'New Site'
+
+
+def test_thread_can_access_explicit_disallow(app, authed_client):
+    db.session.execute("DELETE FROM forums_permissions")
+    add_permissions(app, 'forums_forums_permission_1')
+    db.session.execute("""INSERT INTO forums_permissions (user_id, permission, granted)
+                       VALUES (1, 'forums_threads_permission_1', 'f')""")
     with pytest.raises(_403Exception):
         ForumThread.from_id(1)
 

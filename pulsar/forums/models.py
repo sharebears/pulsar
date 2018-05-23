@@ -286,12 +286,26 @@ class ForumThread(db.Model, ModelMixin):
                    permission: str = None,
                    error: bool = False) -> bool:
         """Determines whether or not the user has the permissions to access the thread."""
-        access = (flask.g.user is not None and (
-            flask.g.user.has_permission(self.__permission_key__.format(id=self.id))
-            or (permission is not None and flask.g.user.has_permission(permission))))
-        if error and not access:
+        if flask.g.user is None:
+            if error:
+                raise _403Exception
+            return False
+
+        # Explicit thread access
+        permission_key = self.__permission_key__.format(id=self.id)
+        if (flask.g.user.has_permission(permission_key)
+                or (permission is not None and flask.g.user.has_permission(permission))):
+            return True
+
+        # Access to forum gives access to all threads by default.
+        # If user has been ungranted the thread, they cannot view it regardless.
+        ungranted_threads = ForumPermission.get_ungranted_from_user(flask.g.user.id)
+        if permission_key not in ungranted_threads and (
+                flask.g.user.has_permission(Forum.__permission_key__.format(id=self.forum_id))):
+            return True
+        if error:
             raise _403Exception
-        return access
+        return False
 
 
 class ForumPost(db.Model, ModelMixin):

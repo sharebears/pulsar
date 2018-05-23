@@ -5,7 +5,7 @@ import pytz
 from voluptuous import All, Length, Range, Schema
 
 from pulsar import APIException, db
-from pulsar.models import ForumPost, ForumPostEditHistory, ForumThread
+from pulsar.forums.models import ForumPost, ForumPostEditHistory, ForumThread
 from pulsar.utils import assert_user, require_permission, validate_data
 
 from . import bp

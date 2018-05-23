@@ -4,7 +4,9 @@ import pytest
 
 from conftest import add_permissions, check_json_response
 from pulsar import db
-from pulsar.models import User, UserPermission
+from pulsar.forums.models import ForumPermission
+from pulsar.permissions.models import UserPermission
+from pulsar.users.models import User
 
 
 def test_int_overflow(app, authed_client):
@@ -90,9 +92,9 @@ def test_change_permissions(app, authed_client):
 @pytest.mark.parametrize(
     'permissions, expected', [
         ({'send_invites': True, 'view_invites': False},
-         'The following permissions could not be added: send_invites.'),
+         'The following UserPermissions could not be added: send_invites.'),
         ({'change_password': False, 'send_invites': False},
-         'The following permissions could not be deleted: change_password.'),
+         'The following UserPermissions could not be deleted: change_password.'),
         ({'legacy': False, 'view_invites': False},
          'legacy is not a valid permission.'),
     ])
@@ -108,11 +110,59 @@ def test_change_permissions_failure(app, authed_client, permissions, expected):
 
 
 def test_change_permissions_restricted(app, authed_client):
+    """Basic but not advanced permissions privileges."""
     add_permissions(app, 'moderate_users')
     response = authed_client.put('/users/1/moderate', data=json.dumps({
         'permissions': {'moderate_users': False}}))
     check_json_response(
         response, 'Invalid data: moderate_users is not a valid permission (key "permissions")')
+
+
+def test_change_forum_permissions(app, authed_client):
+    add_permissions(app, 'moderate_users')
+    add_permissions(app, 'forums_forums_permission_1', 'forums_threads_permission_1',
+                    table='forums_permissions')
+    db.engine.execute("""UPDATE user_classes
+                      SET forum_permissions = '{"forums_forums_permission_2"}'""")
+
+    response = authed_client.put('/users/1/moderate', data=json.dumps({
+        'forum_permissions': {
+            'forums_forums_permission_2': False,
+            'forums_threads_permission_1': False,
+            'forums_threads_permission_2': True
+        }})).get_json()
+
+    print(response['response'])
+    assert set(response['response']['forum_permissions']) == {
+        'forums_forums_permission_1', 'forums_threads_permission_2'}
+
+    f_perms = ForumPermission.from_user(1)
+    assert f_perms == {
+        'forums_forums_permission_2': False,
+        'forums_forums_permission_1': True,
+        'forums_threads_permission_2': True,
+        }
+
+
+def test_change_forum_permissions_failure(app, authed_client):
+    add_permissions(app, 'moderate_users')
+    add_permissions(app, 'forums_threads_permission_1', table='forums_permissions')
+    db.engine.execute("""UPDATE user_classes
+                      SET forum_permissions = '{"forums_forums_permission_2"}'""")
+
+    response = authed_client.put('/users/1/moderate', data=json.dumps({
+        'forum_permissions': {
+            'forums_forums_permission_2': True,
+            'forums_threads_permission_1': False,
+            'forums_threads_permission_4': False,
+            'forums_threads_permission_2': True
+        }}))
+
+    check_json_response(
+        response, 'The following ForumPermissions could not be added: forums_forums_permission_2. '
+        'The following ForumPermissions could not be deleted: forums_threads_permission_4.')
+    f_perms = ForumPermission.from_user(1)
+    assert f_perms == {'forums_threads_permission_1': True}
 
 
 @pytest.mark.parametrize(

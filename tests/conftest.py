@@ -55,11 +55,11 @@ def check_dictionary(response, expected, list_=False, strict=False):
                 assert key in response and value == response[key]
 
 
-def add_permissions(app_, *permissions):
+def add_permissions(app_, *permissions, table='users_permissions'):
     "Insert permissions into database for user_id 1 (authed user)."
     assert isinstance(app_, flask.Flask)
     db.engine.execute(
-        """INSERT INTO users_permissions (user_id, permission) VALUES
+        f"""INSERT INTO {table} (user_id, permission) VALUES
         (1, '""" + "'), (1, '".join(permissions) + "')")
 
 

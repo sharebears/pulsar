@@ -2,7 +2,7 @@ import flask
 from voluptuous import All, In, Length, Range, Schema
 
 from pulsar import db
-from pulsar.models import Forum, ForumPost, ForumThread
+from pulsar.forums.models import Forum, ForumPost, ForumThread
 from pulsar.utils import require_permission, validate_data
 from pulsar.validators import bool_get
 

@@ -1,15 +1,19 @@
 import re
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple, Type, Union
 
 import flask
 from voluptuous import Invalid
 
 from pulsar import APIException
+from pulsar.forums.models import ForumPermission
 from pulsar.permissions import BASIC_PERMISSIONS
-from pulsar.permissions.models import UserPermission
+from pulsar.permissions.models import SecondaryClass, UserPermission
 from pulsar.users.models import User
 from pulsar.utils import get_all_permissions
+
+FORUM_PERMISSION = re.compile(r'forums_forums_permission_\d+')
+THREAD_PERMISSION = re.compile(r'forums_threads_permission_\d+')
 
 
 def permissions_list(perm_list: List[str]) -> List[str]:
@@ -87,10 +91,6 @@ class PermissionsDict:
         return permissions
 
 
-FORUM_PERMISSION = re.compile(r'forums_forums_permission_\d+')
-THREAD_PERMISSION = re.compile(r'forums_threads_permission_\d+')
-
-
 def ForumPermissionsDict(value):
     """
     Validate that the dictionary contains valid forum permissions as keys and
@@ -103,18 +103,17 @@ def ForumPermissionsDict(value):
     """
     if isinstance(value, dict):
         for key, val in value.items():
-            if not (isinstance(key, str)
-                    and isinstance(val, bool)
-                    and FORUM_PERMISSION.match(key)
-                    and THREAD_PERMISSION.match(key)):
+            if not (isinstance(key, str) and isinstance(val, bool) and (
+                    FORUM_PERMISSION.match(key) or THREAD_PERMISSION.match(key))):
                 break
         else:
             return value
     raise Invalid('data must be a dict with valid forums permission keys and boolean values')
 
 
-def check_permissions(user: User,  # noqa: C901 (McCabe complexity)
-                      permissions: Dict[str, bool]) -> Tuple[List[str], List[str], List[str]]:
+def check_user_permissions(user: User,
+                           permissions: Dict[str, bool]
+                           ) -> Tuple[Set[str], Set[str], Set[str]]:
     """
     Validates that the provided permissions can be applied to the user.
     Permissions can be added if they were previously taken away or aren't
@@ -129,40 +128,82 @@ def check_permissions(user: User,  # noqa: C901 (McCabe complexity)
     :raises APIException: If the user already has a to-add permission or
                           lacks a to-delete permission
     """
-    add: List[str] = []
-    ungrant: List[str] = []
-    delete: List[str] = []
-    errors: Dict[str, List[str]] = defaultdict(list)
+    return check_permissions(
+        user, permissions, UserPermission, 'permissions')
 
-    uc_permissions: List[str] = user.user_class_model.permissions
-    user_permissions: Dict[str, bool] = UserPermission.from_user(user.id)
+
+def check_forum_permissions(user: User,
+                            permissions: Dict[str, bool]
+                            ) -> Tuple[Set[str], Set[str], Set[str]]:
+    """
+    Validates that the provided permissions can be applied to the user.
+    Permissions can be added if they were previously taken away or aren't
+    a permission given to the user class. Permissions can be removed if
+    were specifically given to the user previously, or are included in their userclass.
+
+    :param user:          The recipient of the permission changes
+    :param permissions:   A dictionary of permission changes, with permission name
+                          and boolean (True = Add, False = Remove) key value pairs
+    :return:              A tuple of lists, one of permissions to add, another with
+                          permissions to ungrant, and another of permissions to remove
+    :raises APIException: If the user already has a to-add permission or
+                          lacks a to-delete permission
+    """
+    return check_permissions(
+        user, permissions, ForumPermission, 'forum_permissions')
+
+
+def check_permissions(user: User,  # noqa: C901 (McCabe complexity)
+                      permissions: Dict[str, bool],
+                      perm_model: Union[Type[UserPermission], Type[ForumPermission]],
+                      perm_attr: str
+                      ) -> Tuple[Set[str], Set[str], Set[str]]:
+    """
+    The abstracted meat of the user and forum permission checkers. Takes the input
+    and some model-specific information and returns permission information.
+
+    :param user:        The recipient of the permission changes
+    :param permissions: A dictionary of permission changes, with permission name
+                        and boolean (True = Add, False = Remove) key value pairs
+    :param perm_model:  The permission model to be checked
+    :param perm_attr:   The attribute of the user classes which represents the permissions
+    """
+    add: Set[str] = set()
+    ungrant: Set[str] = set()
+    delete: Set[str] = set()
+    errors: Dict[str, Set[str]] = defaultdict(set)
+
+    uc_permissions: Set[str] = set(getattr(user.user_class_model, perm_attr))
+    for class_ in SecondaryClass.from_user(user.id):
+        uc_permissions |= set(getattr(class_, perm_attr))
+    custom_permissions: Dict[str, bool] = perm_model.from_user(user.id)
 
     for perm, active in permissions.items():
         if active is True:
-            if perm in user_permissions:
-                if user_permissions[perm] is False:
-                    delete.append(perm)
-                    add.append(perm)
+            if perm in custom_permissions:
+                if custom_permissions[perm] is False:
+                    delete.add(perm)
+                    add.add(perm)
             elif perm not in uc_permissions:
-                add.append(perm)
-            if perm not in add + delete:
-                errors['add'].append(perm)
+                add.add(perm)
+            if perm not in add.union(delete):
+                errors['add'].add(perm)
         else:
-            if perm in user_permissions and user_permissions[perm] is True:
-                delete.append(perm)
+            if perm in custom_permissions and custom_permissions[perm] is True:
+                delete.add(perm)
             if perm in uc_permissions:
-                ungrant.append(perm)
-            if perm not in delete + ungrant:
-                errors['delete'].append(perm)
+                ungrant.add(perm)
+            if perm not in delete.union(ungrant):
+                errors['delete'].add(perm)
 
     if errors:
         message = []
         if 'add' in errors:
-            message.append('The following permissions could not be added: {}.'.format(
-                ", ".join(errors['add'])))
+            message.append(f'The following {perm_model.__name__}s could not be added: '
+                           f'{", ".join(errors["add"])}.')
         if 'delete' in errors:
-            message.append('The following permissions could not be deleted: {}.'.format(
-                ", ".join(errors['delete'])))
+            message.append(f'The following {perm_model.__name__}s could not be deleted: '
+                           f'{", ".join(errors["delete"])}.')
         raise APIException(' '.join(message))
 
     return add, ungrant, delete

@@ -2,7 +2,7 @@ import flask
 from voluptuous import All, Any, Length, Optional, Range, Schema
 
 from pulsar import APIException, db
-from pulsar.models import ForumCategory
+from pulsar.forums.models import ForumCategory
 from pulsar.utils import require_permission, validate_data
 from pulsar.validators import bool_get
 

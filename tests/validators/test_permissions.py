@@ -7,8 +7,8 @@ from voluptuous import Invalid
 from conftest import add_permissions, check_dupe_in_list, check_json_response
 from pulsar import APIException, db
 from pulsar.models import User
-from pulsar.validators import (PermissionsDict, check_permissions, permissions_list,
-                               permissions_list_of_user)
+from pulsar.validators import (PermissionsDict, check_user_permissions, permissions_list,
+                               permissions_list_of_user, ForumPermissionsDict)
 
 
 def test_permissions_list(app, authed_client):
@@ -84,6 +84,26 @@ def test_PermissionsDict_failure(permissions, expected):
     assert str(e.value) == expected
 
 
+def test_forum_permission_dict():
+    data = {
+        'forums_forums_permission_1': True,
+        'forums_threads_permission_1': False
+        }
+    assert data == ForumPermissionsDict(data)
+
+
+@pytest.mark.parametrize(
+    'value', [
+        {'forums_forums_permixsion_1': True},
+        {'forums_forums_permission_1': 'False'},
+        {'forums_threads_permission_a': True},
+        'not-a-dict',
+    ])
+def test_forum_permission_dict_failure(value):
+    with pytest.raises(Invalid):
+        ForumPermissionsDict(value)
+
+
 @pytest.mark.parametrize(
     'permissions, expected', [
         ({'sample_one': False,
@@ -114,9 +134,11 @@ def test_check_permission(app, authed_client, permissions, expected):
     db.engine.execute("""INSERT INTO users_permissions (user_id, permission, granted)
                       VALUES (1, 'sample_three', 'f')""")
     db.engine.execute("""UPDATE user_classes
-                      SET permissions = '{"sample_four", "sample_five", "shared_perm"}'
+                      SET permissions = '{"sample_four", "sample_five"}'
                       WHERE name = 'User'""")
-    add, ungrant, delete = check_permissions(User.from_id(1), permissions)
+    db.engine.execute("""UPDATE secondary_classes SET permissions = '{"shared_perm"}'
+                      WHERE name = 'FLS'""")
+    add, ungrant, delete = check_user_permissions(User.from_id(1), permissions)
     for li in [add, ungrant, delete]:
         check_dupe_in_list(li)
     assert set(add) == set(expected['add'])
@@ -128,9 +150,9 @@ def test_check_permission(app, authed_client, permissions, expected):
     'permissions, error', [
         ({'sample_one': False, 'sample_two': False,
           'sample_three': False, 'non_existent': False},
-         'The following permissions could not be deleted: sample_three, non_existent.'),
+         ['deleted', 'sample_three', 'non_existent']),
         ({'sample_four': True, 'sample_one': True},
-         'The following permissions could not be added: sample_four, sample_one.'),
+         ['added', 'sample_four', 'sample_one']),
     ])
 def test_check_permission_error(app, authed_client, permissions, error):
     add_permissions(app, 'sample_one', 'sample_two')
@@ -140,5 +162,5 @@ def test_check_permission_error(app, authed_client, permissions, error):
                       SET permissions = '{"sample_four", "sample_five"}'
                       WHERE name = 'User'""")
     with pytest.raises(APIException) as e:
-        check_permissions(User.from_id(1), permissions)
-    assert e.value.message == error
+        check_user_permissions(User.from_id(1), permissions)
+    assert all(w in e.value.message for w in error)
