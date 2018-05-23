@@ -8,10 +8,9 @@
 - [ ] Index
 
 # Issues
-- [ ] Combine invites into users?
-- [ ] ForumPermission belongs in permissions
 - [ ] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
+- [ ] @setter instead of set_threads() ?
 
 
 # TODO
@@ -39,7 +38,8 @@
 - [ ] Invite Trees
 
 ## Authentication
-- [ ] 
+- [x] Permissioned API Keys
+- [x] Sessions
 
 ## Permissions
 - [x] Primary User Classes
@@ -55,10 +55,10 @@
 - [x] Forum View
 - [x] Thread View
 - [x] Posts View
+- [x] Last viewed post in a thread
 - [ ] Subscriptions
-- [ ] Last viewed post in a thread | "viewed" boolean, clear on new post in thread
-- [ ] Max post lengths on a per-user basis
 - [ ] Polls
+- [ ] Max post lengths on a per-user basis
 - [ ] Individual category view with 8 threads per sub-forum
 - [ ] Documentation
 
@@ -81,7 +81,7 @@
 ## Site Log
 - [ ] Site log table, insert-deletion function helpers
 - [ ] Store some metadata fields - torrent ID, group ID, user ID use where applicable
-- [ ] string for log type? is that normalized?
+- [ ] String for log type? Is that normalized?
 
 ## Staff Tools
 - [ ] Basic Site-Level Administration Tools

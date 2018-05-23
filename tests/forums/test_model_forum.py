@@ -124,6 +124,14 @@ def test_forum_threads_with_deleted(app, authed_client):
     assert threads[0].topic != 'New Site Borked'
 
 
+def test_forum_subscriptions(app, authed_client):
+    db.session.execute("""INSERT INTO forums_forums_subscriptions (user_id, forum_id) VALUES
+                       (1, 1), (1, 2), (1, 3)""")
+    forums = Forum.from_subscribed(1)
+    assert len(forums) == 2
+    assert all(f.id in {1, 2} for f in forums)
+
+
 def test_serialize_no_perms(app, authed_client):
     category = Forum.from_id(1)
     data = NewJSONEncoder()._to_dict(category)

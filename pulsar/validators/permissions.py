@@ -111,48 +111,6 @@ def ForumPermissionsDict(value):
     raise Invalid('data must be a dict with valid forums permission keys and boolean values')
 
 
-def check_user_permissions(user: User,
-                           permissions: Dict[str, bool]
-                           ) -> Tuple[Set[str], Set[str], Set[str]]:
-    """
-    Validates that the provided permissions can be applied to the user.
-    Permissions can be added if they were previously taken away or aren't
-    a permission given to the user class. Permissions can be removed if
-    were specifically given to the user previously, or are included in their userclass.
-
-    :param user:          The recipient of the permission changes
-    :param permissions:   A dictionary of permission changes, with permission name
-                          and boolean (True = Add, False = Remove) key value pairs
-    :return:              A tuple of lists, one of permissions to add, another with
-                          permissions to ungrant, and another of permissions to remove
-    :raises APIException: If the user already has a to-add permission or
-                          lacks a to-delete permission
-    """
-    return check_permissions(
-        user, permissions, UserPermission, 'permissions')
-
-
-def check_forum_permissions(user: User,
-                            permissions: Dict[str, bool]
-                            ) -> Tuple[Set[str], Set[str], Set[str]]:
-    """
-    Validates that the provided permissions can be applied to the user.
-    Permissions can be added if they were previously taken away or aren't
-    a permission given to the user class. Permissions can be removed if
-    were specifically given to the user previously, or are included in their userclass.
-
-    :param user:          The recipient of the permission changes
-    :param permissions:   A dictionary of permission changes, with permission name
-                          and boolean (True = Add, False = Remove) key value pairs
-    :return:              A tuple of lists, one of permissions to add, another with
-                          permissions to ungrant, and another of permissions to remove
-    :raises APIException: If the user already has a to-add permission or
-                          lacks a to-delete permission
-    """
-    return check_permissions(
-        user, permissions, ForumPermission, 'forum_permissions')
-
-
 def check_permissions(user: User,  # noqa: C901 (McCabe complexity)
                       permissions: Dict[str, bool],
                       perm_model: Union[Type[UserPermission], Type[ForumPermission]],

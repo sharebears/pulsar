@@ -5,8 +5,7 @@ from voluptuous import All, Email, Range, Schema
 from voluptuous.validators import Match
 
 from pulsar import APIException, cache, db
-from pulsar.forums.models import ForumPermission
-from pulsar.permissions.models import UserPermission
+from pulsar.permissions.models import UserPermission, ForumPermission
 from pulsar.users.models import User
 from pulsar.utils import get_all_permissions, require_permission, validate_data
 from pulsar.validators import (PASSWORD_REGEX, ForumPermissionsDict, PermissionsDict,

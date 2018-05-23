@@ -51,6 +51,8 @@ def populate_db(app, client):
         (4, 3, 2, 'New typo', NOW() - INTERVAL '1 HOUR'),
         (2, 2, 1, 'Why the shit is Pizzelle in GPG?', NOW() - INTERVAL '12 HOURS')""")
     db.engine.execute("ALTER SEQUENCE forums_posts_edit_history_id_seq RESTART WITH 5")
+    db.engine.execute("""INSERT INTO last_viewed_forum_posts (user_id, thread_id, post_id) VALUES
+                      (1, 3, 2), (1, 5, 4), (1, 4, 5)""")
     add_permissions(
         app,
         'forums_forums_permission_1',

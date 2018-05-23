@@ -1,14 +1,10 @@
 from typing import List
 
-from sqlalchemy.sql import select
+from sqlalchemy import select, and_
 
 from pulsar import db
 from pulsar.mixins import ClassMixin, PermissionMixin
 from pulsar.users.models import User
-
-
-class UserPermission(db.Model, PermissionMixin):
-    __tablename__ = 'users_permissions'
 
 
 class UserClass(db.Model, ClassMixin):
@@ -18,13 +14,6 @@ class UserClass(db.Model, ClassMixin):
 
     def has_users(self) -> bool:
         return bool(User.query.filter(User.user_class_id == self.id).limit(1).first())
-
-
-secondary_class_assoc_table = db.Table(
-    'secondary_class_assoc', db.metadata,
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('secondary_class_id', db.Integer, db.ForeignKey('secondary_classes.id'),
-              nullable=False))
 
 
 class SecondaryClass(db.Model, ClassMixin):
@@ -45,3 +34,25 @@ class SecondaryClass(db.Model, ClassMixin):
         return bool(db.session.execute(
             select([secondary_class_assoc_table.c.user_id]).where(
                 secondary_class_assoc_table.c.secondary_class_id == self.id).limit(1)))
+
+
+secondary_class_assoc_table = db.Table(
+    'secondary_class_assoc', db.metadata,
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
+    db.Column('secondary_class_id', db.Integer, db.ForeignKey('secondary_classes.id'),
+              nullable=False))
+
+
+class UserPermission(db.Model, PermissionMixin):
+    __tablename__ = 'users_permissions'
+
+
+class ForumPermission(db.Model, PermissionMixin):
+    __tablename__ = 'forums_permissions'
+    # TODO: Cache key
+
+    @classmethod
+    def get_ungranted_from_user(cls, user_id):
+        return {p.permission for p in cls.query.filter(and_(
+            (cls.user_id == user_id),
+            (cls.granted == 'f'))).all()}

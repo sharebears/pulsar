@@ -6,9 +6,10 @@ from voluptuous import Invalid
 
 from conftest import add_permissions, check_dupe_in_list, check_json_response
 from pulsar import APIException, db
-from pulsar.models import User
+from pulsar.users.models import User
+from pulsar.permissions.models import UserPermission
 from pulsar.validators import (ForumPermissionsDict, PermissionsDict,
-                               check_user_permissions, permissions_list,
+                               check_permissions, permissions_list,
                                permissions_list_of_user)
 
 
@@ -139,7 +140,8 @@ def test_check_permission(app, authed_client, permissions, expected):
                       WHERE name = 'User'""")
     db.engine.execute("""UPDATE secondary_classes SET permissions = '{"shared_perm"}'
                       WHERE name = 'FLS'""")
-    add, ungrant, delete = check_user_permissions(User.from_id(1), permissions)
+    add, ungrant, delete = check_permissions(
+        User.from_id(1), permissions, UserPermission, 'permissions')
     for li in [add, ungrant, delete]:
         check_dupe_in_list(li)
     assert set(add) == set(expected['add'])
@@ -163,5 +165,5 @@ def test_check_permission_error(app, authed_client, permissions, error):
                       SET permissions = '{"sample_four", "sample_five"}'
                       WHERE name = 'User'""")
     with pytest.raises(APIException) as e:
-        check_user_permissions(User.from_id(1), permissions)
+        check_permissions(User.from_id(1), permissions, UserPermission, 'permissions')
     assert all(w in e.value.message for w in error)

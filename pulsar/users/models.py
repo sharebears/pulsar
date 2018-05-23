@@ -14,6 +14,7 @@ from pulsar.utils import cached_property
 if TYPE_CHECKING:
     from pulsar.auth.models import APIKey as APIKey_, Session as Session_  # noqa
     from pulsar.permissions.models import UserClass as UserClass_  # noqa
+    from pulsar.forums.models import Forum as Forum_, ForumThread as ForumThread_ # noqa
 
 app = flask.current_app
 
@@ -139,7 +140,7 @@ class User(db.Model, ModelMixin):
 
     @cached_property
     def forum_permissions(self) -> List[str]:
-        from pulsar.forums.models import ForumPermission
+        from pulsar.permissions.models import ForumPermission
         return self._get_permissions(
             key=self.__cache_key_forum_permissions__.format(id=self.id),
             model=ForumPermission,

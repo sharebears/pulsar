@@ -160,6 +160,55 @@ def test_thread_last_post_already_cached(app, authed_client):
     assert cache.ttl(post.cache_key) < 61
 
 
+def test_thread_subscriptions(app, authed_client):
+    db.session.execute("""INSERT INTO forums_threads_subscriptions (user_id, thread_id) VALUES
+                       (1, 1), (1, 2), (1, 3)""")
+    threads = ForumThread.from_subscribed(1)
+    assert len(threads) == 2
+    assert all(t.id in {1, 3} for t in threads)
+
+
+def test_thread_last_viewed_post_none(app, authed_client):
+    thread = ForumThread.from_id(1)
+    assert thread.last_viewed_post is None
+    assert not cache.get(ForumThread.__cache_key_last_viewed_post__.format(id=1, user_id=1))
+
+
+def test_thread_last_viewed_post(app, authed_client):
+    thread = ForumThread.from_id(3)
+    last_post = thread.last_viewed_post
+    assert last_post.id == 2
+    assert last_post.thread_id == 3
+    assert 2 == cache.get(ForumThread.__cache_key_last_viewed_post__.format(
+        id=3, user_id=1))
+
+
+def test_thread_last_viewed_post_cached(app, authed_client):
+    cache.set(ForumThread.__cache_key_last_viewed_post__.format(
+        id=1, user_id=1), 2)
+    thread = ForumThread.from_id(1)
+    last_post = thread.last_viewed_post
+    assert last_post.id == 2
+    assert last_post.thread_id == 3
+    assert 2 == cache.get(ForumThread.__cache_key_last_viewed_post__.format(
+        id=1, user_id=1))
+
+
+def test_thread_last_viewed_post_deleted(app, authed_client):
+    thread = ForumThread.from_id(5)
+    last_post = thread.last_viewed_post
+    assert last_post.id == 3
+    assert last_post.thread_id == 5
+    assert 3 == cache.get(ForumThread.__cache_key_last_viewed_post__.format(
+        id=5, user_id=1))
+
+
+def test_thread_last_viewed_none_available(app, authed_client):
+    db.session.execute("DELETE FROM forums_posts WHERE id > 5")
+    thread = ForumThread.from_id(4)
+    assert thread.last_viewed_post is None
+
+
 def test_serialize_no_perms(app, authed_client):
     category = ForumThread.from_id(3)
     data = NewJSONEncoder()._to_dict(category)
@@ -173,11 +222,12 @@ def test_serialize_no_perms(app, authed_client):
     assert 'forum' in data and data['forum']['id'] == 2
     assert 'poster' in data and data['poster']['id'] == 2
     assert 'last_post' in data and data['last_post']['id'] == 2
+    assert 'last_viewed_post' in data and data['last_viewed_post']['id'] == 2
     assert ('posts' in data
             and len(data['posts']) == 1
             and data['posts'][0]['id'] == 2)
     assert 'created_time' in data and isinstance(data['created_time'], int)
-    assert len(data) == 10
+    assert len(data) == 11
 
 
 def test_serialize_very_detailed(app, authed_client):
@@ -195,11 +245,12 @@ def test_serialize_very_detailed(app, authed_client):
     assert 'forum' in data and data['forum']['id'] == 2
     assert 'poster' in data and data['poster']['id'] == 2
     assert 'last_post' in data and data['last_post']['id'] == 2
+    assert 'last_viewed_post' in data and data['last_viewed_post']['id'] == 2
     assert ('posts' in data
             and len(data['posts']) == 1
             and data['posts'][0]['id'] == 2)
     assert 'created_time' in data and isinstance(data['created_time'], int)
-    assert len(data) == 11
+    assert len(data) == 12
 
 
 def test_serialize_nested(app, authed_client):
@@ -216,5 +267,6 @@ def test_serialize_nested(app, authed_client):
         })
     assert 'poster' in data and data['poster']['id'] == 2
     assert 'last_post' in data and data['last_post']['id'] == 2
+    assert 'last_viewed_post' in data and data['last_viewed_post']['id'] == 2
     assert 'created_time' in data and isinstance(data['created_time'], int)
-    assert len(data) == 9
+    assert len(data) == 10

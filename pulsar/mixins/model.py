@@ -171,7 +171,7 @@ class ModelMixin(Model):
     @classmethod
     def from_query(cls: Type[MDL],
                    *,
-                   key: str,
+                   key: str = None,
                    filter: BinaryExpression = None,
                    order: BinaryExpression = None) -> Optional[MDL]:
         """
@@ -189,14 +189,15 @@ class ModelMixin(Model):
 
         :return:       The queried model, if it exists
         """
-        cls_id = cache.get(key)
+        cls_id = cache.get(key) if key else None
         if not cls_id or not isinstance(cls_id, int):
             query = cls._construct_query(cls.query, filter, order)
             model = query.limit(1).first()
             if model:
                 if not cache.has(model.cache_key):
                     cache.cache_model(model)
-                cache.set(key, model.id)
+                if key:
+                    cache.set(key, model.id)
                 return model
             return None
         return cls.from_id(cls_id)

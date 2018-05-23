@@ -63,7 +63,8 @@ def test_user_has_permission(app, client):
 def test_user_permissions_property(app, client):
     """Permissions property should properly handle differences in userclasses and custom perms."""
     add_permissions(app, 'one', 'three', 'four')
-    db.session.execute("""UPDATE user_classes SET permissions = '{"one", "five", "six", "four"}'""")
+    db.session.execute("""UPDATE user_classes
+                       SET permissions = '{"one", "five", "six", "four"}'""")
     db.session.execute("""UPDATE secondary_classes SET permissions = '{"five", "two", "one"}'""")
     db.session.execute("""INSERT INTO users_permissions (user_id, permission, granted)
                        VALUES (1, 'six', 'f')""")
