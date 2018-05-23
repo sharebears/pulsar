@@ -186,4 +186,6 @@ class User(db.Model, ModelMixin):
         return check_password_hash(self.passhash, password)
 
     def has_permission(self, permission: Optional[str]) -> bool:
-        return permission is not None and permission in self.permissions
+        """Check whether a user has a permission. Includes regular and forum permissions."""
+        return (permission is not None
+                and permission in self.permissions.union(self.forum_permissions))

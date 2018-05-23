@@ -16,11 +16,11 @@ REDIS_PARAMS = {
     }
 
 REQUIRE_INVITE_CODE = None
-LOCKED_ACCOUNT_PERMISSIONS = [
+LOCKED_ACCOUNT_PERMISSIONS = {
     'view_staff_pm',
     'send_staff_pm',
     'resolve_staff_pm',
-    ]
+    }
 INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days
 
 RATE_LIMIT_AUTH_SPECIFIC = (50, 80)

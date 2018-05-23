@@ -2,7 +2,6 @@ import secrets
 from datetime import datetime
 from typing import List, Tuple, Union
 
-import pytz
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import ARRAY, INET
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -92,18 +91,6 @@ class Session(db.Model, ModelMixin):
         return cls.get_ids_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)
-
-    def is_expired(self) -> bool:
-        """Checks whether or not the session is expired."""
-        if self.expired:
-            return True
-        elif not self.persistent:
-            delta = datetime.utcnow().replace(tzinfo=pytz.utc) - self.last_used
-            if delta.total_seconds() > 60 * 30:  # 30 minutes
-                self.expired = True
-                db.session.commit()
-                return True
-        return False
 
 
 class APIKey(db.Model, ModelMixin):

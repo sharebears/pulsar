@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
@@ -85,7 +86,30 @@ class PermissionsDict:
         return permissions
 
 
-def check_permissions(user: User,  # noqa: C901
+FORUM_PERMISSION = re.compile(r'forums_forums_permission_\d+')
+THREAD_PERMISSION = re.compile(r'forums_threads_permission_\d+')
+
+
+def ForumPermissionsDict(value):
+    """
+    Validate that the dictionary contains valid forum permissions as keys and
+    booleans as the values.
+
+    :param value:   The input dictionary to validate
+
+    :return:        The input value
+    :raise Invalid: If the input dictionary is not valid
+    """
+    if isinstance(value, dict):
+        for key, val in value.items():
+            if (not isinstance(key, str)
+                    or isinstance(val, bool)
+                    or FORUM_PERMISSION.match(key)
+                    or THREAD_PERMISSION.match(key)):
+                    break
+
+
+def check_permissions(user: User,  # noqa: C901 (McCabe complexity)
                       permissions: Dict[str, bool]) -> Tuple[List[str], List[str], List[str]]:
     """
     Validates that the provided permissions can be applied to the user.

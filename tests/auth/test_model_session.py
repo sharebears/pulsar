@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_dictionary
-from pulsar import NewJSONEncoder, cache, db
+from pulsar import NewJSONEncoder, cache
 from pulsar.auth.models import Session
 
 
@@ -68,30 +68,6 @@ def test_from_id_incl_dead(app, client):
 def test_get_nonexistent_session(app, client):
     session = Session.from_id('1234567890')
     assert not session
-
-
-def test_session_is_expired_not_persistent(app, client):
-    db.session.execute(
-        "UPDATE sessions SET last_used = NOW() - INTERVAL '31 MINUTES', persistent = 'f'")
-    db.session.commit()
-    session = Session.from_id('abcdefghij')
-    assert not session.expired
-    assert session.is_expired()
-    session = Session.from_id('abcdefghij', include_dead=True)
-    assert session.expired
-
-
-@pytest.mark.parametrize(
-    'code, expired', [
-        ('abcdefghij', False),
-        ('1234567890', True),
-        ('0987654321', True),
-        ('bcdefghijk', False),
-        ('cdefghijkl', False),
-    ])
-def test_session_expiry(app, client, code, expired):
-    session = Session.from_id(code, include_dead=True)
-    assert session.is_expired() is expired
 
 
 def test_serialize_no_perms(app, client):

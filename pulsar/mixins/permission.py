@@ -10,12 +10,12 @@ PMS = TypeVar('PMS', bound='PermissionMixin')
 
 
 class PermissionMixin:
+    permission: str = db.Column(db.String(36), primary_key=True)
+    granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
+
     @declared_attr
     def user_id(cls) -> int:
         return db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-
-    permission: str = db.Column(db.String(36), primary_key=True)
-    granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
 
     @classmethod
     def from_attrs(cls: Type[PMS],

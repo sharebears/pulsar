@@ -7,7 +7,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import APIException, _404Exception, cache, db
+from pulsar import APIException, _404Exception, _403Exception, cache, db
 
 MDL = TypeVar('MDL', bound='ModelMixin')
 
@@ -58,6 +58,9 @@ class ModelMixin(Model):
     Some of those functions may need to be overridden by the subclass. The base cache
     key property and ``from_id`` classmethod assume that an ``id`` property exists and
     that the cache key only accepts an ID kwarg.
+
+    It's not a true mixin in that it's monolithic and inherits from the base class,
+    but let's pretend it is so our type analysis works.
     """
 
     __cache_key__: str = None
@@ -117,7 +120,7 @@ class ModelMixin(Model):
                 key=cls.create_cache_key(id=id),
                 query=cls.query.filter(cls.id == id))
             if (model is not None
-                    and model.can_access(asrt)
+                    and model.can_access(asrt, error=True)
                     and (include_dead
                          or not cls.__deletion_attr__
                          or not getattr(model, cls.__deletion_attr__, False))):
@@ -206,6 +209,7 @@ class ModelMixin(Model):
                  order: BinaryExpression = None,
                  required_properties: tuple = (),
                  include_dead: bool = False,
+                 asrt: str = None,
                  page: int = None,
                  limit: int = 50,
                  reverse: bool = False,
@@ -227,6 +231,10 @@ class ModelMixin(Model):
                                     pagination (varying # on one page)
                                     for a retrieved item to be included in the returned list
         :param include_dead:        Whether or not to include deleted/revoked/expired models
+        :param asrt:                Whether or not to check for ownership of the model or a
+                                    permission. Can be a boolean to purely check for ownership,
+                                    or a permission string which can override ownership and
+                                    access the model anyways.
         :param page:                The page number of results to return
         :param limit:               The limit of results to return, defaults to 50 if page
                                     is set, otherwise infinite
@@ -237,27 +245,38 @@ class ModelMixin(Model):
 
         :return:                    A list of objects matching the query specifications
         """
+        # TODO: Profile efficiency of this function with a bunch of random data
         ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
         if reverse:
             ids.reverse()
         if page is not None:
-            ids = ids[(page - 1) * limit:page * limit]
+            all_next_ids = ids[(page - 1) * limit:]
+            ids, extra_ids = all_next_ids[:limit], all_next_ids[limit:]
 
-        models, uncached_ids = {}, []
-        cached_dict = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
-        for i, (k, v) in zip(ids, cached_dict.items()):
-            if v:
-                models[i] = cls._create_obj_from_cache(v)
-            else:
-                uncached_ids.append(i)
+        models: Dict[Union[int, str], MDL] = {}
+        while len(models) < limit:
+            uncached_ids = []
+            cached_dict = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
+            for i, (k, v) in zip(ids, cached_dict.items()):
+                if v:
+                    models[i] = cls._create_obj_from_cache(v)
+                else:
+                    uncached_ids.append(i)
 
-        qry_models = cls._construct_query(cls.query, filter).filter(cls.id.in_(uncached_ids)).all()
-        cache.cache_models(qry_models)
-        for model in qry_models:
-            models[model.id] = model
-        if required_properties:
-            return [m for m in models.values() if all(
-                getattr(m, rp, False) for rp in required_properties)]
+            qry_models = cls._construct_query(cls.query, filter).filter(
+                cls.id.in_(uncached_ids)).all()
+            cache.cache_models(qry_models)
+            for model in qry_models:
+                models[model.id] = model
+            if required_properties:
+                models = {k: m for k, m in models.items() if all(
+                    getattr(m, rp, False) for rp in required_properties)}
+            if asrt:
+                models = {k: m for k, m in models.items() if m.can_access(asrt)}
+            if not page or not extra_ids:
+                break
+            ids = extra_ids[:abs(limit - len(models))]
+            extra_ids = extra_ids[abs(limit - len(models)):]
         return list(models.values())
 
     @classmethod
@@ -406,7 +425,9 @@ class ModelMixin(Model):
             cache.set(key, count)
         return count
 
-    def can_access(self, permission: str = None) -> bool:
+    def can_access(self,
+                   permission: str = None,
+                   error: bool = False) -> bool:
         """
         Determines whether or not the requesting user can access the following resource.
         If no permission is specified, any user can access the resource. If a permission is
@@ -416,9 +437,12 @@ class ModelMixin(Model):
         :param permission: Permission to restrict access to
         :return:           Whether or not the requesting user can access the resource
         """
-        return (permission is None
-                or self.belongs_to_user()
-                or flask.g.user.has_permission(permission))
+        access = (permission is None
+                  or self.belongs_to_user()
+                  or flask.g.user.has_permission(permission))
+        if error and not access:
+            raise _403Exception
+        return access
 
     def belongs_to_user(self) -> bool:
         """

@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import select
 from sqlalchemy.sql.elements import BinaryExpression
 
-from pulsar import cache, db
+from pulsar import cache, db, _403Exception
 from pulsar.mixins import ModelMixin, PermissionMixin
 from pulsar.models import User
 from pulsar.utils import cached_property
@@ -70,6 +70,7 @@ class Forum(db.Model, ModelMixin):
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
     __cache_key_thread_count__ = 'forums_{id}_thread_count'
     __cache_key_of_category__ = 'forums_forums_of_categories_{id}'
+    __permission_key__ = 'forums_forums_permission_{id}'
     __deletion_attr__ = 'deleted'
 
     __serialize__ = (
@@ -151,6 +152,17 @@ class Forum(db.Model, ModelMixin):
                     include_dead: bool = False) -> None:
         self._threads = ForumThread.from_forum(self.id, page, limit, include_dead)
 
+    def can_access(self,
+                   permission: str = None,
+                   error: bool = False) -> bool:
+        """Determines whether or not the user has the permissions to access the forum."""
+        access = (flask.g.user is not None and (
+            flask.g.user.has_permission(self.__permission_key__.format(id=self.id))
+            or (permission is not None and flask.g.user.has_permission(permission))))
+        if error and not access:
+            raise _403Exception
+        return access
+
 
 class ForumThread(db.Model, ModelMixin):
     __tablename__ = 'forums_threads'
@@ -158,6 +170,7 @@ class ForumThread(db.Model, ModelMixin):
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
+    __permission_key__ = 'forums_threads_permission_{id}'
     __deletion_attr__ = 'deleted'
 
     __serialize__ = (
@@ -268,6 +281,17 @@ class ForumThread(db.Model, ModelMixin):
                   limit: int = 50,
                   include_dead: bool = False) -> None:
         self._posts = ForumPost.from_thread(self.id, page, limit, include_dead)
+
+    def can_access(self,
+                   permission: str = None,
+                   error: bool = False) -> bool:
+        """Determines whether or not the user has the permissions to access the thread."""
+        access = (flask.g.user is not None and (
+            flask.g.user.has_permission(self.__permission_key__.format(id=self.id))
+            or (permission is not None and flask.g.user.has_permission(permission))))
+        if error and not access:
+            raise _403Exception
+        return access
 
 
 class ForumPost(db.Model, ModelMixin):
@@ -400,5 +424,10 @@ class ForumPostEditHistory(db.Model, ModelMixin):
 
 class ForumPermission(db.Model, PermissionMixin):
     __tablename__ = 'forums_permissions'
-    __permission_forum__ = 'forums_forums_permission_{id}'
-    __permission_thread__ = 'forums_threads_permission_{id}'
+    # TODO: Cache key
+
+    @classmethod
+    def get_ungranted_from_user(cls, user_id):
+        return {p.permission for p in cls.query.filter(and_(
+            (cls.user_id == user_id),
+            (cls.granted == 'f'))).all()}

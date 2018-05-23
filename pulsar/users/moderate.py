@@ -7,7 +7,8 @@ from voluptuous.validators import Match
 from pulsar import APIException, cache, db
 from pulsar.models import User, UserPermission
 from pulsar.utils import get_all_permissions, require_permission, validate_data
-from pulsar.validators import PASSWORD_REGEX, PermissionsDict, check_permissions
+from pulsar.validators import (PASSWORD_REGEX, PermissionsDict, check_permissions,
+                               ForumPermissionsDict)
 
 from . import bp
 
@@ -22,6 +23,7 @@ MODERATE_USER_SCHEMA = Schema({
     'downloaded': All(int, Range(min=0, max=9223372036854775808)),
     'invites': All(int, Range(min=0, max=2147483648)),
     'permissions': PermissionsDict(restrict='moderate_users_advanced'),
+    'forum_permissions': ForumPermissionsDict,
     })
 
 
@@ -34,7 +36,8 @@ def moderate_user(user_id: int,
                   uploaded: int = None,
                   downloaded: int = None,
                   invites: int = None,
-                  permissions: Dict[str, bool] = None) -> flask.Response:
+                  permissions: Dict[str, bool] = None,
+                  forum_permissions: Dict[str, bool] = None) -> flask.Response:
     """
     Moderate a user - change password for them, alter stats, modify basic permissions,
     etc.

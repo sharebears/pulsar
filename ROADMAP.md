@@ -5,11 +5,7 @@
 - [x] Permissioned Serialization
 - [x] Boilerplate Refactors & Typing (Issues)
 - [x] Forums
-- [ ] Thread permissions
-- [ ] Thread subscriptions
-- [ ] Thread last read post
-- [ ] Polls
-- [ ] Forum Documentation
+- [ ] Forum Glitter
 - [ ] Hypothesis property testing for validators
 - [ ] Rules
 - [ ] News Posts
@@ -18,15 +14,8 @@
 # Issues
 - [ ] Hypothesis property testing for validators
 - [ ] Combine invites/permissions into users?
+- [ ] Why am I checking session age when I am not setting permanent...?
 
-## Hypothesis
-- [ ] Refactor schemas to move default values to function parameters
-- [ ] Auth
-- [ ] Invites
-- [ ] Permissions
-- [ ] Users
-- [ ] Forums
- 
 
 # TODO
 
@@ -178,3 +167,7 @@ wet_torrents from a table with certain criteria
 ## User Stats & History
 - [ ] Community Stats
 - [ ] Data Visualization
+
+## Public Site Usage
+- [ ] Create an anonymous user with default permissions, might as well implement
+      into private so I can get rid of "not flask.g.user" and "flask.g.user is not None"

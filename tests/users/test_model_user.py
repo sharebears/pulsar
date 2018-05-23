@@ -119,7 +119,7 @@ def test_locked_acc_perms_can_access(app, client):
     with client.session_transaction() as sess:
         sess['user_id'] = 2
         sess['session_id'] = 'bcdefghijk'
-    app.config['LOCKED_ACCOUNT_PERMISSIONS'] = 'view_users'
+    app.config['LOCKED_ACCOUNT_PERMISSIONS'] = {'view_users'}
 
     response = client.get('/users/1')
     assert response.status_code == 200
