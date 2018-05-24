@@ -10,6 +10,7 @@
 # Issues
 - [ ] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
+- [ ] Use a rollback for tests instead of manual table clears?
 
 
 # TODO

@@ -148,6 +148,8 @@ def populate_db():
 
 def unpopulate_db():
     "Unpopulate the database with test user information."
+    db.engine.execute("DELETE FROM forums_threads_subscriptions")
+    db.engine.execute("DELETE FROM forums_forums_subscriptions")
     db.engine.execute("DELETE FROM last_viewed_forum_posts")
     db.engine.execute("DELETE FROM forums_posts_edit_history")
     db.engine.execute("DELETE FROM forums_posts")

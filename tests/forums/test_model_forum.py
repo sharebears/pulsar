@@ -125,13 +125,18 @@ def test_forum_threads_with_deleted(app, authed_client):
 
 
 def test_forum_subscriptions(app, authed_client):
-    db.session.execute("""INSERT INTO forums_forums_subscriptions (user_id, forum_id) VALUES
-                       (1, 1), (1, 2), (1, 3)""")
     forums = Forum.from_subscribed_user(1)
     assert len(forums) == 2
     assert all(f.id in {1, 2} for f in forums)
     assert {1, 2} == set(
         cache.get(ForumSubscription.__cache_key__.format(user_id=1)))
+
+
+def test_forum_subscriptions_active(app, authed_client):
+    threads = Forum.new_subscriptions(1)
+    assert len(threads) == 1
+    assert threads[0].id == 4
+    assert [4] == cache.get(ForumSubscription.__cache_key_active__.format(user_id=1))
 
 
 def test_serialize_no_perms(app, authed_client):

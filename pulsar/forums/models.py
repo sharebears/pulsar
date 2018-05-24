@@ -131,6 +131,20 @@ class Forum(db.Model, ModelMixin):
                               .filter(ForumSubscription.user_id == user_id)),
             order=Forum.id.asc())  # type: ignore
 
+    @classmethod
+    def new_subscriptions(cls, user_id: int) -> List['ForumThread']:
+        return ForumThread.get_many(
+            key=ForumSubscription.__cache_key_active__.format(user_id=user_id),
+            filter=and_(
+                (ForumThread.forum_id.in_(  # type: ignore
+                    db.session.query(ForumSubscription.forum_id)
+                    .filter(ForumSubscription.user_id == user_id))),
+                (ForumThread.last_post_id > db.session.query(
+                    ForumLastViewedPost.post_id).filter(and_(
+                        (ForumLastViewedPost.user_id == user_id),
+                        (ForumLastViewedPost.thread_id == ForumThread.id))))),
+            order=ForumThread.last_post_id.desc())
+
     @cached_property
     def category(self) -> 'ForumCategory':
         return ForumCategory.from_id(self.category_id)
@@ -261,9 +275,26 @@ class ForumThread(db.Model, ModelMixin):
                               .filter(ForumThreadSubscription.user_id == user_id)),
             order=ForumThread.id.asc())  # type: ignore
 
+    @classmethod
+    def new_subscriptions(cls, user_id: int) -> List['ForumThread']:
+        return cls.get_many(
+            key=ForumThreadSubscription.__cache_key_active__.format(user_id=user_id),
+            filter=and_(
+                (cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
+                            .filter(ForumThreadSubscription.user_id == user_id))),
+                (cls.last_post_id > db.session.query(
+                    ForumLastViewedPost.post_id).filter(and_(
+                        (ForumLastViewedPost.user_id == user_id),
+                        (ForumLastViewedPost.thread_id == cls.id))))),
+            order=cls.last_post_id.desc())
+
     @hybrid_property
     def last_updated(cls) -> BinaryExpression:
         return select([func.max(ForumPost.time)]).where(ForumPost.thread_id == cls.id).as_scalar()
+
+    @hybrid_property
+    def last_post_id(cls) -> BinaryExpression:
+        return select([func.max(ForumPost.id)]).where(ForumPost.thread_id == cls.id).as_scalar()
 
     @cached_property
     def last_post(self) -> Optional['ForumPost']:
@@ -496,6 +527,7 @@ class ForumLastViewedPost(db.Model):
 class ForumSubscription(db.Model):
     __tablename__ = 'forums_forums_subscriptions'
     __cache_key__ = 'forums_forums_subscriptions_{user_id}'
+    __cache_key_active__ = 'forums_forums_subscriptions_active_{user_id}'
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), primary_key=True)
@@ -504,6 +536,7 @@ class ForumSubscription(db.Model):
 class ForumThreadSubscription(db.Model):
     __tablename__ = 'forums_threads_subscriptions'
     __cache_key__ = 'forums_threads_subscriptions_{user_id}'
+    __cache_key_active__ = 'forums_threads_subscriptions_active_{user_id}'
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     thread_id = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), primary_key=True)

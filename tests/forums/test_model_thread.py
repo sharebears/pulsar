@@ -162,13 +162,19 @@ def test_thread_last_post_already_cached(app, authed_client):
 
 
 def test_thread_subscriptions(app, authed_client):
-    db.session.execute("""INSERT INTO forums_threads_subscriptions (user_id, thread_id) VALUES
-                       (1, 1), (1, 2), (1, 3)""")
     threads = ForumThread.from_subscribed_user(1)
     assert len(threads) == 2
-    assert all(t.id in {1, 3} for t in threads)
-    assert {1, 3} == set(
+    assert all(t.id in {1, 4} for t in threads)
+    assert {1, 4} == set(
         cache.get(ForumThreadSubscription.__cache_key__.format(user_id=1)))
+
+
+def test_thread_subscriptions_active(app, authed_client):
+    threads = ForumThread.new_subscriptions(1)
+    print(threads)
+    assert len(threads) == 1
+    assert threads[0].id == 4
+    assert [4] == cache.get(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
 
 
 def test_thread_last_viewed_post_none(app, authed_client):
