@@ -5,7 +5,8 @@ import pytz
 from voluptuous import All, Length, Range, Schema
 
 from pulsar import APIException, db
-from pulsar.forums.models import ForumPost, ForumPostEditHistory, ForumThread
+from pulsar.forums.models import (ForumPost, ForumPostEditHistory, ForumThread,
+                                  ForumThreadSubscription)
 from pulsar.utils import assert_user, require_permission, validate_data
 
 from . import bp
@@ -127,6 +128,7 @@ def create_post(contents: str,
         thread_id=thread_id,
         poster_id=flask.g.user.id,
         contents=contents)
+    ForumThreadSubscription.clear_cache_keys(thread_id=thread_id)
     return flask.jsonify(post)
 
 

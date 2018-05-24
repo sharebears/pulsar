@@ -4,8 +4,8 @@ from typing import Union
 import flask
 from voluptuous import All, Any, In, Length, Optional, Range, Schema
 
-from pulsar import db
-from pulsar.forums.models import Forum, ForumCategory, ForumThread
+from pulsar import db, APIException
+from pulsar.forums.models import Forum, ForumCategory, ForumThread, ForumSubscription
 from pulsar.utils import require_permission, validate_data
 from pulsar.validators import bool_get
 
@@ -256,3 +256,57 @@ def delete_forum(id: int) -> flask.Response:
         ids=ForumThread.get_ids_from_forum(forum.id),
         update={'deleted': True})
     return flask.jsonify(f'Forum {id} ({forum.name}) has been deleted.')
+
+
+@bp.route('/forums/<int:forum_id>/subscribe', methods=['POST', 'DELETE'])
+@require_permission('modify_forum_subscriptions')
+def alter_forum_subscription(forum_id: int) -> flask.Response:
+    """
+    This is the endpoint for forum subscription. The ``modify_forum_subscriptions``
+    permission is required to access this endpoint. A POST request creates a subscription,
+    whereas a DELETE request removes a subscription.
+
+    .. :quickref: Forum; Subscribe to a forum.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       PUT /forums/2/subscribe HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": "Successfully subscribed to forum 2."
+       }
+
+    :>json str response: Success or failure message
+
+    :statuscode 200: Subscription alteration successful
+    :statuscode 400: Subscription alteration unsuccessful
+    :statuscode 404: Forum thread does not exist
+    """
+    forum = Forum.from_id(forum_id, _404=True)
+    subscription = ForumSubscription.from_attrs(flask.g.user.id, forum.id)
+    if flask.request.method == 'POST':
+        if subscription:
+            raise APIException(f'You are already subscribed to forum {forum_id}.')
+        ForumSubscription.new(
+            user_id=flask.g.user.id,
+            forum_id=forum_id)
+        return flask.jsonify(f'Successfully subscribed to forum {forum_id}.')
+    else:  # method = DELETE
+        if not subscription:
+            raise APIException(f'You are not subscribed to forum {forum_id}.')
+        db.session.delete(subscription)
+        db.session.commit()
+        return flask.jsonify(f'Successfully unsubscribed from forum {forum_id}.')

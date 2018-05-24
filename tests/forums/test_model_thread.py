@@ -161,22 +161,6 @@ def test_thread_last_post_already_cached(app, authed_client):
     assert cache.ttl(post.cache_key) < 61
 
 
-def test_thread_subscriptions(app, authed_client):
-    threads = ForumThread.from_subscribed_user(1)
-    assert len(threads) == 2
-    assert all(t.id in {1, 4} for t in threads)
-    assert {1, 4} == set(
-        cache.get(ForumThreadSubscription.__cache_key__.format(user_id=1)))
-
-
-def test_thread_subscriptions_active(app, authed_client):
-    threads = ForumThread.new_subscriptions(1)
-    print(threads)
-    assert len(threads) == 1
-    assert threads[0].id == 4
-    assert [4] == cache.get(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
-
-
 def test_thread_last_viewed_post_none(app, authed_client):
     thread = ForumThread.from_id(1)
     assert thread.last_viewed_post is None
@@ -217,6 +201,49 @@ def test_thread_last_viewed_none_available(app, authed_client):
     db.session.execute("DELETE FROM forums_posts WHERE id > 5")
     thread = ForumThread.from_id(4)
     assert thread.last_viewed_post is None
+
+
+def test_thread_subscriptions(app, authed_client):
+    threads = ForumThread.from_subscribed_user(1)
+    assert all(t.id in {1, 3, 4} for t in threads)
+    assert {1, 3, 4} == set(
+        cache.get(ForumThreadSubscription.__cache_key_of_users__.format(user_id=1)))
+
+
+def test_thread_subscriptions_active(app, authed_client):
+    threads = ForumThread.new_subscriptions(1)
+    assert {1, 4} == set(t.id for t in threads)
+    assert {1, 4} == set(
+        cache.get(ForumThreadSubscription.__cache_key_active__.format(user_id=1)))
+
+
+def test_user_ids_from_thread_subscription(app, authed_client):
+    assert [1] == ForumThreadSubscription.user_ids_from_thread(2)
+    assert {1, 2} == set(ForumThreadSubscription.user_ids_from_thread(4))
+
+
+def test_forum_thread_subscriptions_cache_keys_thread_id(app, authed_client):
+    user_ids = ForumThreadSubscription.user_ids_from_thread(4)  # noqa
+    cache.set(ForumThreadSubscription.__cache_key_of_users__.format(user_id=1), [14, 23])
+    cache.set(ForumThreadSubscription.__cache_key_active__.format(user_id=1), [12, 28])
+    cache.set(ForumThreadSubscription.__cache_key_users__.format(thread_id=4), [3, 4, 5])
+    assert 3 == len(cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=4)))
+    ForumThreadSubscription.clear_cache_keys(thread_id=4)
+    assert 2 == len(cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=4)))
+    assert not cache.has(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
+    assert [14, 23] == cache.get(ForumThreadSubscription.__cache_key_of_users__.format(user_id=1))
+
+
+def test_forum_thread_subscriptions_cache_keys_user_ids(app, authed_client):
+    user_ids = ForumThreadSubscription.user_ids_from_thread(4)  # noqa
+    cache.set(ForumThreadSubscription.__cache_key_of_users__.format(user_id=1), [14, 23])
+    cache.set(ForumThreadSubscription.__cache_key_active__.format(user_id=1), [12, 28])
+    cache.set(ForumThreadSubscription.__cache_key_users__.format(thread_id=4), [3, 4, 5])
+    assert 3 == len(cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=4)))
+    ForumThreadSubscription.clear_cache_keys(user_ids=[1, 2])
+    assert 3 == len(cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=4)))
+    assert not cache.has(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
+    assert not cache.get(ForumThreadSubscription.__cache_key_of_users__.format(user_id=1))
 
 
 def test_serialize_no_perms(app, authed_client):

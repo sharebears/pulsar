@@ -4,7 +4,7 @@ import pytest
 
 from conftest import add_permissions, check_json_response
 from pulsar import db
-from pulsar.permissions.models import UserPermission, ForumPermission
+from pulsar.permissions.models import ForumPermission, UserPermission
 from pulsar.users.models import User
 
 

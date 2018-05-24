@@ -3,7 +3,7 @@ import json
 import pytest
 
 from conftest import add_permissions, check_json_response
-from pulsar.forums.models import Forum, ForumThread
+from pulsar.forums.models import Forum, ForumThread, ForumSubscription
 
 
 def test_view_forum(app, authed_client):
@@ -138,6 +138,32 @@ def test_delete_forum_nonexistent(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forums')
     response = authed_client.delete('/forums/100')
     check_json_response(response, 'Forum 100 does not exist.')
+
+
+def test_subscribe_to_forum(app, authed_client):
+    add_permissions(app, 'modify_forum_subscriptions')
+    response = authed_client.post('/forums/5/subscribe')
+    check_json_response(response, 'Successfully subscribed to forum 5.')
+    assert ForumSubscription.from_attrs(user_id=1, forum_id=5)
+
+
+def test_subscribe_to_forum_already_subscribed(app, authed_client):
+    add_permissions(app, 'modify_forum_subscriptions')
+    response = authed_client.post('/forums/2/subscribe')
+    check_json_response(response, 'You are already subscribed to forum 2.')
+
+
+def test_unsubscribe_from_forum(app, authed_client):
+    add_permissions(app, 'modify_forum_subscriptions')
+    response = authed_client.delete('/forums/2/subscribe')
+    check_json_response(response, 'Successfully unsubscribed from forum 2.')
+    assert not ForumSubscription.from_attrs(user_id=1, forum_id=2)
+
+
+def test_unsubscribe_from_forum_not_subscribed(app, authed_client):
+    add_permissions(app, 'modify_forum_subscriptions')
+    response = authed_client.delete('/forums/5/subscribe')
+    check_json_response(response, 'You are not subscribed to forum 5.')
 
 
 @pytest.mark.parametrize(

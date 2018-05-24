@@ -5,7 +5,8 @@ from werkzeug import find_modules, import_string
 
 from pulsar.cache import Cache, clear_cache_dirty
 from pulsar.exceptions import (APIException, _312Exception, _401Exception,  # noqa
-                               _403Exception, _404Exception, _405Exception, _500Exception)
+                               _403Exception, _404Exception, _405Exception,
+                               _500Exception)
 from pulsar.serializer import NewJSONEncoder
 
 db = SQLAlchemy()

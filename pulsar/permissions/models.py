@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 
 from pulsar import db
 from pulsar.mixins import ClassMixin, PermissionMixin

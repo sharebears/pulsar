@@ -124,19 +124,9 @@ def test_forum_threads_with_deleted(app, authed_client):
     assert threads[0].topic != 'New Site Borked'
 
 
-def test_forum_subscriptions(app, authed_client):
-    forums = Forum.from_subscribed_user(1)
-    assert len(forums) == 2
-    assert all(f.id in {1, 2} for f in forums)
-    assert {1, 2} == set(
-        cache.get(ForumSubscription.__cache_key__.format(user_id=1)))
-
-
-def test_forum_subscriptions_active(app, authed_client):
-    threads = Forum.new_subscriptions(1)
-    assert len(threads) == 1
-    assert threads[0].id == 4
-    assert [4] == cache.get(ForumSubscription.__cache_key_active__.format(user_id=1))
+def test_users_from_forum_subscription(app, authed_client):
+    assert {1, 2} == set(ForumSubscription.user_ids_from_forum(4))
+    assert [1] == ForumSubscription.user_ids_from_forum(1)
 
 
 def test_serialize_no_perms(app, authed_client):

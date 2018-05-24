@@ -9,6 +9,7 @@ PERMISSIONS = [
     'create_forum_posts',  # Post in the forums and edit own posts
     'forum_double_post',  # Double post in the forums
     'create_forum_threads',  # Create forum threads
+    'modify_forum_subscriptions',  # Add and remove subscriptions to forums and threads
     'modify_forum_posts',  # Edit others' forum posts
     'modify_forum_posts_advanced',  # Manipulate and delete others' forum posts
     'modify_forum_threads',  # Edit forum threads

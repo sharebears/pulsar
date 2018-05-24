@@ -206,7 +206,7 @@ class ModelMixin(Model):
     @classmethod
     def get_many(cls: Type[MDL],
                  *,
-                 key: str,
+                 key: str = None,
                  filter: BinaryExpression = None,
                  order: BinaryExpression = None,
                  required_properties: tuple = (),
@@ -242,6 +242,8 @@ class ModelMixin(Model):
         :param limit:               The limit of results to return, defaults to 50 if page
                                     is set, otherwise infinite
         :param reverse:             Whether or not to reverse the order of the list
+        :param ids:                 A list of previously-generated IDs to be used in lieu
+                                    of re-generating the IDs
         :param expr_override:       If passed, this will override filter and order, and be
                                     called verbatim in a ``db.session.execute`` if the cache
                                     key does not exist
@@ -249,7 +251,8 @@ class ModelMixin(Model):
         :return:                    A list of objects matching the query specifications
         """
         # TODO: Cleanup review
-        ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
+        if not ids:
+            ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
         if reverse:
             ids.reverse()
         if page is not None:
@@ -283,7 +286,7 @@ class ModelMixin(Model):
 
     @classmethod
     def get_ids_of_many(cls,
-                        key: str,
+                        key: str = None,
                         filter: BinaryExpression = None,
                         order: BinaryExpression = None,
                         include_dead: bool = False,
@@ -305,8 +308,8 @@ class ModelMixin(Model):
 
         :return:                    A list of IDs
         """
-        key = f'{key}_incl_dead' if include_dead else key
-        ids = cache.get(key)
+        key = f'{key}_incl_dead' if include_dead and key else key
+        ids = cache.get(key) if key else None
         if not ids or not isinstance(ids, list):
             if expr_override is not None:
                 ids = [x[0] for x in db.session.execute(expr_override)]
@@ -315,7 +318,8 @@ class ModelMixin(Model):
                 if not include_dead and cls.__deletion_attr__:
                     query = query.filter(getattr(cls, cls.__deletion_attr__) == 'f')
                 ids = [x[0] for x in query.all()]
-            cache.set(key, ids)
+            if key:
+                cache.set(key, ids)
         return ids
 
     @classmethod

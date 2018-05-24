@@ -1,16 +1,16 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import flask
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import _403Exception, cache, db
 from pulsar.mixins import ModelMixin
-from pulsar.users.models import User
 from pulsar.permissions.models import ForumPermission
+from pulsar.users.models import User
 from pulsar.utils import cached_property
 
 app = flask.current_app
@@ -38,8 +38,8 @@ class ForumCategory(db.Model, ModelMixin):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
     description: Optional[str] = db.Column(db.Text)
-    position: int = db.Column(db.SmallInteger, nullable=False, server_default='0')
-    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    position: int = db.Column(db.SmallInteger, nullable=False, server_default='0', index=True)
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f', index=True)
 
     @classmethod
     def get_all(cls, include_dead: bool = False) -> List['ForumCategory']:
@@ -70,7 +70,6 @@ class Forum(db.Model, ModelMixin):
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
     __cache_key_thread_count__ = 'forums_{id}_thread_count'
     __cache_key_of_category__ = 'forums_forums_of_categories_{id}'
-    __cache_key_of_subscribed__ = 'forums_forums_subscriptions_{user_id}'
     __permission_key__ = 'forums_forums_permission_{id}'
     __deletion_attr__ = 'deleted'
 
@@ -99,8 +98,8 @@ class Forum(db.Model, ModelMixin):
     description: Optional[str] = db.Column(db.Text)
     category_id: int = db.Column(
         db.Integer, db.ForeignKey('forums_categories.id'), nullable=False, index=True)
-    position: int = db.Column(db.SmallInteger, nullable=False, server_default='0')
-    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    position: int = db.Column(db.SmallInteger, nullable=False, server_default='0', index=True)
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f', index=True)
 
     @classmethod
     def from_category(cls, category_id: int) -> List['Forum']:
@@ -126,24 +125,10 @@ class Forum(db.Model, ModelMixin):
     @classmethod
     def from_subscribed_user(cls, user_id: int) -> List['Forum']:
         return cls.get_many(
-            key=ForumSubscription.__cache_key__.format(user_id=user_id),
+            key=ForumSubscription.__cache_key_of_users__.format(user_id=user_id),
             filter=cls.id.in_(db.session.query(ForumSubscription.forum_id)  # type: ignore
                               .filter(ForumSubscription.user_id == user_id)),
             order=Forum.id.asc())  # type: ignore
-
-    @classmethod
-    def new_subscriptions(cls, user_id: int) -> List['ForumThread']:
-        return ForumThread.get_many(
-            key=ForumSubscription.__cache_key_active__.format(user_id=user_id),
-            filter=and_(
-                (ForumThread.forum_id.in_(  # type: ignore
-                    db.session.query(ForumSubscription.forum_id)
-                    .filter(ForumSubscription.user_id == user_id))),
-                (ForumThread.last_post_id > db.session.query(
-                    ForumLastViewedPost.post_id).filter(and_(
-                        (ForumLastViewedPost.user_id == user_id),
-                        (ForumLastViewedPost.thread_id == ForumThread.id))))),
-            order=ForumThread.last_post_id.desc())
 
     @cached_property
     def category(self) -> 'ForumCategory':
@@ -179,12 +164,27 @@ class Forum(db.Model, ModelMixin):
                    permission: str = None,
                    error: bool = False) -> bool:
         """Determines whether or not the user has the permissions to access the forum."""
-        access = (flask.g.user is not None and (
-            flask.g.user.has_permission(self.__permission_key__.format(id=self.id))
-            or (permission is not None and flask.g.user.has_permission(permission))))
-        if error and not access:
+        if flask.g.user is None:  # pragma: no cover
+            if error:
+                raise _403Exception
+            return False
+
+        # Explicit forum access
+        permission_key = self.__permission_key__.format(id=self.id)
+        if (flask.g.user.has_permission(permission_key)
+                or (permission is not None and flask.g.user.has_permission(permission))):
+            return True
+
+        # If user has access to a thread in the forum, they can view the metadata of the forum
+        # (albeit they can't view threads beyond their alloted ones).
+        forum_thread_permissions = {
+            ForumThread.__permission_key__.format(id=fid)
+            for fid in ForumThread.get_ids_from_forum(self.id)}
+        if any(fperm in forum_thread_permissions for fperm in flask.g.user.forum_permissions):
+            return True
+        if error:
             raise _403Exception
-        return access
+        return False
 
 
 class ForumThread(db.Model, ModelMixin):
@@ -192,7 +192,6 @@ class ForumThread(db.Model, ModelMixin):
     __cache_key__ = 'forums_threads_{id}'
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
-    __cache_key_of_subscribed__ = 'forums_threads_subscriptions_{user_id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
     __permission_key__ = 'forums_threads_permission_{id}'
     __deletion_attr__ = 'deleted'
@@ -221,13 +220,14 @@ class ForumThread(db.Model, ModelMixin):
 
     id: int = db.Column(db.Integer, primary_key=True)
     topic: str = db.Column(db.String(150), nullable=False)
-    forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), nullable=False)  # type: int
+    forum_id = db.Column(
+        db.Integer, db.ForeignKey('forums.id'), nullable=False, index=True)  # type: int
     poster_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     created_time: datetime = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     locked: bool = db.Column(db.Boolean, nullable=False, server_default='f')
     sticky: bool = db.Column(db.Boolean, nullable=False, server_default='f')
-    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f', index=True)
 
     @declared_attr
     def __table_args__(cls):
@@ -269,8 +269,12 @@ class ForumThread(db.Model, ModelMixin):
 
     @classmethod
     def from_subscribed_user(cls, user_id: int) -> List['ForumThread']:
-        return cls.get_many(
-            key=ForumThreadSubscription.__cache_key__.format(user_id=user_id),
+        return cls.get_many(ids=cls.subscribed_ids(user_id))
+
+    @classmethod
+    def subscribed_ids(cls, user_id: int) -> List[Union[str, int]]:
+        return cls.get_ids_of_many(
+            key=ForumThreadSubscription.__cache_key_of_users__.format(user_id=user_id),
             filter=cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
                               .filter(ForumThreadSubscription.user_id == user_id)),
             order=ForumThread.id.asc())  # type: ignore
@@ -279,13 +283,19 @@ class ForumThread(db.Model, ModelMixin):
     def new_subscriptions(cls, user_id: int) -> List['ForumThread']:
         return cls.get_many(
             key=ForumThreadSubscription.__cache_key_active__.format(user_id=user_id),
-            filter=and_(
-                (cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
-                            .filter(ForumThreadSubscription.user_id == user_id))),
-                (cls.last_post_id > db.session.query(
+            filter=or_(and_(
+                    (cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
+                                .filter(ForumThreadSubscription.user_id == user_id))),
+                    (cls.last_post_id > db.session.query(
+                        ForumLastViewedPost.post_id).filter(and_(
+                            ForumLastViewedPost.user_id == user_id,
+                            ForumLastViewedPost.thread_id == cls.id)))
+                ),
+                (db.session.query(
                     ForumLastViewedPost.post_id).filter(and_(
-                        (ForumLastViewedPost.user_id == user_id),
-                        (ForumLastViewedPost.thread_id == cls.id))))),
+                        ForumLastViewedPost.user_id == user_id,
+                        ForumLastViewedPost.thread_id == cls.id)).as_scalar().is_(None))
+                ),
             order=cls.last_post_id.desc())
 
     @hybrid_property
@@ -325,6 +335,10 @@ class ForumThread(db.Model, ModelMixin):
             key=self.__cache_key_post_count__.format(id=self.id),
             attribute=ForumPost.id,
             filter=and_(ForumPost.thread_id == self.id, ForumPost.deleted == 'f',))
+
+    @cached_property
+    def subscribed(self) -> bool:
+        return self.id in set(self.subscribed_ids(flask.g.user.id)) if flask.g.user else False
 
     @property
     def posts(self) -> List['ForumPost']:
@@ -388,7 +402,8 @@ class ForumPost(db.Model, ModelMixin):
     __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
     id: int = db.Column(db.Integer, primary_key=True)
-    thread_id: int = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), nullable=False)
+    thread_id: int = db.Column(
+        db.Integer, db.ForeignKey('forums_threads.id'), nullable=False, index=True)
     poster_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     contents: str = db.Column(db.Text, nullable=False)
     time: datetime = db.Column(
@@ -396,7 +411,7 @@ class ForumPost(db.Model, ModelMixin):
     sticky: bool = db.Column(db.Boolean, nullable=False, server_default='f')
     edited_user_id: Optional[int] = db.Column(db.Integer, db.ForeignKey('users.id'))
     edited_time: Optional[datetime] = db.Column(db.DateTime(timezone=True))
-    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f')
+    deleted: bool = db.Column(db.Boolean, nullable=False, server_default='f', index=True)
 
     @classmethod
     def from_thread(cls,
@@ -492,7 +507,6 @@ class ForumPostEditHistory(db.Model, ModelMixin):
         return User.from_id(self.editor_id)
 
 
-# Denormalized thread id and post id for efficiency's sake
 class ForumLastViewedPost(db.Model):
     __tablename__ = 'last_viewed_forum_posts'
     __cache_key__ = 'last_viewed_forum_post_{thread_id}_{user_id}'
@@ -526,17 +540,103 @@ class ForumLastViewedPost(db.Model):
 
 class ForumSubscription(db.Model):
     __tablename__ = 'forums_forums_subscriptions'
-    __cache_key__ = 'forums_forums_subscriptions_{user_id}'
-    __cache_key_active__ = 'forums_forums_subscriptions_active_{user_id}'
+    __cache_key_users__ = 'forums_forums_subscriptions_{forum_id}_users'
+    __cache_key_of_users__ = 'forums_forums_subscriptions_{user_id}'
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), primary_key=True)
 
+    @classmethod
+    def new(cls,
+            *,
+            user_id: int,
+            forum_id: int) -> Optional['ForumSubscription']:
+        Forum.is_valid(forum_id, error=True)
+        User.is_valid(user_id, error=True)
+        subscription = cls(
+            user_id=user_id,
+            forum_id=forum_id)
+        db.session.add(subscription)
+        db.session.commit()
+        return subscription
+
+    @classmethod
+    def from_attrs(cls,
+                   user_id: int,
+                   forum_id: int) -> Optional['ForumSubscription']:
+        return cls.query.filter(and_(
+            cls.user_id == user_id,
+            cls.forum_id == forum_id)).scalar()
+
+    @classmethod
+    def user_ids_from_forum(cls, id: int) -> List[int]:
+        cache_key = cls.__cache_key_users__.format(forum_id=id)
+        user_ids = cache.get(cache_key)
+        if not user_ids:
+            user_ids = [
+                i for i, in db.session.query(cls.user_id).filter(cls.forum_id == id).all()]
+            cache.set(cache_key, user_ids)
+        return user_ids
+
 
 class ForumThreadSubscription(db.Model):
     __tablename__ = 'forums_threads_subscriptions'
-    __cache_key__ = 'forums_threads_subscriptions_{user_id}'
     __cache_key_active__ = 'forums_threads_subscriptions_active_{user_id}'
+    __cache_key_users__ = 'forums_threads_subscriptions_{thread_id}_users'
+    __cache_key_of_users__ = 'forums_threads_subscriptions_{user_id}'
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     thread_id = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), primary_key=True)
+
+    @classmethod
+    def new(cls,
+            *,
+            user_id: int,
+            thread_id: int) -> Optional['ForumThreadSubscription']:
+        ForumThread.is_valid(thread_id, error=True)
+        User.is_valid(user_id, error=True)
+        subscription = cls(
+            user_id=user_id,
+            thread_id=thread_id)
+        db.session.add(subscription)
+        db.session.commit()
+        return subscription
+
+    @classmethod
+    def from_attrs(cls,
+                   user_id: int,
+                   thread_id: int) -> Optional['ForumThreadSubscription']:
+        return cls.query.filter(and_(
+            cls.user_id == user_id,
+            cls.thread_id == thread_id)).scalar()
+
+    @classmethod
+    def user_ids_from_thread(cls, id: int) -> List[int]:
+        cache_key = cls.__cache_key_users__.format(thread_id=id)
+        user_ids = cache.get(cache_key)
+        if not user_ids:
+            user_ids = [
+                i for i, in db.session.query(cls.user_id).filter(cls.thread_id == id).all()]
+            cache.set(cache_key, user_ids)
+        return user_ids
+
+    @classmethod
+    def clear_cache_keys(cls,
+                         user_ids: List[int] = None,
+                         thread_id: int = None) -> None:
+        """
+        Clear the cache keys associated with specific users and/or threads. Clearing a thread
+        cache key also clears the cache keys for all of its users
+
+        :param user_ids: The IDs of the users whose cache keys should be cleared
+        :param thread_id: The ID of the thread for which the cache key should be cleared
+        """
+        user_ids = user_ids or []  # Don't put a mutable object as default kwarg!
+        active_user_ids = user_ids or []
+        if thread_id:
+            cache.delete(cls.__cache_key_users__.format(thread_id=thread_id))
+            active_user_ids += cls.user_ids_from_thread(thread_id)
+        if active_user_ids:
+            cache.delete_many(
+                *(cls.__cache_key_of_users__.format(user_id=uid) for uid in user_ids),
+                *(cls.__cache_key_active__.format(user_id=uid) for uid in active_user_ids))

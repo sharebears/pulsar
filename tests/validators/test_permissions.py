@@ -6,11 +6,10 @@ from voluptuous import Invalid
 
 from conftest import add_permissions, check_dupe_in_list, check_json_response
 from pulsar import APIException, db
-from pulsar.users.models import User
 from pulsar.permissions.models import UserPermission
-from pulsar.validators import (ForumPermissionsDict, PermissionsDict,
-                               check_permissions, permissions_list,
-                               permissions_list_of_user)
+from pulsar.users.models import User
+from pulsar.validators import (ForumPermissionsDict, PermissionsDict, check_permissions,
+                               permissions_list, permissions_list_of_user)
 
 
 def test_permissions_list(app, authed_client):

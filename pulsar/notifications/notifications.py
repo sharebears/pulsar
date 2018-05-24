@@ -1,12 +1,31 @@
-# flake8:  noqa
+import flask
+
+from pulsar.forums.models import ForumThread
+from pulsar.utils import require_permission, choose_user
 
 from . import bp
-from pulsar.forums.models import Forum, ForumThread
 
 
-@bp.route('/notifications')
-def view_notifications():
+@bp.route('/notifications', methods=['GET'])
+@bp.route('/notifications/user/<int:user_id>', methods=['GET'])
+@require_permission('view_notifications')
+def view_notifications(user_id=None):
     """
-    View all pending notifications for a user.
+    View all pending notifications for a user. This includes thread subscriptions,
+    collage notifications, torrent notifications, and inbox messages.
     """
-    pass
+    user = choose_user(user_id, 'view_notifications_others')
+    return flask.jsonify({
+        'forum_subscriptions': ForumThread.new_subscriptions(user.id),
+        })
+
+
+@bp.route('/subscriptions', methods=['GET'])
+@bp.route('/subscriptions/user/<int:user_id>', methods=['GET'])
+@require_permission('view_notifications')
+def view_subscriptions(user_id=None):
+    """
+    View all pending subscriptions for a user.
+    """
+    user = choose_user(user_id, 'view_notifications_others')
+    return flask.jsonify(ForumThread.new_subscriptions(user.id))

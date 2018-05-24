@@ -1,8 +1,9 @@
 import flask
 from voluptuous import All, In, Length, Range, Schema
 
-from pulsar import db
-from pulsar.forums.models import Forum, ForumPost, ForumThread
+from pulsar import db, APIException
+from pulsar.forums.models import (Forum, ForumPost, ForumSubscription, ForumThread,
+                                  ForumThreadSubscription)
 from pulsar.utils import require_permission, validate_data
 from pulsar.validators import bool_get
 
@@ -121,11 +122,25 @@ def create_thread(topic: str,
     :statuscode 200: Creation successful
     :statuscode 400: Creation unsuccessful
     """
-    forum = ForumThread.new(
+    thread = ForumThread.new(
         topic=topic,
         forum_id=forum_id,
         poster_id=flask.g.user.id)
-    return flask.jsonify(forum)
+    subscribe_users_to_new_thread(thread)
+    return flask.jsonify(thread)
+
+
+def subscribe_users_to_new_thread(thread: ForumThread) -> None:
+    """
+    Subscribes all users subscribed to the parent forum to the new forum thread.
+
+    :param thread: The newly-created forum thread
+    """
+    user_ids = ForumSubscription.user_ids_from_forum(thread.forum_id)
+    db.session.bulk_save_objects([
+        ForumThreadSubscription(user_id=uid, thread_id=thread.id)
+        for uid in user_ids])
+    ForumThreadSubscription.clear_cache_keys(user_ids=user_ids)
 
 
 MODIFY_FORUM_THREAD_SCHEMA = Schema({
@@ -246,3 +261,58 @@ def delete_thread(id: int) -> flask.Response:
         ids=ForumPost.get_ids_from_thread(thread.id),
         update={'deleted': True})
     return flask.jsonify(f'ForumThread {id} ({thread.topic}) has been deleted.')
+
+
+@bp.route('/forums/threads/<int:thread_id>/subscribe', methods=['POST', 'DELETE'])
+@require_permission('modify_forum_subscriptions')
+def alter_thread_subscription(thread_id: int) -> flask.Response:
+    """
+    This is the endpoint for forum thread subscription. The ``modify_forum_subscriptions``
+    permission is required to access this endpoint. A POST request creates a subscription,
+    whereas a DELETE request removes a subscription.
+
+    .. :quickref: ForumThread; Subscribe to a forum thread.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       PUT /forums/threads/2/subscribe HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": "Successfully subscribed to thread 2."
+       }
+
+    :>json str response: Success or failure message
+
+    :statuscode 200: Subscription alteration successful
+    :statuscode 400: Subscription alteration unsuccessful
+    :statuscode 404: Forum thread does not exist
+    """
+    thread = ForumThread.from_id(thread_id, _404=True)
+    subscription = ForumThreadSubscription.from_attrs(
+        flask.g.user.id, thread.id)
+    if flask.request.method == 'POST':
+        if subscription:
+            raise APIException(f'You are already subscribed to thread {thread_id}.')
+        ForumThreadSubscription.new(
+            user_id=flask.g.user.id,
+            thread_id=thread_id)
+        return flask.jsonify(f'Successfully subscribed to thread {thread_id}.')
+    else:  # method = DELETE
+        if not subscription:
+            raise APIException(f'You are not subscribed to thread {thread_id}.')
+        db.session.delete(subscription)
+        db.session.commit()
+        return flask.jsonify(f'Successfully unsubscribed from thread {thread_id}.')

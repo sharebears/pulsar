@@ -11,6 +11,10 @@
 - [ ] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
 - [ ] Use a rollback for tests instead of manual table clears?
+- [ ] Post-length exemption permission
+- [ ] Create a values() query function per http://xion.io/post/code/sqlalchemy-query-values.html
+- [ ] Unit tests for cache key clear on new subscribed threads / posts in subscribed threads
+- [ ] Automate PK usage based on SQLA object metadata in ModelMixin instead of ID--support composite PK
 
 
 # TODO
@@ -56,11 +60,11 @@
 - [x] Thread View
 - [x] Posts View
 - [x] Last viewed post in a thread
-- [ ] Subscriptions
+- [x] Thread Subscriptions
+- [x] Forum Subscriptions (autosubscribe to new threads in forum)
 - [ ] Polls
 - [ ] Individual category view with 8 threads per sub-forum
 - [ ] Documentation
-- [ ] Max post lengths on a per-user basis
 
 ## Rules
 - [ ] Dictionary files to be imported - enable reload of import without restarting site
