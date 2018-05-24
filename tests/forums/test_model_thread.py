@@ -2,7 +2,8 @@ import pytest
 
 from conftest import add_permissions, check_dictionary
 from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
-from pulsar.forums.models import ForumPost, ForumThread, ForumLastViewedPost
+from pulsar.forums.models import (ForumLastViewedPost, ForumPost, ForumThread,
+                                  ForumThreadSubscription)
 
 
 def test_thread_from_id(app, authed_client):
@@ -163,9 +164,11 @@ def test_thread_last_post_already_cached(app, authed_client):
 def test_thread_subscriptions(app, authed_client):
     db.session.execute("""INSERT INTO forums_threads_subscriptions (user_id, thread_id) VALUES
                        (1, 1), (1, 2), (1, 3)""")
-    threads = ForumThread.from_subscribed(1)
+    threads = ForumThread.from_subscribed_user(1)
     assert len(threads) == 2
     assert all(t.id in {1, 3} for t in threads)
+    assert {1, 3} == set(
+        cache.get(ForumThreadSubscription.__cache_key__.format(user_id=1)))
 
 
 def test_thread_last_viewed_post_none(app, authed_client):

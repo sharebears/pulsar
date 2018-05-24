@@ -110,18 +110,6 @@ class Forum(db.Model, ModelMixin):
             order=cls.position.asc())  # type: ignore
 
     @classmethod
-    def from_subscribed(cls, user_id: int) -> List['Forum']:
-        return cls.get_many(
-            key=cls.__cache_key_of_subscribed__.format(user_id=user_id),
-            expr_override=select(
-                [forum_subscriptions_table.c.forum_id]).select_from(
-                    forum_subscriptions_table.join(
-                        Forum.__table__)).where(and_(
-                           (forum_subscriptions_table.c.user_id == user_id),
-                           (Forum.__table__.c.deleted == 'f'),
-                        )))
-
-    @classmethod
     def new(cls,
             name: str,
             category_id: int,
@@ -134,6 +122,14 @@ class Forum(db.Model, ModelMixin):
             category_id=category_id,
             description=description,
             position=position)
+
+    @classmethod
+    def from_subscribed_user(cls, user_id: int) -> List['Forum']:
+        return cls.get_many(
+            key=ForumSubscription.__cache_key__.format(user_id=user_id),
+            filter=cls.id.in_(db.session.query(ForumSubscription.forum_id)  # type: ignore
+                              .filter(ForumSubscription.user_id == user_id)),
+            order=Forum.id.asc())  # type: ignore
 
     @cached_property
     def category(self) -> 'ForumCategory':
@@ -153,11 +149,11 @@ class Forum(db.Model, ModelMixin):
             filter=(ForumThread.forum_id == self.id),
             order=ForumThread.last_updated.desc())
 
-    @cached_property
+    @property
     def threads(self) -> List['ForumThread']:
-        if hasattr(self, '_threads'):
-            return self._threads
-        return ForumThread.from_forum(self.id, 1, limit=50)
+        if not hasattr(self, '_threads'):
+            self._threads = ForumThread.from_forum(self.id, 1, limit=50)
+        return self._threads
 
     def set_threads(self,
                     page: int,
@@ -238,18 +234,6 @@ class ForumThread(db.Model, ModelMixin):
             include_dead=include_dead)
 
     @classmethod
-    def from_subscribed(cls, user_id: int) -> List['ForumThread']:
-        return cls.get_many(
-            key=cls.__cache_key_of_subscribed__.format(user_id=user_id),
-            expr_override=select(
-                [forum_thread_subscriptions_table.c.thread_id]).select_from(
-                    forum_thread_subscriptions_table.join(
-                        ForumThread.__table__)).where(and_(
-                           (forum_thread_subscriptions_table.c.user_id == user_id),
-                           (ForumThread.__table__.c.deleted == 'f'),
-                        )))
-
-    @classmethod
     def new(cls,
             topic: str,
             forum_id: int,
@@ -268,6 +252,14 @@ class ForumThread(db.Model, ModelMixin):
             key=cls.__cache_key_of_forum__.format(id=id),
             filter=cls.forum_id == id,
             order=cls.last_updated.desc())
+
+    @classmethod
+    def from_subscribed_user(cls, user_id: int) -> List['ForumThread']:
+        return cls.get_many(
+            key=ForumThreadSubscription.__cache_key__.format(user_id=user_id),
+            filter=cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
+                              .filter(ForumThreadSubscription.user_id == user_id)),
+            order=ForumThread.id.asc())  # type: ignore
 
     @hybrid_property
     def last_updated(cls) -> BinaryExpression:
@@ -303,11 +295,11 @@ class ForumThread(db.Model, ModelMixin):
             attribute=ForumPost.id,
             filter=and_(ForumPost.thread_id == self.id, ForumPost.deleted == 'f',))
 
-    @cached_property
+    @property
     def posts(self) -> List['ForumPost']:
-        if hasattr(self, '_posts'):
-            return self._posts
-        return ForumPost.from_thread(self.id, 1, limit=50)
+        if not hasattr(self, '_posts'):
+            self._posts = ForumPost.from_thread(self.id, 1, limit=50)
+        return self._posts
 
     def set_posts(self,
                   page: int = 1,
@@ -319,7 +311,7 @@ class ForumThread(db.Model, ModelMixin):
                    permission: str = None,
                    error: bool = False) -> bool:
         """Determines whether or not the user has the permissions to access the thread."""
-        if flask.g.user is None:
+        if flask.g.user is None:  # pragma: no cover
             if error:
                 raise _403Exception
             return False
@@ -501,13 +493,17 @@ class ForumLastViewedPost(db.Model):
         return post
 
 
-forum_subscriptions_table = db.Table(
-    'forums_forums_subscriptions', db.metadata,
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('forum_id', db.Integer, db.ForeignKey('forums.id'), nullable=False))
+class ForumSubscription(db.Model):
+    __tablename__ = 'forums_forums_subscriptions'
+    __cache_key__ = 'forums_forums_subscriptions_{user_id}'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    forum_id = db.Column(db.Integer, db.ForeignKey('forums.id'), primary_key=True)
 
 
-forum_thread_subscriptions_table = db.Table(
-    'forums_threads_subscriptions', db.metadata,
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), nullable=False),
-    db.Column('thread_id', db.Integer, db.ForeignKey('forums_threads.id'), nullable=False))
+class ForumThreadSubscription(db.Model):
+    __tablename__ = 'forums_threads_subscriptions'
+    __cache_key__ = 'forums_threads_subscriptions_{user_id}'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    thread_id = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), primary_key=True)

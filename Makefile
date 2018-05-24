@@ -3,6 +3,6 @@ lint:
 test:
 	flake8
 	./scripts/permissions_checker.py
-	mypy pulsar/ --no-strict-optional
+	mypy --no-strict-optional --html-report .mypy-html pulsar/
 	pytest --cov-report term-missing --cov-branch --cov=pulsar tests/
 tests: test

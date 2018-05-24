@@ -48,6 +48,11 @@ def test_belongs_to_user_fails_unauthed(app, client):
         assert not mixin.belongs_to_user()
 
 
+def test_delet_unavailable_property_from_cache_doesnt_blow_up(app, authed_client):
+    user = ModelMixin()
+    user.del_property_cache('notakey')
+
+
 @pytest.mark.parametrize(
     'data, result', [
         ('not-a-dict', False),

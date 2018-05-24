@@ -63,8 +63,8 @@ class ModelMixin(Model):
     but let's pretend it is so our type analysis works.
     """
 
-    __cache_key__: str = None
-    __deletion_attr__: str = None
+    __cache_key__: Optional[str] = None
+    __deletion_attr__: Optional[str] = None
 
     __serialize__: tuple = ()
     __serialize_self__: tuple = ()
@@ -95,7 +95,8 @@ class ModelMixin(Model):
                 *,
                 include_dead: bool = False,
                 _404: bool = False,
-                asrt: str = None) -> Optional[MDL]:  # FIXME
+                asrt: str = None) -> Optional[MDL]:
+                # TODO fix response type, this is why we are static optional.
         """
         Default classmethod constructor to get an object by its PK ID.
         If the object has a deleted/revoked/expired column, it will compare a
@@ -214,6 +215,7 @@ class ModelMixin(Model):
                  page: int = None,
                  limit: int = 50,
                  reverse: bool = False,
+                 ids: List[Union[int, str]] = None,
                  expr_override: BinaryExpression = None) -> List[MDL]:
         """
         An abstracted function to get a list of IDs from the cache with a cache key,
@@ -246,7 +248,7 @@ class ModelMixin(Model):
 
         :return:                    A list of objects matching the query specifications
         """
-        # TODO: Profile efficiency of this function with a bunch of random data
+        # TODO: Cleanup review
         ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
         if reverse:
             ids.reverse()

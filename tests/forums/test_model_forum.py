@@ -2,7 +2,7 @@ import pytest
 
 from conftest import add_permissions, check_dictionary
 from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
-from pulsar.forums.models import Forum
+from pulsar.forums.models import Forum, ForumSubscription
 
 
 def test_forum_from_id(app, authed_client):
@@ -127,9 +127,11 @@ def test_forum_threads_with_deleted(app, authed_client):
 def test_forum_subscriptions(app, authed_client):
     db.session.execute("""INSERT INTO forums_forums_subscriptions (user_id, forum_id) VALUES
                        (1, 1), (1, 2), (1, 3)""")
-    forums = Forum.from_subscribed(1)
+    forums = Forum.from_subscribed_user(1)
     assert len(forums) == 2
     assert all(f.id in {1, 2} for f in forums)
+    assert {1, 2} == set(
+        cache.get(ForumSubscription.__cache_key__.format(user_id=1)))
 
 
 def test_serialize_no_perms(app, authed_client):

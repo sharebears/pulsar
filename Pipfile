@@ -27,6 +27,7 @@ mypy = "*"
 isort = "*"
 sphinx-autodoc-typehints = "*"
 hypothesis = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.6"

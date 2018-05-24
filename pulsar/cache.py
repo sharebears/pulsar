@@ -218,7 +218,7 @@ class Cache(RedisCache):
 
 def clear_cache_dirty(session: SignallingSession, _, __) -> None:
     """
-    Clear the cache key of every dirty/deleted object before DB commit.
+    Clear the cache key of every dirty/deleted object before DB flush.
 
     :param session: The database session about to be committed
     """
