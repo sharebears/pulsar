@@ -283,18 +283,17 @@ class ForumThread(db.Model, ModelMixin):
     def new_subscriptions(cls, user_id: int) -> List['ForumThread']:
         return cls.get_many(
             key=ForumThreadSubscription.__cache_key_active__.format(user_id=user_id),
-            filter=or_(and_(
-                    (cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
-                                .filter(ForumThreadSubscription.user_id == user_id))),
-                    (cls.last_post_id > db.session.query(
-                        ForumLastViewedPost.post_id).filter(and_(
-                            ForumLastViewedPost.user_id == user_id,
-                            ForumLastViewedPost.thread_id == cls.id)))
-                ),
-                (db.session.query(
+            filter=and_(
+                (cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
+                            .filter(ForumThreadSubscription.user_id == user_id))),
+                or_((cls.last_post_id > db.session.query(
                     ForumLastViewedPost.post_id).filter(and_(
                         ForumLastViewedPost.user_id == user_id,
-                        ForumLastViewedPost.thread_id == cls.id)).as_scalar().is_(None))
+                        ForumLastViewedPost.thread_id == cls.id))),
+                    (db.session.query(
+                        ForumLastViewedPost.post_id).filter(and_(
+                            ForumLastViewedPost.user_id == user_id,
+                            ForumLastViewedPost.thread_id == cls.id)).as_scalar().is_(None)))
                 ),
             order=cls.last_post_id.desc())
 

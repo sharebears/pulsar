@@ -17,6 +17,7 @@ def populate_db(app, client):
     db.engine.execute(
         """INSERT INTO forums_threads (
             id, topic, forum_id, poster_id, locked, sticky, deleted) VALUES
+        (1, 'New Site', 1, 1, 'f', 'f', 'f'),
         (3, 'Using PHP', 2, 2, 't', 't', 'f'),
         (4, 'Literally this', 2, 1, 'f', 'f', 'f')""")
     db.engine.execute("ALTER SEQUENCE forums_threads_id_seq RESTART WITH 6")
