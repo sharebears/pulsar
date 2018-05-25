@@ -42,7 +42,7 @@ app = create_app('config.py')
 app.app_context().push()
 
 try:
-    if User.from_id(10):
+    if User.from_pk(10):
         sys.exit("""Database has 10+ users, please wipe it manually if you wish
                  to insert testing data. Example commands:
                  DROP SCHEMA <schemaname> CASCADE;

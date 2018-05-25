@@ -58,7 +58,7 @@ def test_edit_category(app, authed_client):
         'name': 'Bite',
         'description': 'Very New Description',
         })
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     assert category.id == 1
     assert category.name == 'Bite'
     assert category.description == 'Very New Description'
@@ -75,7 +75,7 @@ def test_edit_category_skips(app, authed_client):
         'description': 'General site discussion',
         'position': 0,
         })
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     assert category.position == 0
 
 
@@ -83,7 +83,7 @@ def test_delete_category(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forums')
     response = authed_client.delete('/forums/categories/5')
     check_json_response(response, 'ForumCategory 5 (uWhatMate) has been deleted.')
-    category = ForumCategory.from_id(5, include_dead=True)
+    category = ForumCategory.from_pk(5, include_dead=True)
     assert category.deleted
 
 

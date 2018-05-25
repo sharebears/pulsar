@@ -13,9 +13,9 @@ from . import bp
 app = flask.current_app
 
 
-@bp.route('/api_keys/<id>', methods=['GET'])
+@bp.route('/api_keys/<hash>', methods=['GET'])
 @require_permission('view_api_keys')
-def view_api_key(id: str) -> flask.Response:
+def view_api_key(hash: str) -> flask.Response:
     """
     View info of an API key. Requires the ``view_api_keys`` permission to view
     one's own API keys, and the ``view_api_keys_others`` permission to view
@@ -43,7 +43,7 @@ def view_api_key(id: str) -> flask.Response:
          "status": "success",
          "response": {
            "revoked": false,
-           "id": "abcdefghij",
+           "hash": "abcdefghij",
            "ip": "127.0.0.1",
            "last_used": "1970-01-01T00:00:00.000001+00:00",
            "user-agent": "curl/7.59.0",
@@ -55,7 +55,7 @@ def view_api_key(id: str) -> flask.Response:
        }
 
     :>jsonarr boolean revoked: Whether or not the API key is revoked
-    :>jsonarr string id: The identification id of the API key
+    :>jsonarr string hash: The identification id of the API key
     :>jsonarr string ip: The last IP to access the API key
     :>jsonarr string user-agent: The last User Agent to access the API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
@@ -64,8 +64,8 @@ def view_api_key(id: str) -> flask.Response:
     :statuscode 200: Successfully viewed API key.
     :statuscode 404: API key does not exist.
     """
-    return flask.jsonify(APIKey.from_id(
-        id, include_dead=True, _404=True, asrt='view_api_keys_others'))
+    return flask.jsonify(APIKey.from_pk(
+        hash, include_dead=True, _404=True, asrt='view_api_keys_others'))
 
 
 VIEW_ALL_API_KEYS_SCHEMA = Schema({
@@ -107,7 +107,7 @@ def view_all_api_keys(include_dead: bool,
          "response": [
            {
              "revoked": false,
-             "id": "abcdefghij",
+             "hash": "abcdefghij",
              "ip": "127.0.0.1",
              "last_used": "1970-01-01T00:00:00.000001+00:00",
              "user-agent": "curl/7.59.0",
@@ -124,7 +124,7 @@ def view_all_api_keys(include_dead: bool,
     :>json list response: A list of API keys
 
     :>jsonarr boolean revoked: Whether or not the API key is revoked
-    :>jsonarr string id: The identification id of the API key
+    :>jsonarr string hash: The identification id of the API key
     :>jsonarr string ip: The last IP to access the API key
     :>jsonarr string user-agent: The last User Agent to access the API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
@@ -174,7 +174,7 @@ def create_api_key(permissions: List[str] = None) -> flask.Response:
        {
          "status": "success",
          "response": {
-           "identifier": "abcdefghij",
+           "hash": "abcdefghij",
            "key": "abcdefghijklmnopqrstuvwx",
            "permissions": [
              "view_api_keys",
@@ -183,7 +183,7 @@ def create_api_key(permissions: List[str] = None) -> flask.Response:
          }
        }
 
-    :>jsonarr string id: The identification id of the API key
+    :>jsonarr string hash: The identification id of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
@@ -196,21 +196,21 @@ def create_api_key(permissions: List[str] = None) -> flask.Response:
         flask.request.user_agent.string,
         permissions)
     return flask.jsonify({
-        'id': api_key.id,
+        'hash': api_key.hash,
         'key': raw_key,
         'permissions': permissions,
         })
 
 
 REVOKE_API_KEY_SCHEMA = Schema({
-    'id': All(str, Length(min=10, max=10)),
+    'hash': All(str, Length(min=10, max=10)),
     }, required=True)
 
 
 @bp.route('/api_keys', methods=['DELETE'])
 @require_permission('revoke_api_keys')
 @validate_data(REVOKE_API_KEY_SCHEMA)
-def revoke_api_key(id: int) -> flask.Response:
+def revoke_api_key(hash: int) -> flask.Response:
     """
     Revokes an API key currently in use by the user. Requires the
     ``revoke_api_keys`` permission to revoke one's own API keys, and the
@@ -228,7 +228,7 @@ def revoke_api_key(id: int) -> flask.Response:
        Content-Type: application/json
 
        {
-         "id": "abcdefghij"
+         "hash": "abcdefghij"
        }
 
     **Example response**:
@@ -244,9 +244,9 @@ def revoke_api_key(id: int) -> flask.Response:
          "response": "API Key abcdefghij has been revoked."
        }
 
-    :<json str id: The ID of the API key
+    :<json str hash: The hash of the API key
 
-    :>jsonarr string id: The ID of the API key
+    :>jsonarr string hash: The hash of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
@@ -255,13 +255,13 @@ def revoke_api_key(id: int) -> flask.Response:
     :statuscode 404: API key does not exist or user does not have permission
         to revoke the API key
     """
-    api_key = APIKey.from_id(
-        id, include_dead=True, _404=True, asrt='revoke_api_keys_others')
+    api_key = APIKey.from_pk(
+        hash, include_dead=True, _404=True, asrt='revoke_api_keys_others')
     if api_key.revoked:
-        raise APIException(f'APIKey {id} is already revoked.')
+        raise APIException(f'APIKey {hash} is already revoked.')
     api_key.revoked = True
     db.session.commit()
-    return flask.jsonify(f'APIKey {id} has been revoked.')
+    return flask.jsonify(f'APIKey {hash} has been revoked.')
 
 
 @bp.route('/api_keys/all', methods=['DELETE'])
@@ -296,7 +296,7 @@ def revoke_all_api_keys(user_id: int = None) -> flask.Response:
          "response": "All api keys have been revoked."
        }
 
-    :>jsonarr string id: The identification id of the API key
+    :>jsonarr string hash: The identification id of the API key
     :>jsonarr string key: The full API key
     :>jsonarr list permissions: A list of permissions allowed to the API key,
         encoded as ``str``
@@ -306,7 +306,7 @@ def revoke_all_api_keys(user_id: int = None) -> flask.Response:
     """
     user = choose_user(user_id, 'revoke_api_keys_others')
     APIKey.update_many(
-        ids=APIKey.ids_from_user(user.id),
+        pks=APIKey.hashes_from_user(user.id),
         update={'revoked': True})
     db.session.commit()
     return flask.jsonify('All api keys have been revoked.')

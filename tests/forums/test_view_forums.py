@@ -69,7 +69,7 @@ def test_add_forum_nonexistent_category(app, authed_client):
         'name': 'New Forum',
         'category_id': 100,
         }))
-    check_json_response(response, 'Invalid ForumCategory ID.')
+    check_json_response(response, 'Invalid ForumCategory id.')
 
 
 def test_edit_forum(app, authed_client):
@@ -85,7 +85,7 @@ def test_edit_forum(app, authed_client):
         'description': 'Very New Description',
         })
     assert response.get_json()['response']['category']['id'] == 4
-    forum = Forum.from_id(1)
+    forum = Forum.from_pk(1)
     assert forum.id == 1
     assert forum.name == 'Bite'
     assert forum.description == 'Very New Description'
@@ -103,7 +103,7 @@ def test_edit_forum_skips(app, authed_client):
         'description': 'Stuff about pulsar',
         'position': 0,
         })
-    forum = Forum.from_id(1)
+    forum = Forum.from_pk(1)
     assert forum.position == 0
 
 
@@ -112,7 +112,7 @@ def test_edit_forum_bad_category(app, authed_client):
     response = authed_client.put('/forums/1', data=json.dumps({
         'category_id': 100,
         }))
-    check_json_response(response, 'Invalid ForumCategory ID.')
+    check_json_response(response, 'Invalid ForumCategory id.')
 
 
 def test_edit_forum_nonexistent(app, authed_client):
@@ -125,12 +125,12 @@ def test_edit_forum_nonexistent(app, authed_client):
 
 def test_delete_forum(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forums')
-    sub_thread = ForumThread.from_id(5)  # Cache - thread isn't deleted, belongs to category
+    sub_thread = ForumThread.from_pk(5)  # Cache - thread isn't deleted, belongs to category
     response = authed_client.delete('/forums/5')
     check_json_response(response, 'Forum 5 (Yacht Funding) has been deleted.')
-    forum = ForumThread.from_id(5, include_dead=True)
+    forum = ForumThread.from_pk(5, include_dead=True)
     assert forum.deleted
-    sub_thread = ForumThread.from_id(5, include_dead=True)
+    sub_thread = ForumThread.from_pk(5, include_dead=True)
     assert sub_thread.deleted
 
 

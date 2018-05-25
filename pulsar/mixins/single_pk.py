@@ -6,20 +6,22 @@ from sqlalchemy import func
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
+from sqlalchemy.inspection import inspect
 
 from pulsar import APIException, _403Exception, _404Exception, cache, db
 
-MDL = TypeVar('MDL', bound='ModelMixin')
+MDL = TypeVar('MDL', bound='SinglePKMixin')
 
 
-class ModelMixin(Model):
+class SinglePKMixin(Model):
     """
     This is a custom model mixin for the pulsar project, which adds caching
     and JSON serialization functionality to the base model. Subclasses are
     expected to define their serializable attributes, permission restrictions,
     and cache key template with the following class attributes. They are required
     if one wants to cache or serialize data for a model. By default, all "serialize"
-    tuples are empty, so only the populated ones need to be defined.
+    tuples are empty, so only the populated ones need to be defined. This mixin is
+    not designed for models with composite primary keys.
 
     * ``__cache_key__`` (``str``)
     * ``__serialize__`` (``tuple``)
@@ -55,10 +57,6 @@ class ModelMixin(Model):
     and repetitive. Generalized functions to abstract those are included in this class,
     and are expected to be utilized wherever possible.
 
-    Some of those functions may need to be overridden by the subclass. The base cache
-    key property and ``from_id`` classmethod assume that an ``id`` property exists and
-    that the cache key only accepts an ID kwarg.
-
     It's not a true mixin in that it's monolithic and inherits from the base class,
     but let's pretend it is so our type analysis works.
     """
@@ -76,22 +74,9 @@ class ModelMixin(Model):
     __permission_detailed__: Optional[str] = None
     __permission_very_detailed__: Optional[str] = None
 
-    @property
-    def cache_key(self) -> str:
-        """
-        Default property for cache key which should be overridden if the
-        cache key is not formatted with an ID column. If the cache key
-        string for the model only takes an {id} param, then this function
-        will suffice.
-
-        :return:           The cache key of the model
-        :raises NameError: If the model does not have a cache key
-        """
-        return self.create_cache_key(id=self.id)
-
     @classmethod
-    def from_id(cls: Type[MDL],
-                id: Union[str, int, None],
+    def from_pk(cls: Type[MDL],
+                pk: Union[str, int, None],
                 *,
                 include_dead: bool = False,
                 _404: bool = False,
@@ -116,10 +101,10 @@ class ModelMixin(Model):
         :return:               The object corresponding to the given ID, if it exists
         :raises _404Exception: If ``_404`` is passed and a model is not found or accessible
         """
-        if id:
+        if pk:
             model = cls.from_cache(
-                key=cls.create_cache_key(id=id),
-                query=cls.query.filter(cls.id == id))
+                key=cls.create_cache_key(pk),
+                query=cls.query.filter(getattr(cls, cls.get_primary_key()) == pk))
             if (model is not None
                     and model.can_access(asrt, error=not _404)
                     and (include_dead
@@ -127,8 +112,12 @@ class ModelMixin(Model):
                          or not getattr(model, cls.__deletion_attr__, False))):
                 return model
         if _404:
-            raise _404Exception(f'{cls.__name__} {id}')
+            raise _404Exception(f'{cls.__name__} {pk}')
         return None
+
+    @classmethod
+    def get_primary_key(cls) -> str:
+        return inspect(cls).primary_key[0].name
 
     @classmethod
     def from_cache(cls: Type[MDL],
@@ -182,7 +171,7 @@ class ModelMixin(Model):
         parameters. The resultant object (if exists) will be cached and returned.
 
         **The queried model must have a primary key column named ``id`` and a
-        ``from_id`` classmethod constructor.**
+        ``from_pk`` classmethod constructor.**
 
         :param key:    The cache key belonging to the object
         :param filter: A SQLAlchemy expression to filter the query with
@@ -190,18 +179,18 @@ class ModelMixin(Model):
 
         :return:       The queried model, if it exists
         """
-        cls_id = cache.get(key) if key else None
-        if not cls_id or not isinstance(cls_id, int):
+        cls_pk = cache.get(key) if key else None
+        if not cls_pk or not isinstance(cls_pk, int):
             query = cls._construct_query(cls.query, filter, order)
             model = query.first()
             if model:
                 if not cache.has(model.cache_key):
                     cache.cache_model(model)
                 if key:
-                    cache.set(key, model.id)
+                    cache.set(key, model.primary_key)
                 return model
             return None
-        return cls.from_id(cls_id)
+        return cls.from_pk(cls_pk)
 
     @classmethod
     def get_many(cls: Type[MDL],
@@ -215,10 +204,10 @@ class ModelMixin(Model):
                  page: int = None,
                  limit: int = 50,
                  reverse: bool = False,
-                 ids: List[Union[int, str]] = None,
+                 pks: List[Union[int, str]] = None,
                  expr_override: BinaryExpression = None) -> List[MDL]:
         """
-        An abstracted function to get a list of IDs from the cache with a cache key,
+        An abstracted function to get a list of PKs from the cache with a cache key,
         and query for those IDs if the key does not exist. If the query needs to be ran,
         a list will be created from the first element in every returned tuple result, like so:
         ``[x[0] for x in cls.query.all()]``
@@ -250,42 +239,33 @@ class ModelMixin(Model):
 
         :return:                    A list of objects matching the query specifications
         """
-        # TODO: Cleanup review
-        if not ids:
-            ids = cls.get_ids_of_many(key, filter, order, include_dead, expr_override)
+        if not pks:
+            pks = cls.get_pks_of_many(key, filter, order, include_dead, expr_override)
         if reverse:
-            ids.reverse()
+            pks.reverse()
         if page is not None:
-            all_next_ids = ids[(page - 1) * limit:]
-            ids, extra_ids = all_next_ids[:limit], all_next_ids[limit:]
+            all_next_pks = pks[(page - 1) * limit:]
+            pks, extra_pks = all_next_pks[:limit], all_next_pks[limit:]
 
         models: Dict[Union[int, str], MDL] = {}
         while len(models) < limit:
-            uncached_ids = []
-            cached_dict = cache.get_dict(*(cls.create_cache_key(id=i) for i in ids))
-            for i, (k, v) in zip(ids, cached_dict.items()):
-                if v:
-                    models[i] = cls._create_obj_from_cache(v)
-                else:
-                    uncached_ids.append(i)
+            cls.populate_models_from_pks(models, pks, filter)
 
-            qry_models = cls._construct_query(cls.query, filter).filter(
-                cls.id.in_(uncached_ids)).all()
-            cache.cache_models(qry_models)
-            for model in qry_models:
-                models[model.id] = model
+            # Check permissions on the models and filter out unwanted ones.
+            models = {k: m for k, m in models.items() if m.can_access(asrt)}
             if required_properties:
                 models = {k: m for k, m in models.items() if all(
                     getattr(m, rp, False) for rp in required_properties)}
-            models = {k: m for k, m in models.items() if m.can_access(asrt)}
-            if not page or not extra_ids:
+
+            # End pagination loop and return models.
+            if not page or not extra_pks:
                 break
-            ids = extra_ids[:abs(limit - len(models))]
-            extra_ids = extra_ids[abs(limit - len(models)):]
+            pks = extra_pks[:abs(limit - len(models))]
+            extra_pks = extra_pks[abs(limit - len(models)):]
         return list(models.values())
 
     @classmethod
-    def get_ids_of_many(cls,
+    def get_pks_of_many(cls,
                         key: str = None,
                         filter: BinaryExpression = None,
                         order: BinaryExpression = None,
@@ -309,22 +289,44 @@ class ModelMixin(Model):
         :return:                    A list of IDs
         """
         key = f'{key}_incl_dead' if include_dead and key else key
-        ids = cache.get(key) if key else None
-        if not ids or not isinstance(ids, list):
+        pks = cache.get(key) if key else None
+        if not pks or not isinstance(pks, list):
             if expr_override is not None:
-                ids = [x[0] for x in db.session.execute(expr_override)]
+                pks = [x[0] for x in db.session.execute(expr_override)]
             else:
-                query = cls._construct_query(db.session.query(cls.id), filter, order)
+                query = cls._construct_query(
+                    db.session.query(getattr(cls, cls.get_primary_key())), filter, order)
                 if not include_dead and cls.__deletion_attr__:
                     query = query.filter(getattr(cls, cls.__deletion_attr__) == 'f')
-                ids = [x[0] for x in query.all()]
+                pks = [x[0] for x in query.all()]
             if key:
-                cache.set(key, ids)
-        return ids
+                cache.set(key, pks)
+        return pks
+
+    @classmethod
+    def populate_models_from_pks(cls,
+                                 models: Dict[Union[int, str], MDL],
+                                 pks: List[Union[str, int]],
+                                 filter: BinaryExpression = None) -> None:
+        uncached_pks = []
+        cached_dict = cache.get_dict(*(cls.create_cache_key(pk) for pk in pks))
+        for i, (k, v) in zip(pks, cached_dict.items()):
+            if v:
+                models[i] = cls._create_obj_from_cache(v)
+            else:
+                uncached_pks.append(i)
+
+        if uncached_pks:
+            qry_models = cls._construct_query(cls.query.filter(
+                    getattr(cls, cls.get_primary_key()).in_(uncached_pks)),
+                filter).all()
+            cache.cache_models(qry_models)
+            for model in qry_models:
+                models[model.primary_key] = model
 
     @classmethod
     def is_valid(cls,
-                 id: Union[int, str, None],
+                 pk: Union[int, str, None],
                  error: bool = False) -> bool:
         """
         Check whether or not the object exists and isn't deleted.
@@ -334,16 +336,16 @@ class ModelMixin(Model):
         :return:              Validity of the object
         :raises APIException: If error param is passed and ID is not valid
         """
-        obj = cls.from_id(id)
+        obj = cls.from_pk(pk)
         valid = (obj is not None and (
             cls.__deletion_attr__ is None
             or not getattr(obj, cls.__deletion_attr__, False)))
         if error and not valid:
-            raise APIException(f'Invalid {cls.__name__} ID.')
+            raise APIException(f'Invalid {cls.__name__} {cls.get_primary_key()}.')
         return valid
 
     @classmethod
-    def create_cache_key(cls, **kwargs: Union[int, str]) -> str:
+    def create_cache_key(cls, pk: Union[int, str]) -> str:
         """
         Populate the ``__cache_key__`` class attribute with the kwargs.
 
@@ -352,34 +354,35 @@ class ModelMixin(Model):
         :return:           The cache key
         :raises NameError: If the cache key is undefined or improperly defined
         """
+        print(cls.get_primary_key())
         if cls.__cache_key__:
             try:
-                return cls.__cache_key__.format(**kwargs)
+                return cls.__cache_key__.format(**{cls.get_primary_key(): pk})
             except KeyError:
                 pass
         raise NameError('The cache key is undefined or improperly defined in this model.')
 
     @classmethod
     def update_many(cls, *,
-                    ids: List[Union[str, int]],
+                    pks: List[Union[str, int]],
                     update: Dict[str, Any],
                     sychronize_session: bool = False) -> None:
         """
-        Construct and execute a query affecting all objects with IDs in the
-        list of IDs passed to this function. This is only meant to be used for
-        models with an ID primary key and cache key formatted by ID.
+        Construct and execute a query affecting all objects with PKs in the
+        list of PKs passed to this function. This is only meant to be used for
+        models with an PK primary key and cache key formatted by PK.
 
-        :param ids:                 The list of primary key IDs to update
+        :param pks:                 The list of primary key PKs to update
         :param update:              The dictionary of column values to update
         :param synchronize_session: Whether or not to update the session after
                                     the query; should be True if the objects are
                                     going to be used after updating
         """
-        if ids:
-            db.session.query(cls).filter(cls.id.in_(ids)).update(
+        if pks:
+            db.session.query(cls).filter(getattr(cls, cls.get_primary_key()).in_(pks)).update(
                 update, synchronize_session=sychronize_session)
             db.session.commit()
-            cache.delete_many(*(cls.create_cache_key(id=id) for id in ids))
+            cache.delete_many(*(cls.create_cache_key(pk) for pk in pks))
 
     @classmethod
     def _new(cls: Type[MDL],
@@ -491,3 +494,20 @@ class ModelMixin(Model):
         if order is not None:
             query = query.order_by(order)
         return query
+
+    @property
+    def primary_key(self) -> Union[int, str]:
+        return getattr(self, self.get_primary_key())
+
+    @property
+    def cache_key(self) -> str:
+        """
+        Default property for cache key which should be overridden if the
+        cache key is not formatted with an ID column. If the cache key
+        string for the model only takes an {id} param, then this function
+        will suffice.
+
+        :return:           The cache key of the model
+        :raises NameError: If the model does not have a cache key
+        """
+        return self.create_cache_key(self.primary_key)

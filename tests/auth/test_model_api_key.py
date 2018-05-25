@@ -24,41 +24,41 @@ def test_api_key_collision(app, client, monkeypatch):
 
     raw_key, api_key = APIKey.new(2, '127.0.0.2', 'UA')
     assert len(raw_key) == 26
-    assert api_key.id != CODE_2[:10]
+    assert api_key.hash != CODE_2[:10]
     with pytest.raises(StopIteration):
         hex_generator(None)
 
 
-def test_from_id_and_check(app, client):
-    api_key = APIKey.from_id('abcdefghij')
+def test_from_pk_and_check(app, client):
+    api_key = APIKey.from_pk('abcdefghij')
     assert api_key.user_id == 1
     assert api_key.check_key(CODE_1)
     assert not api_key.check_key(CODE_2)
 
 
-def test_from_id_when_dead(app, client):
-    api_key = APIKey.from_id('1234567890', include_dead=True)
+def test_from_pk_when_dead(app, client):
+    api_key = APIKey.from_pk('1234567890', include_dead=True)
     assert api_key.user_id == 2
     assert api_key.check_key(CODE_2)
 
 
 def test_api_key_permission(app, client):
-    api_key = APIKey.from_id('abcdefghij', include_dead=True)
+    api_key = APIKey.from_pk('abcdefghij', include_dead=True)
     assert api_key.has_permission('sample_permission')
     assert not api_key.has_permission('not_a_permission')
 
 
 def test_serialize_no_perms(app, client):
-    session = APIKey.from_id('abcdefghij')
+    session = APIKey.from_pk('abcdefghij')
     assert NewJSONEncoder()._to_dict(session) is None
 
 
 def test_serialize_detailed(app, authed_client):
     add_permissions(app, 'view_api_keys_others')
-    session = APIKey.from_id('1234567890', include_dead=True)
+    session = APIKey.from_pk('1234567890', include_dead=True)
     data = NewJSONEncoder()._to_dict(session)
     check_dictionary(data, {
-        'id': '1234567890',
+        'hash': '1234567890',
         'user_id': 2,
         'ip': '0.0.0.0',
         'user_agent': None,
@@ -70,10 +70,10 @@ def test_serialize_detailed(app, authed_client):
 
 
 def test_serialize_self(app, authed_client):
-    session = APIKey.from_id('abcdefghij')
+    session = APIKey.from_pk('abcdefghij')
     data = NewJSONEncoder()._to_dict(session)
     check_dictionary(data, {
-        'id': 'abcdefghij',
+        'hash': 'abcdefghij',
         'user_id': 1,
         'ip': '0.0.0.0',
         'user_agent': None,

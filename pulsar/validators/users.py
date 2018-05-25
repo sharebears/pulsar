@@ -56,7 +56,7 @@ def val_invite_code(code: Optional[str]) -> None:
     if code is not None and (not isinstance(code, str) or len(code) != 24):
         raise APIException('Invite code must be a 24 character string.')
 
-    invite = Invite.from_id(code)
+    invite = Invite.from_pk(code)
     if invite and not invite.invitee_id:
         time_since_usage = datetime.utcnow().replace(tzinfo=pytz.utc) - invite.time_sent
         if time_since_usage.total_seconds() < app.config['INVITE_LIFETIME']:

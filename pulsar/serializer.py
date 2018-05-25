@@ -5,14 +5,14 @@ import flask
 from flask.json import JSONEncoder
 
 if TYPE_CHECKING:
-    from pulsar.mixins import ModelMixin as ModelMixin_ # noqa
+    from pulsar.mixins import SinglePKMixin as SinglePKMixin_ # noqa
 
 
 class NewJSONEncoder(JSONEncoder):
     """
     Custom JSON Encoder class to apply the _to_dict() function to
-    all ModelMixins and turn timestamps into unixtime. This encoder
-    allows ``flask.jsonify`` to receive a ``ModelMixin`` subclass
+    all SinglePKMixins and turn timestamps into unixtime. This encoder
+    allows ``flask.jsonify`` to receive a ``SinglePKMixin`` subclass
     as an argument, which will then be turned into a dictionary
     automatically.
     """
@@ -20,25 +20,25 @@ class NewJSONEncoder(JSONEncoder):
     def default(self, obj):
         """
         Overridden default method for the JSONEncoder. The JSON encoder will
-        now serialize all timestamps to POSIX time and turn ModelMixins
+        now serialize all timestamps to POSIX time and turn SinglePKMixins
         into dictionaries.
         """
-        from pulsar.mixins import ModelMixin
+        from pulsar.mixins import SinglePKMixin
         if isinstance(obj, datetime):
             return int(obj.timestamp())
         if isinstance(obj, set):
             return list(obj)
-        elif isinstance(obj, ModelMixin):
+        elif isinstance(obj, SinglePKMixin):
             return self._to_dict(obj)
         else:
             return super().default(obj)
 
     def _to_dict(self,
-                 model: 'ModelMixin_',
+                 model: 'SinglePKMixin_',
                  nested: bool = False) -> Optional[dict]:
         """
         Convert the model to a dictionary based on its defined serializable attributes.
-        ``ModelMixin`` objects embedded in the dictionary or lists in the dictionary
+        ``SinglePKMixin`` objects embedded in the dictionary or lists in the dictionary
         will be replaced with the result of their ``_to_dict`` methods.
 
         :param detailed:      Whether or not to include detailed serializable attributes
@@ -65,7 +65,7 @@ class NewJSONEncoder(JSONEncoder):
         Iterate through all values inside a dictionary and "fix" a dictionary to be
         JSON serializable by applying the _to_dict() function to all embedded models.
         All datetime objects are converted to a POSIX timestamp (seconds since epoch).
-        This function only supports converting ``dict``s, ``list``s, ``ModelMixin``s,
+        This function only supports converting ``dict``s, ``list``s, ``SinglePKMixin``s,
         and ``datetimes``. If the value was originally serializable, it will remain
         serializable. Keys are not modified, so they must be JSON serializable.
         If your serialization needs are more complex, feel free to add to the function.
@@ -73,7 +73,7 @@ class NewJSONEncoder(JSONEncoder):
         :param dict_: The dictionary to iterate over and make JSON serializable
         :return:      A JSON serializable dict of all the elements inside the original dict
         """
-        from pulsar.mixins import ModelMixin
+        from pulsar.mixins import SinglePKMixin
 
         def iter_handler(value):
             if isinstance(value, dict):
@@ -86,7 +86,7 @@ class NewJSONEncoder(JSONEncoder):
                     if v2 is not None:
                         new_value.append(iter_handler(v2))
                 return new_value or None
-            elif isinstance(value, ModelMixin):
+            elif isinstance(value, SinglePKMixin):
                 return self._to_dict(value, nested=True)
             elif isinstance(value, datetime):
                 return int(value.timestamp())

@@ -80,7 +80,7 @@ def choose_user(user_id: Optional[int],
     from pulsar.users.models import User
     if user_id and flask.g.user.id != user_id:
         if flask.g.user.has_permission(permission):
-            user = User.from_id(user_id)
+            user = User.from_pk(user_id)
             if user:
                 return user
             raise _404Exception(f'User {user_id}')

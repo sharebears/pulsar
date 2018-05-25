@@ -5,16 +5,16 @@ from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
 from pulsar.forums.models import Forum, ForumSubscription
 
 
-def test_forum_from_id(app, authed_client):
-    forum = Forum.from_id(1)
+def test_forum_from_pk(app, authed_client):
+    forum = Forum.from_pk(1)
     assert forum.name == 'Pulsar'
     assert forum.description == 'Stuff about pulsar'
 
 
 def test_forum_cache(app, authed_client):
-    forum = Forum.from_id(1)
+    forum = Forum.from_pk(1)
     cache.cache_model(forum, timeout=60)
-    forum = Forum.from_id(1)
+    forum = Forum.from_pk(1)
     assert forum.name == 'Pulsar'
     assert forum.description == 'Stuff about pulsar'
     assert cache.ttl(forum.cache_key) < 61
@@ -23,7 +23,7 @@ def test_forum_cache(app, authed_client):
 def test_forum_no_permission(app, authed_client):
     db.session.execute("DELETE FROM forums_permissions")
     with pytest.raises(_403Exception):
-        Forum.from_id(1)
+        Forum.from_pk(1)
 
 
 def test_forum_get_from_category(app, authed_client):
@@ -45,7 +45,7 @@ def test_forum_get_from_category_no_permissions(app, authed_client):
 
 def test_forum_get_from_category_cached(app, authed_client):
     cache.set(Forum.__cache_key_of_category__.format(id=2), ['1', '5'], timeout=60)
-    Forum.from_id(1); Forum.from_id(5)  # noqa: cache these
+    Forum.from_pk(1); Forum.from_pk(5)  # noqa: cache these
     forums = Forum.from_category(2)
     assert len(forums) == 2
 
@@ -83,34 +83,34 @@ def test_new_forum_failure(app, authed_client, category_id):
     'forum_id, count', [
         (2, 2), (1, 1), (4, 0)])
 def test_forum_thread_count(app, authed_client, forum_id, count):
-    assert Forum.from_id(forum_id).thread_count == count
+    assert Forum.from_pk(forum_id).thread_count == count
 
 
 def test_forum_thread_count_from_cache(app, authed_client):
     cache.set(Forum.__cache_key_thread_count__.format(id=2), 40)
-    assert Forum.from_id(2).thread_count == 40
+    assert Forum.from_pk(2).thread_count == 40
 
 
 def test_forum_last_updated_thread(app, authed_client):
-    forum = Forum.from_id(2)
+    forum = Forum.from_pk(2)
     assert forum.last_updated_thread.id == 3
 
 
 def test_forum_last_updated_thread_from_cache(app, authed_client):
     cache.set(Forum.__cache_key_last_updated__.format(id=2), 4)
-    forum = Forum.from_id(2)
+    forum = Forum.from_pk(2)
     assert forum.last_updated_thread.id == 4
 
 
 def test_forum_threads(app, authed_client):
-    forum = Forum.from_id(2)
+    forum = Forum.from_pk(2)
     threads = forum.threads
     assert len(threads) == 2
     assert any(t.topic == 'Using PHP' for t in threads)
 
 
 def test_forum_threads_setter(app, authed_client):
-    forum = Forum.from_id(2)
+    forum = Forum.from_pk(2)
     forum.set_threads(page=1, limit=1)
     threads = forum.threads
     assert len(threads) == 1
@@ -118,7 +118,7 @@ def test_forum_threads_setter(app, authed_client):
 
 
 def test_forum_threads_with_deleted(app, authed_client):
-    forum = Forum.from_id(1)
+    forum = Forum.from_pk(1)
     threads = forum.threads
     assert len(threads) == 1
     assert threads[0].topic != 'New Site Borked'
@@ -130,7 +130,7 @@ def test_users_from_forum_subscription(app, authed_client):
 
 
 def test_serialize_no_perms(app, authed_client):
-    category = Forum.from_id(1)
+    category = Forum.from_pk(1)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {
         'id': 1,
@@ -146,7 +146,7 @@ def test_serialize_no_perms(app, authed_client):
 
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'modify_forums')
-    category = Forum.from_id(1)
+    category = Forum.from_pk(1)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {
         'id': 1,
@@ -163,7 +163,7 @@ def test_serialize_very_detailed(app, authed_client):
 
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forums')
-    category = Forum.from_id(1)
+    category = Forum.from_pk(1)
     data = NewJSONEncoder()._to_dict(category, nested=True)
     check_dictionary(data, {
         'id': 1,

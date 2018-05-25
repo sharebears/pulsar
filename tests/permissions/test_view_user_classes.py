@@ -63,7 +63,7 @@ def test_create_user_class(app, authed_client):
         'name': 'user_v3',
         'permissions': ['edit_settings', 'send_invites']})
 
-    user_class = UserClass.from_id(3)
+    user_class = UserClass.from_pk(3)
     assert user_class.name == 'user_v3'
     assert user_class.permissions == ['edit_settings', 'send_invites']
 
@@ -84,11 +84,11 @@ def test_create_user_class_secondary(app, authed_client):
         'name': 'User',
         'permissions': ['edit_settings', 'send_invites']})
 
-    user_class = SecondaryClass.from_id(3)
+    user_class = SecondaryClass.from_pk(3)
     assert user_class.name == 'User'
     assert user_class.permissions == ['edit_settings', 'send_invites']
 
-    assert not UserClass.from_id(4)
+    assert not UserClass.from_pk(4)
 
 
 def test_create_secondary_class_duplicate(app, authed_client):
@@ -100,7 +100,7 @@ def test_create_secondary_class_duplicate(app, authed_client):
 def test_delete_user_class(app, authed_client):
     response = authed_client.delete('/user_classes/2').get_json()
     assert response['response'] == 'UserClass user_v2 has been deleted.'
-    assert not UserClass.from_id(2)
+    assert not UserClass.from_pk(2)
     assert not UserClass.from_name('user_v2')
 
 
@@ -119,7 +119,7 @@ def test_delete_user_class_with_user(app, authed_client):
     response = authed_client.delete('/user_classes/1').get_json()
     assert response['response'] == \
         'You cannot delete a UserClass while users are assigned to it.'
-    assert UserClass.from_id(1)
+    assert UserClass.from_pk(1)
 
 
 def test_delete_secondary_class_with_user(app, authed_client):
@@ -127,7 +127,7 @@ def test_delete_secondary_class_with_user(app, authed_client):
         'secondary': True}).get_json()
     assert response['response'] == \
         'You cannot delete a SecondaryClass while users are assigned to it.'
-    assert SecondaryClass.from_id(1)
+    assert SecondaryClass.from_pk(1)
 
 
 def test_modify_user_class(app, authed_client):
@@ -139,7 +139,7 @@ def test_modify_user_class(app, authed_client):
     check_json_response(response, {
         'name': 'User',
         'permissions': ['modify_permissions', 'send_invites']})
-    user_class = UserClass.from_id(1)
+    user_class = UserClass.from_pk(1)
     assert set(user_class.permissions) == {'modify_permissions', 'send_invites'}
 
 
@@ -149,10 +149,10 @@ def test_modify_secondary_user_class(app, authed_client):
         'secondary': True,
         }))
 
-    secondary_class = SecondaryClass.from_id(2)
+    secondary_class = SecondaryClass.from_pk(2)
     assert not secondary_class.permissions
 
-    user_class = UserClass.from_id(2)
+    user_class = UserClass.from_pk(2)
     assert 'edit_settings' in user_class.permissions
 
 

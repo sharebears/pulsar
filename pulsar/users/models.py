@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import APIException, cache, db
-from pulsar.mixins import ModelMixin
+from pulsar.mixins import SinglePKMixin
 from pulsar.permissions import BASIC_PERMISSIONS
 from pulsar.utils import cached_property
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 app = flask.current_app
 
 
-class User(db.Model, ModelMixin):
+class User(db.Model, SinglePKMixin):
     __tablename__ = 'users'
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_{id}_permissions'
@@ -116,7 +116,7 @@ class User(db.Model, ModelMixin):
 
     @cached_property
     def inviter(self) -> Optional['User']:
-        return User.from_id(self.inviter_id) if self.inviter_id else None
+        return User.from_pk(self.inviter_id) if self.inviter_id else None
 
     @cached_property
     def api_keys(self) -> List['APIKey_']:
@@ -182,7 +182,7 @@ class User(db.Model, ModelMixin):
     @cached_property
     def user_class_model(self) -> 'UserClass_':
         from pulsar.permissions.models import UserClass
-        return UserClass.from_id(self.user_class_id)
+        return UserClass.from_pk(self.user_class_id)
 
     def belongs_to_user(self) -> bool:
         """Check whether or not the requesting user matches this user."""

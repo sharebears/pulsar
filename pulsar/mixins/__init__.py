@@ -1,5 +1,5 @@
 # flake8: noqa
 
+from .single_pk import SinglePKMixin
 from .class_ import ClassMixin
-from .model import ModelMixin
 from .permission import PermissionMixin

@@ -3,16 +3,16 @@ from pulsar import NewJSONEncoder, cache
 from pulsar.forums.models import ForumCategory
 
 
-def test_category_from_id(app, authed_client):
-    category = ForumCategory.from_id(1)
+def test_category_from_pk(app, authed_client):
+    category = ForumCategory.from_pk(1)
     assert category.name == 'Site'
     assert category.description == 'General site discussion'
 
 
 def test_category_cache(app, authed_client):
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     cache.cache_model(category, timeout=60)
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     assert category.name == 'Site'
     assert category.description == 'General site discussion'
     assert cache.ttl(category.cache_key) < 61
@@ -53,7 +53,7 @@ def test_new_category(app, authed_client):
 
 
 def test_serialize_no_perms(app, authed_client):
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {
         'id': 1,
@@ -67,7 +67,7 @@ def test_serialize_no_perms(app, authed_client):
 
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'modify_forums')
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {
         'id': 1,
@@ -82,7 +82,7 @@ def test_serialize_very_detailed(app, authed_client):
 
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forums')
-    category = ForumCategory.from_id(1)
+    category = ForumCategory.from_pk(1)
     data = NewJSONEncoder()._to_dict(category, nested=True)
     check_dictionary(data, {
         'id': 1,

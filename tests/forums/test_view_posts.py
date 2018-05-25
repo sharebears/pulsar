@@ -98,7 +98,7 @@ def test_edit_post_self(app, authed_client):
         'id': 8,
         'contents': 'New site, yeah!',
         })
-    post = ForumPost.from_id(8)
+    post = ForumPost.from_pk(8)
     assert post.id == 8
     assert post.contents == 'New site, yeah!'
     post_edits = ForumPostEditHistory.from_post(8)
@@ -118,7 +118,7 @@ def test_edit_post_other_and_history(app, authed_client):
         'id': 7,
         'contents': 'snipped',
         })
-    post = ForumPost.from_id(7)
+    post = ForumPost.from_pk(7)
     assert post.contents == 'snipped'
     post_edits = ForumPostEditHistory.from_post(7)
     assert len(post_edits) == 1
@@ -139,7 +139,7 @@ def test_edit_post_other_no_contents_mod_advanced_locked_override(app, authed_cl
         'contents': 'Why the fuck is Gazelle in PHP?!',
         'sticky': True,
         })
-    post = ForumPost.from_id(2)
+    post = ForumPost.from_pk(2)
     assert post.sticky is True
     post_edits = ForumPostEditHistory.from_post(2)
     assert len(post_edits) == 1
@@ -173,7 +173,7 @@ def test_delete_post(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_posts_advanced')
     response = authed_client.delete('/forums/posts/1')
     check_json_response(response, 'ForumPost 1 has been deleted.')
-    post = ForumPost.from_id(1, include_dead=True)
+    post = ForumPost.from_pk(1, include_dead=True)
     assert post.deleted
 
 

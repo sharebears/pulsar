@@ -8,19 +8,19 @@ from pulsar.models import User
 def test_get_from_cache(app, authed_client):
     """Test that cache values are used instead of querying a user."""
     add_permissions(app, 'view_users')
-    user = User.from_id(1)
+    user = User.from_pk(1)
     data = {}
     for attr in user.__table__.columns.keys():
         data[attr] = getattr(user, attr, None)
     data['username'] = 'fakeshit'
     cache.set(user.cache_key, data)
-    user = User.from_id(1)
+    user = User.from_pk(1)
     assert user.username == 'fakeshit'
 
 
 def test_cache_model(app, authed_client):
     """Test that caching a model works."""
-    user = User.from_id(1)
+    user = User.from_pk(1)
     cache.cache_model(user, timeout=60)
     user_data = cache.get('users_1')
     assert user_data['id'] == 1
@@ -36,7 +36,7 @@ def test_cache_model_when_none(app, client, monkeypatch):
 
 def test_from_cache(app, authed_client):
     """Get a user from the cache."""
-    user = User.from_id(1)
+    user = User.from_pk(1)
     cache.cache_model(user, timeout=60)
     user_new = User.from_cache('users_1')
     assert user_new.id == 1
@@ -71,8 +71,8 @@ def test_cache_inc_key_already_exists(app, client):
 
 def test_cache_autoclear_dirty_and_deleted(app, client):
     """The cache autoclears dirty models upon commit."""
-    user = User.from_id(1)
-    user_2 = User.from_id(3)
+    user = User.from_pk(1)
+    user_2 = User.from_pk(3)
     user.set_password('testing')
     db.session.delete(user_2)
     assert cache.has('users_1')
@@ -80,12 +80,12 @@ def test_cache_autoclear_dirty_and_deleted(app, client):
     db.session.commit()
     assert not cache.has('users_1')
     assert not cache.has('users_3')
-    assert not User.from_id(3)
+    assert not User.from_pk(3)
 
 
 def test_cache_doesnt_autoclear_dirty_and_deleted_(app, client, monkeypatch):
     """The cache does not autoclear dirty models upon commit if they do not have cache keys."""
-    user = User.from_id(1)
+    user = User.from_pk(1)
     monkeypatch.setattr('pulsar.users.models.User.__cache_key__', None)
     user.set_password('testing')
     assert cache.has('users_1')

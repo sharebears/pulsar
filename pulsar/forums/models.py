@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.elements import BinaryExpression
 
 from pulsar import _403Exception, cache, db
-from pulsar.mixins import ModelMixin
+from pulsar.mixins import SinglePKMixin
 from pulsar.permissions.models import ForumPermission
 from pulsar.users.models import User
 from pulsar.utils import cached_property
@@ -16,7 +16,7 @@ from pulsar.utils import cached_property
 app = flask.current_app
 
 
-class ForumCategory(db.Model, ModelMixin):
+class ForumCategory(db.Model, SinglePKMixin):
     __tablename__ = 'forums_categories'
     __cache_key__ = 'forums_categories_{id}'
     __cache_key_all__ = 'forums_categories_all'
@@ -64,7 +64,7 @@ class ForumCategory(db.Model, ModelMixin):
         return Forum.from_category(self.id)
 
 
-class Forum(db.Model, ModelMixin):
+class Forum(db.Model, SinglePKMixin):
     __tablename__ = 'forums'
     __cache_key__ = 'forums_{id}'
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
@@ -132,7 +132,7 @@ class Forum(db.Model, ModelMixin):
 
     @cached_property
     def category(self) -> 'ForumCategory':
-        return ForumCategory.from_id(self.category_id)
+        return ForumCategory.from_pk(self.category_id)
 
     @cached_property
     def thread_count(self) -> 'int':
@@ -187,7 +187,7 @@ class Forum(db.Model, ModelMixin):
         return False
 
 
-class ForumThread(db.Model, ModelMixin):
+class ForumThread(db.Model, SinglePKMixin):
     __tablename__ = 'forums_threads'
     __cache_key__ = 'forums_threads_{id}'
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
@@ -262,18 +262,18 @@ class ForumThread(db.Model, ModelMixin):
 
     @classmethod
     def get_ids_from_forum(cls, id):
-        return cls.get_ids_of_many(
+        return cls.get_pks_of_many(
             key=cls.__cache_key_of_forum__.format(id=id),
             filter=cls.forum_id == id,
             order=cls.last_updated.desc())
 
     @classmethod
     def from_subscribed_user(cls, user_id: int) -> List['ForumThread']:
-        return cls.get_many(ids=cls.subscribed_ids(user_id))
+        return cls.get_many(pks=cls.subscribed_ids(user_id))
 
     @classmethod
     def subscribed_ids(cls, user_id: int) -> List[Union[str, int]]:
-        return cls.get_ids_of_many(
+        return cls.get_pks_of_many(
             key=ForumThreadSubscription.__cache_key_of_users__.format(user_id=user_id),
             filter=cls.id.in_(db.session.query(ForumThreadSubscription.thread_id)  # type: ignore
                               .filter(ForumThreadSubscription.user_id == user_id)),
@@ -322,11 +322,11 @@ class ForumThread(db.Model, ModelMixin):
 
     @cached_property
     def forum(self) -> 'Forum':
-        return Forum.from_id(self.forum_id)
+        return Forum.from_pk(self.forum_id)
 
     @cached_property
     def poster(self) -> User:
-        return User.from_id(self.poster_id)
+        return User.from_pk(self.poster_id)
 
     @cached_property
     def post_count(self) -> int:
@@ -377,7 +377,7 @@ class ForumThread(db.Model, ModelMixin):
         return False
 
 
-class ForumPost(db.Model, ModelMixin):
+class ForumPost(db.Model, SinglePKMixin):
     __tablename__ = 'forums_posts'
     __cache_key__ = 'forums_posts_{id}'
     __cache_key_of_thread__ = 'forums_posts_threads_{id}'
@@ -428,7 +428,7 @@ class ForumPost(db.Model, ModelMixin):
 
     @classmethod
     def get_ids_from_thread(cls, id):
-        return cls.get_ids_of_many(
+        return cls.get_pks_of_many(
             key=cls.__cache_key_of_thread__.format(id=id),
             filter=cls.thread_id == id,
             order=cls.id.asc())
@@ -448,18 +448,18 @@ class ForumPost(db.Model, ModelMixin):
 
     @cached_property
     def poster(self) -> User:
-        return User.from_id(self.poster_id)
+        return User.from_pk(self.poster_id)
 
     @cached_property
     def editor(self) -> Optional[User]:
-        return User.from_id(self.edited_user_id)
+        return User.from_pk(self.edited_user_id)
 
     @cached_property
     def edit_history(self) -> List['ForumPostEditHistory']:
         return ForumPostEditHistory.from_post(self.id)
 
 
-class ForumPostEditHistory(db.Model, ModelMixin):
+class ForumPostEditHistory(db.Model, SinglePKMixin):
     __tablename__ = 'forums_posts_edit_history'
     __cache_key__ = 'forums_posts_edit_history_{id}'
     __cache_key_of_post__ = 'forums_posts_edit_history_posts_{id}'
@@ -503,7 +503,7 @@ class ForumPostEditHistory(db.Model, ModelMixin):
 
     @cached_property
     def editor(self) -> User:
-        return User.from_id(self.editor_id)
+        return User.from_pk(self.editor_id)
 
 
 class ForumLastViewedPost(db.Model):
@@ -523,7 +523,7 @@ class ForumLastViewedPost(db.Model):
                 (cls.thread_id == thread_id),
                 (cls.user_id == user_id))).scalar()
             post_id = last_viewed.post_id if last_viewed else None
-        post = ForumPost.from_id(post_id, include_dead=True)
+        post = ForumPost.from_pk(post_id, include_dead=True)
         if not post:
             return None
         if post.deleted:  # Get the last non-deleted and read post.

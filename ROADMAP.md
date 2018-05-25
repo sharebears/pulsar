@@ -8,7 +8,7 @@
 - [ ] Index
 
 # Issues
-- [ ] Automate PK usage based on SQLA object metadata in ModelMixin instead of ID
+- [ ] Automate PK usage based on SQLA object metadata in SinglePKMixin instead of ID
 - [ ] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
 - [ ] Use a rollback for tests instead of manual table clears?

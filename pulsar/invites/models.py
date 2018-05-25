@@ -7,19 +7,19 @@ from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import INET
 
 from pulsar import cache, db
-from pulsar.mixins import ModelMixin
+from pulsar.mixins import SinglePKMixin
 from pulsar.users.models import User
 from pulsar.utils import cached_property
 
 
-class Invite(db.Model, ModelMixin):
+class Invite(db.Model, SinglePKMixin):
     __tablename__: str = 'invites'
-    __cache_key__: str = 'invites_{id}'
+    __cache_key__: str = 'invites_{code}'
     __cache_key_of_user__: str = 'invites_user_{user_id}'
     __deletion_attr__ = 'expired'
 
     __serialize_self__: tuple = (
-        'id',
+        'code',
         'email',
         'time_sent',
         'expired',
@@ -32,7 +32,7 @@ class Invite(db.Model, ModelMixin):
 
     __permission_detailed__ = 'view_invites_others'
 
-    id: str = db.Column(db.String(24), primary_key=True)
+    code: str = db.Column(db.String(24), primary_key=True)
     inviter_id: int = db.Column(
         db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     invitee_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
@@ -54,13 +54,13 @@ class Invite(db.Model, ModelMixin):
         :param ip:         IP address the invite was sent from
         """
         while True:
-            id = secrets.token_hex(12)
-            if not cls.from_id(id, include_dead=True):
+            code = secrets.token_hex(12)
+            if not cls.from_pk(code, include_dead=True):
                 break
         cache.delete(cls.__cache_key_of_user__.format(user_id=inviter_id))
         return super()._new(
             inviter_id=inviter_id,
-            id=id,
+            code=code,
             email=email.lower().strip(),
             from_ip=ip)
 
@@ -89,11 +89,11 @@ class Invite(db.Model, ModelMixin):
 
     @cached_property
     def invitee(self) -> User:
-        return User.from_id(self.invitee_id)
+        return User.from_pk(self.invitee_id)
 
     @cached_property
     def inviter(self) -> User:
-        return User.from_id(self.inviter_id)
+        return User.from_pk(self.inviter_id)
 
     def belongs_to_user(self) -> bool:
         """Returns whether or not the requesting user matches the inviter."""

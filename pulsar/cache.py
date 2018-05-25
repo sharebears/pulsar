@@ -6,7 +6,7 @@ from redis import Redis  # noqa
 from werkzeug.contrib.cache import RedisCache
 
 if TYPE_CHECKING:
-    from pulsar.mixins import ModelMixin  # noqa
+    from pulsar.mixins import SinglePKMixin  # noqa
 
 
 class Cache(RedisCache):
@@ -170,7 +170,7 @@ class Cache(RedisCache):
         return value
 
     def cache_model(self,
-                    model: Optional['ModelMixin'],
+                    model: Optional['SinglePKMixin'],
                     timeout: int = None) -> Optional[str]:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
@@ -193,7 +193,7 @@ class Cache(RedisCache):
         return None
 
     def cache_models(self,
-                     models: List[Optional['ModelMixin']],
+                     models: List[Optional['SinglePKMixin']],
                      timeout: int = None) -> None:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.

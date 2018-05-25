@@ -7,7 +7,7 @@ from pulsar import db
 @pytest.fixture(autouse=True)
 def populate_db(app, client):
     db.engine.execute(
-        f"""INSERT INTO invites (inviter_id, invitee_id, email, id, expired) VALUES
+        f"""INSERT INTO invites (inviter_id, invitee_id, email, code, expired) VALUES
         (1, NULL, 'bright@puls.ar', '{CODE_1}', 'f'),
         (1, 2, 'bright@quas.ar', '{CODE_2}', 't'),
         (2, NULL, 'bright@puls.ar', '{CODE_3}', 'f'),

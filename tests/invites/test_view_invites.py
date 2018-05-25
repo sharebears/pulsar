@@ -11,13 +11,13 @@ from pulsar.models import Invite, User
     'code, expected', [
         (CODE_1, {
             'expired': False,
-            'id': CODE_1,
+            'code': CODE_1,
             'email': 'bright@puls.ar',
             'invitee': None,
             }),
         (CODE_2, {
             'expired': True,
-            'id': CODE_2,
+            'code': CODE_2,
             'email': 'bright@quas.ar',
             }),
         ('abcdef', 'Invite abcdef does not exist.')
@@ -25,7 +25,7 @@ from pulsar.models import Invite, User
 def test_view_invite(app, authed_client, code, expected):
     """Viewing invites should return the invite."""
     add_permissions(app, 'view_invites')
-    response = authed_client.get(f'/invite', query_string={'id': code})
+    response = authed_client.get(f'/invite', query_string={'code': code})
     check_json_response(response, expected)
 
 
@@ -35,7 +35,7 @@ def test_view_invites_multiple(app, authed_client):
     response = authed_client.get('/invites')
     check_json_response(response, {
         'expired': False,
-        'id': CODE_1,
+        'code': CODE_1,
         'email': 'bright@puls.ar',
         'invitee': None,
         }, list_=True)
@@ -57,7 +57,7 @@ def test_view_invites_used(app, authed_client):
     response = authed_client.get('/invites', query_string={'used': True})
     check_json_response(response, {
         'expired': True,
-        'id': CODE_2,
+        'code': CODE_2,
         'email': 'bright@quas.ar',
         }, list_=True)
     assert len(response.get_json()['response']) == 1
@@ -88,7 +88,7 @@ def test_invite_user_with_code(app, authed_client):
         })
     assert response.status_code == 200
 
-    user = User.from_id(1)
+    user = User.from_pk(1)
     assert user.invites == 0
 
 
@@ -135,12 +135,12 @@ def test_invite_without_code(app, authed_client):
 def test_revoke_invite(app, authed_client, code, expected, invites):
     """Revoking an invite should work only for active invites."""
     add_permissions(app, 'revoke_invites')
-    response = authed_client.delete(f'/invite', data=json.dumps({'id': code}))
-    user = User.from_id(1)
+    response = authed_client.delete(f'/invite', data=json.dumps({'code': code}))
+    user = User.from_pk(1)
     check_json_response(response, expected)
     assert user.invites == invites
     if 'expired' in expected and expected['expired'] is True:
-        invite = Invite.from_id(code, include_dead=True)
+        invite = Invite.from_pk(code, include_dead=True)
         assert invite.expired is True
 
 
@@ -150,16 +150,16 @@ def test_revoke_invite_others(app, authed_client):
     the invite to the inviter's invite count.
     """
     add_permissions(app, 'revoke_invites', 'revoke_invites_others', 'view_invites_others')
-    response = authed_client.delete(f'/invite', data=json.dumps({'id': CODE_3}))
+    response = authed_client.delete(f'/invite', data=json.dumps({'code': CODE_3}))
     check_json_response(response, {'expired': True})
-    user = User.from_id(2)
+    user = User.from_pk(2)
     assert user.invites == 1
 
 
 def test_revoke_invite_others_failure(app, authed_client):
     """Revoking another's invite without permission should raise a 404."""
     add_permissions(app, 'revoke_invites')
-    response = authed_client.delete(f'/invite', data=json.dumps({'id': CODE_3}))
+    response = authed_client.delete(f'/invite', data=json.dumps({'code': CODE_3}))
     print(response.get_json())
     check_json_response(response, f'Invite {CODE_3} does not exist.')
 
@@ -178,6 +178,6 @@ def test_route_permissions(authed_client, endpoint, method):
 
 
 def test_view_invite_route_permission(app, authed_client):
-    response = authed_client.get('/invite', query_string={'id': CODE_1})
+    response = authed_client.get('/invite', query_string={'code': CODE_1})
     check_json_response(response, 'You do not have permission to access this resource.')
     assert response.status_code == 403

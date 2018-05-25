@@ -140,7 +140,7 @@ def test_check_permission(app, authed_client, permissions, expected):
     db.engine.execute("""UPDATE secondary_classes SET permissions = '{"shared_perm"}'
                       WHERE name = 'FLS'""")
     add, ungrant, delete = check_permissions(
-        User.from_id(1), permissions, UserPermission, 'permissions')
+        User.from_pk(1), permissions, UserPermission, 'permissions')
     for li in [add, ungrant, delete]:
         check_dupe_in_list(li)
     assert set(add) == set(expected['add'])
@@ -164,5 +164,5 @@ def test_check_permission_error(app, authed_client, permissions, error):
                       SET permissions = '{"sample_four", "sample_five"}'
                       WHERE name = 'User'""")
     with pytest.raises(APIException) as e:
-        check_permissions(User.from_id(1), permissions, UserPermission, 'permissions')
+        check_permissions(User.from_pk(1), permissions, UserPermission, 'permissions')
     assert all(w in e.value.message for w in error)

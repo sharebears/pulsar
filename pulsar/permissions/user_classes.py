@@ -67,7 +67,7 @@ def view_user_class(user_class_id: int,
     :statuscode 200: View successful
     """
     u_class: Any = SecondaryClass if secondary else UserClass
-    return flask.jsonify(u_class.from_id(user_class_id, _404=True))
+    return flask.jsonify(u_class.from_pk(user_class_id, _404=True))
 
 
 @bp.route('/user_classes', methods=['GET'])
@@ -259,7 +259,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
     secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
     u_class: Any = SecondaryClass if secondary else UserClass
 
-    user_class = u_class.from_id(user_class_id, _404=True)
+    user_class = u_class.from_pk(user_class_id, _404=True)
     if user_class.has_users():
         raise APIException(f'You cannot delete a {u_class.__name__} '
                            'while users are assigned to it.')
@@ -339,7 +339,7 @@ def modify_user_class(user_class_id: int,
     :statuscode 404: Userclass does not exist
     """
     u_class: Any = SecondaryClass if secondary else UserClass
-    user_class = u_class.from_id(user_class_id, _404=True)
+    user_class = u_class.from_pk(user_class_id, _404=True)
 
     uc_perms = copy(user_class.permissions)
     to_add = {p for p, a in permissions.items() if a is True}

@@ -7,18 +7,18 @@ from sqlalchemy.dialects.postgresql import ARRAY, INET
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import cache, db
-from pulsar.mixins import ModelMixin
+from pulsar.mixins import SinglePKMixin
 from pulsar.users.models import User
 
 
-class Session(db.Model, ModelMixin):
+class Session(db.Model, SinglePKMixin):
     __tablename__ = 'sessions'
-    __cache_key__ = 'sessions_{id}'
+    __cache_key__ = 'sessions_{hash}'
     __cache_key_of_user__ = 'sessions_user_{user_id}'
     __deletion_attr__ = 'expired'
 
     __serialize_self__ = __serialize_detailed__ = (
-        'id',
+        'hash',
         'user_id',
         'persistent',
         'last_used',
@@ -28,7 +28,7 @@ class Session(db.Model, ModelMixin):
 
     __permission_detailed__ = 'view_sessions_others'
 
-    id: str = db.Column(db.String(10), primary_key=True)
+    hash: str = db.Column(db.String(10), primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     persistent: bool = db.Column(db.Boolean, nullable=False, server_default='f')
     last_used: datetime = db.Column(
@@ -56,14 +56,14 @@ class Session(db.Model, ModelMixin):
         :return:           The new Session
         """
         while True:
-            id = secrets.token_hex(5)
-            if not cls.from_id(id):
+            hash = secrets.token_hex(5)
+            if not cls.from_pk(hash):
                 break
         csrf_token = secrets.token_hex(12)
         cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
         return super()._new(
             user_id=user_id,
-            id=id,
+            hash=hash,
             csrf_token=csrf_token,
             ip=ip,
             user_agent=user_agent,
@@ -87,20 +87,20 @@ class Session(db.Model, ModelMixin):
             include_dead=include_dead)
 
     @classmethod
-    def ids_from_user(cls, user_id: int) -> List[Union[int, str]]:
-        return cls.get_ids_of_many(
+    def hashes_from_user(cls, user_id: int) -> List[Union[int, str]]:
+        return cls.get_pks_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)
 
 
-class APIKey(db.Model, ModelMixin):
+class APIKey(db.Model, SinglePKMixin):
     __tablename__: str = 'api_keys'
-    __cache_key__: str = 'api_keys_{id}'
+    __cache_key__: str = 'api_keys_{hash}'
     __cache_key_of_user__: str = 'api_keys_user_{user_id}'
     __deletion_attr__ = 'revoked'
 
     __serialize_self__: tuple = (
-        'id',
+        'hash',
         'user_id',
         'last_used',
         'ip',
@@ -111,7 +111,7 @@ class APIKey(db.Model, ModelMixin):
 
     __permission_detailed__ = 'view_api_keys_others'
 
-    id: str = db.Column(db.String(10), primary_key=True)
+    hash: str = db.Column(db.String(10), primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     keyhashsalt: str = db.Column(db.String(128))
     last_used: str = db.Column(
@@ -139,19 +139,19 @@ class APIKey(db.Model, ModelMixin):
         :return:           A tuple containing the identifier and the new API Key
         """
         while True:
-            id = secrets.token_hex(5)
-            if not cls.from_id(id, include_dead=True):
+            hash = secrets.token_hex(5)
+            if not cls.from_pk(hash, include_dead=True):
                 break
         key = secrets.token_hex(8)
         cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
         api_key = super()._new(
             user_id=user_id,
-            id=id,
+            hash=hash,
             keyhashsalt=generate_password_hash(key),
             ip=ip,
             user_agent=user_agent,
             permissions=permissions or [])
-        return (id + key, api_key)
+        return (hash + key, api_key)
 
     @classmethod
     def from_user(cls,
@@ -171,8 +171,8 @@ class APIKey(db.Model, ModelMixin):
             include_dead=include_dead)
 
     @classmethod
-    def ids_from_user(cls, user_id: int) -> List[Union[int, str]]:
-        return cls.get_ids_of_many(
+    def hashes_from_user(cls, user_id: int) -> List[Union[int, str]]:
+        return cls.get_pks_of_many(
             key=cls.__cache_key_of_user__.format(user_id=user_id),
             filter=cls.user_id == user_id)
 
@@ -197,5 +197,5 @@ class APIKey(db.Model, ModelMixin):
         if self.permissions:
             return permission in self.permissions
 
-        user = User.from_id(self.user_id)
+        user = User.from_pk(self.user_id)
         return user.has_permission(permission)

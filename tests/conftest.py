@@ -105,7 +105,7 @@ def authed_client(app, monkeypatch):
     monkeypatch.setattr(app, 'before_request_funcs', {})
     with set_globals(app):
         with app.app_context():
-            user = User.from_id(1)
+            user = User.from_pk(1)
     with set_globals(app):
         with set_user(app, user):
             with app.app_context():

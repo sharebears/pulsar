@@ -12,14 +12,14 @@ app = flask.current_app
 
 
 VIEW_INVITE_SCHEMA = Schema({
-    'id': str,
+    'code': str,
     }, required=True)
 
 
 @bp.route('/invite', methods=['GET'])
 @require_permission('view_invites')
 @validate_data(VIEW_INVITE_SCHEMA)
-def view_invite(id: str) -> flask.Response:
+def view_invite(code: str) -> flask.Response:
     """
     View the details of an invite. Requires the ``view_invites`` permission.
     Requires the ``view_invites_others`` permission to view another user's invites.
@@ -36,7 +36,7 @@ def view_invite(id: str) -> flask.Response:
        Content-Type: application/json
 
        {
-         "id": "an-invite-code"
+         "code": "an-invite-code"
        }
 
     **Example response**:
@@ -51,7 +51,7 @@ def view_invite(id: str) -> flask.Response:
          "status": "success",
          "response": {
            "expired": false,
-           "id": "an-invite-code",
+           "code": "an-invite-code",
            "time-sent": "1970-01-01T00:00:00.000001+00:00",
            "email": "bright@pul.sar",
            "invitee": null
@@ -59,7 +59,7 @@ def view_invite(id: str) -> flask.Response:
        }
 
     :>jsonarr boolean expired: Whether or not the invite is expired
-    :>jsonarr string id: The invite code
+    :>jsonarr string code: The invite code
     :>jsonarr string time-sent: When the invite was sent
     :>jsonarr string email: The email that the invite was sent to
     :>jsonarr dict invitee: The user invited by the invite
@@ -67,8 +67,8 @@ def view_invite(id: str) -> flask.Response:
     :statuscode 200: View successful
     :statuscode 404: Invite does not exist or user cannot view invite
     """
-    return flask.jsonify(Invite.from_id(
-        id, include_dead=True, _404=True, asrt='view_invites_others'))
+    return flask.jsonify(Invite.from_pk(
+        code, include_dead=True, _404=True, asrt='view_invites_others'))
 
 
 VIEW_INVITES_SCHEMA = Schema({
@@ -112,14 +112,14 @@ def view_invites(used: bool,
          "response": [
            {
              "expired": false,
-             "id": "an-invite-code",
+             "code": "an-invite-code",
              "time-sent": "1970-01-01T00:00:00.000001+00:00",
              "email": "bright@pul.sar",
              "invitee": null
            },
            {
              "expired": true,
-             "id": "another-invite-code",
+             "code": "another-invite-code",
              "time-sent": "1970-01-01T00:00:00.000002+00:00",
              "email": "bitsu@qua.sar",
              "invitee": {
@@ -230,7 +230,7 @@ def invite_user(email: str):
 @bp.route('/invite', methods=['DELETE'])
 @require_permission('revoke_invites')
 @validate_data(VIEW_INVITE_SCHEMA)
-def revoke_invite(id: str) -> flask.Response:
+def revoke_invite(code: str) -> flask.Response:
     """
     Revokes an active invite code, preventing it from being used. The
     invite is returned to the user's account. Requires the
@@ -280,7 +280,7 @@ def revoke_invite(id: str) -> flask.Response:
     :statuscode 403: Unauthorized to revoke invites
     :statuscode 404: Invite does not exist or user cannot view invite
     """
-    invite = Invite.from_id(id, _404=True, asrt='revoke_invites_others')
+    invite = Invite.from_pk(code, _404=True, asrt='revoke_invites_others')
     invite.expired = True
     invite.inviter.invites += 1
     db.session.commit()

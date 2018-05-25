@@ -32,9 +32,9 @@ def test_create_dupe_user_classes_database(app, client, class_, name):
         (SecondaryClass, 1, 'send_invites'),
     ])
 def test_user_class_cache(app, client, class_, class_id, permission):
-    user_class = class_.from_id(class_id)
+    user_class = class_.from_pk(class_id)
     cache_key = cache.cache_model(user_class, timeout=60)
-    user_class = class_.from_id(class_id)
+    user_class = class_.from_pk(class_id)
     assert user_class.id == class_id
     assert permission in user_class.permissions
     assert cache.ttl(cache_key) < 61
@@ -57,7 +57,7 @@ def test_user_secondary_classes_models(app, client):
 
 
 def test_serialize_user_class_permless(app, client):
-    user_class = UserClass.from_id(1)
+    user_class = UserClass.from_pk(1)
     data = NewJSONEncoder()._to_dict(user_class)
     check_dictionary(data, {
         'id': 1,
@@ -66,7 +66,7 @@ def test_serialize_user_class_permless(app, client):
 
 
 def test_serialize_user_class_detailed(app, authed_client):
-    user_class = UserClass.from_id(1)
+    user_class = UserClass.from_pk(1)
     data = NewJSONEncoder()._to_dict(user_class)
     check_dictionary(data, {
         'id': 1,

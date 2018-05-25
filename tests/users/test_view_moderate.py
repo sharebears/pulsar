@@ -30,7 +30,7 @@ def test_moderate_user(app, authed_client):
         'uploaded': 999,
         'downloaded': 998,
         })
-    user = User.from_id(2)
+    user = User.from_pk(2)
     assert user.email == 'new@ema.il'
     assert user.uploaded == 999
 
@@ -45,7 +45,7 @@ def test_moderate_user_incomplete(app, authed_client):
         'email': 'paffu@puls.ar',
         'downloaded': 0,
         })
-    user = User.from_id(2)
+    user = User.from_pk(2)
     assert user.check_password('abcdefGHIfJK12#')
     assert user.email == 'paffu@puls.ar'
 

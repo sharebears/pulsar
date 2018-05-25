@@ -179,7 +179,7 @@ def edit_category(id: int,
     :statuscode 400: Editing unsuccessful
     :statuscode 404: Forum category does not exist
     """
-    category = ForumCategory.from_id(id, _404=True)
+    category = ForumCategory.from_pk(id, _404=True)
     if name:
         category.name = name
     if description:
@@ -229,7 +229,7 @@ def delete_category(id: int) -> flask.Response:
     :statuscode 400: Deletion unsuccessful
     :statuscode 404: Forum category does not exist
     """
-    category = ForumCategory.from_id(id, _404=True)
+    category = ForumCategory.from_pk(id, _404=True)
     if category.forums:
         raise APIException(
             'You cannot delete a forum category while it still has forums assigned to it.')

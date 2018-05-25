@@ -61,7 +61,7 @@ def view_thread(id: int,
     :statuscode 403: User does not have permission to view thread
     :statuscode 404: Thread does not exist
     """
-    thread = ForumThread.from_id(
+    thread = ForumThread.from_pk(
         id,
         _404=True,
         include_dead=flask.g.user.has_permission('modify_forum_threads_advanced'))
@@ -203,7 +203,7 @@ def modify_thread(id: int,
     :statuscode 400: Editing unsuccessful
     :statuscode 404: Forum thread does not exist
     """
-    thread = ForumThread.from_id(id, _404=True)
+    thread = ForumThread.from_pk(id, _404=True)
     if topic:
         thread.topic = topic
     if forum_id and Forum.is_valid(forum_id, error=True):
@@ -255,10 +255,10 @@ def delete_thread(id: int) -> flask.Response:
     :statuscode 400: Deletion unsuccessful
     :statuscode 404: Forum thread does not exist
     """
-    thread = ForumThread.from_id(id, _404=True)
+    thread = ForumThread.from_pk(id, _404=True)
     thread.deleted = True
     ForumPost.update_many(
-        ids=ForumPost.get_ids_from_thread(thread.id),
+        pks=ForumPost.get_ids_from_thread(thread.id),
         update={'deleted': True})
     return flask.jsonify(f'ForumThread {id} ({thread.topic}) has been deleted.')
 
@@ -300,7 +300,7 @@ def alter_thread_subscription(thread_id: int) -> flask.Response:
     :statuscode 400: Subscription alteration unsuccessful
     :statuscode 404: Forum thread does not exist
     """
-    thread = ForumThread.from_id(thread_id, _404=True)
+    thread = ForumThread.from_pk(thread_id, _404=True)
     subscription = ForumThreadSubscription.from_attrs(
         flask.g.user.id, thread.id)
     if flask.request.method == 'POST':

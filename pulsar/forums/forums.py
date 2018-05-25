@@ -64,7 +64,7 @@ def view_forum(id: int,
     :statuscode 403: User does not have permission to view forum
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(
+    forum = Forum.from_pk(
         id,
         _404=True,
         include_dead=flask.g.user.has_permission('modify_forums'))
@@ -197,7 +197,7 @@ def modify_forum(id: int,
     :statuscode 400: Editing unsuccessful
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(id, _404=True)
+    forum = Forum.from_pk(id, _404=True)
     if name:
         forum.name = name
     if category_id and ForumCategory.is_valid(category_id, error=True):
@@ -250,10 +250,10 @@ def delete_forum(id: int) -> flask.Response:
     :statuscode 400: Deletion unsuccessful
     :statuscode 404: Forum does not exist
     """
-    forum = Forum.from_id(id, _404=True)
+    forum = Forum.from_pk(id, _404=True)
     forum.deleted = True
     ForumThread.update_many(
-        ids=ForumThread.get_ids_from_forum(forum.id),
+        pks=ForumThread.get_ids_from_forum(forum.id),
         update={'deleted': True})
     return flask.jsonify(f'Forum {id} ({forum.name}) has been deleted.')
 
@@ -295,7 +295,7 @@ def alter_forum_subscription(forum_id: int) -> flask.Response:
     :statuscode 400: Subscription alteration unsuccessful
     :statuscode 404: Forum thread does not exist
     """
-    forum = Forum.from_id(forum_id, _404=True)
+    forum = Forum.from_pk(forum_id, _404=True)
     subscription = ForumSubscription.from_attrs(flask.g.user.id, forum.id)
     if flask.request.method == 'POST':
         if subscription:

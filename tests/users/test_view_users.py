@@ -51,7 +51,7 @@ def test_get_user_detailed(app, authed_client):
     data = response.get_json()
     assert 'api_keys' in data['response']
     assert len(data['response']['api_keys']) == 1
-    assert data['response']['api_keys'][0]['id'] == 'abcdefghij'
+    assert data['response']['api_keys'][0]['hash'] == 'abcdefghij'
 
 
 def test_user_does_not_exist(app, authed_client):

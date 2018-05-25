@@ -34,7 +34,7 @@ def test_csrf_token(app, client):
 
     with client.session_transaction() as sess:
         sess['user_id'] = 1
-        sess['session_id'] = 'abcdefghij'
+        sess['session_hash'] = 'abcdefghij'
 
     response = client.get('/test_endpoint')
     assert response.get_json() == {
@@ -63,7 +63,7 @@ def test_cache_keys(app, authed_client):
 
     @app.route('/test_endpoint')
     def test_endpoint():
-        _ = User.from_id(2)  # noqa
+        _ = User.from_pk(2)  # noqa
         return flask.jsonify('test')
 
     response = authed_client.get('/test_endpoint')

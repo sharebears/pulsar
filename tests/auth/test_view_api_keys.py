@@ -15,7 +15,7 @@ def hex_generator(_):
 
 @pytest.mark.parametrize(
     'key, expected', [
-        ('abcdefghij', {'id': 'abcdefghij', 'revoked': False}),
+        ('abcdefghij', {'hash': 'abcdefghij', 'revoked': False}),
         ('1234567890', 'APIKey 1234567890 does not exist.'),
         ('notrealkey', 'APIKey notrealkey does not exist.'),
     ])
@@ -28,16 +28,16 @@ def test_view_api_key(app, authed_client, key, expected):
 def test_view_api_key_other(app, authed_client):
     add_permissions(app, 'view_api_keys', 'view_api_keys_others')
     response = authed_client.get(f'/api_keys/1234567890')
-    check_json_response(response, {'id': '1234567890', 'revoked': True})
+    check_json_response(response, {'hash': '1234567890', 'revoked': True})
 
 
 def test_view_api_key_cached(app, authed_client):
     add_permissions(app, 'view_api_keys', 'view_api_keys_others')
-    api_key = APIKey.from_id('1234567890', include_dead=True)
+    api_key = APIKey.from_pk('1234567890', include_dead=True)
     cache_key = cache.cache_model(api_key, timeout=60)
 
     response = authed_client.get(f'/api_keys/1234567890')
-    check_json_response(response, {'id': '1234567890', 'revoked': True})
+    check_json_response(response, {'hash': '1234567890', 'revoked': True})
     assert cache.ttl(cache_key) < 61
 
 
@@ -45,7 +45,7 @@ def test_view_all_keys(app, authed_client):
     add_permissions(app, 'view_api_keys')
     response = authed_client.get('/api_keys')
     data = response.get_json()['response']
-    assert any('id' in api_key and api_key['id'] == CODE_2[:10]
+    assert any('hash' in api_key and api_key['hash'] == CODE_2[:10]
                for api_key in data)
 
 
@@ -56,7 +56,7 @@ def test_view_all_keys_cached(app, authed_client):
 
     response = authed_client.get('/api_keys')
     data = response.get_json()['response']
-    assert any('id' in api_key and api_key['id'] == CODE_2[:10]
+    assert any('hash' in api_key and api_key['hash'] == CODE_2[:10]
                for api_key in data)
     assert cache.ttl(cache_key)
 
@@ -87,7 +87,7 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     authed_client.post('/api_keys', data=json.dumps({
         'permissions': ['sample_perm_one', 'sample_perm_two']}),
         content_type='application/json')
-    key = APIKey.from_id('a' * 8)
+    key = APIKey.from_pk('a' * 8)
     assert key.has_permission('sample_perm_one')
     assert key.has_permission('sample_perm_two')
     assert not key.has_permission('sample_perm_three')
@@ -102,13 +102,13 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     ])
 def test_revoke_api_key(app, authed_client, identifier, message):
     add_permissions(app, 'revoke_api_keys', 'revoke_api_keys_others')
-    response = authed_client.delete('/api_keys', data=json.dumps({'id': identifier}))
+    response = authed_client.delete('/api_keys', data=json.dumps({'hash': identifier}))
     check_json_response(response, message)
 
 
 def test_revoke_api_key_not_mine(app, authed_client):
     add_permissions(app, 'revoke_api_keys')
-    response = authed_client.delete('/api_keys', data=json.dumps({'id': '1234567890'}))
+    response = authed_client.delete('/api_keys', data=json.dumps({'hash': '1234567890'}))
     check_json_response(response, 'APIKey 1234567890 does not exist.')
 
 

@@ -56,7 +56,7 @@ def test_serialization_of_datetimes_in_models(app, authed_client):
     posix_time = int(time.timestamp())
     data = {
         'key': time,
-        'key2': User.from_id(1),
+        'key2': User.from_pk(1),
         'key3': [time, None, time],
     }
 

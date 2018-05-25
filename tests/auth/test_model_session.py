@@ -22,22 +22,22 @@ def test_session_collision(app, monkeypatch):
     monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
     with app.app_context():
         session = Session.new(2, '127.0.0.2', 'ua-example')
-        assert session.id != CODE_2[:10]
+        assert session.hash != CODE_2[:10]
         assert session.csrf_token != CODE_2
         with pytest.raises(StopIteration):
             hex_generator(None)
 
 
-def test_from_id(app, client):
-    session = Session.from_id('abcdefghij')
+def test_from_pk(app, client):
+    session = Session.from_pk('abcdefghij')
     assert session.user_id == 1
     assert session.csrf_token == CODE_1
 
 
-def test_from_id_cached(app, client):
-    session = Session.from_id('abcdefghij')
+def test_from_pk_cached(app, client):
+    session = Session.from_pk('abcdefghij')
     cache_key = cache.cache_model(session, timeout=60)
-    session = Session.from_id('abcdefghij')
+    session = Session.from_pk('abcdefghij')
     assert session.user_id == 1
     assert session.csrf_token == CODE_1
     assert cache.ttl(cache_key) < 61
@@ -52,7 +52,7 @@ def test_from_user(app, client):
 
 def test_from_user_cached(app, client):
     cache_key = Session.__cache_key_of_user__.format(user_id=1)
-    sess = Session.from_id('1234567890')  # noqa cache it
+    sess = Session.from_pk('1234567890')  # noqa cache it
     cache.set(f'{cache_key}_incl_dead', ['1234567890'], timeout=60)
     sessions = Session.from_user(1, include_dead=True)
     assert len(sessions) == 1
@@ -60,27 +60,27 @@ def test_from_user_cached(app, client):
     assert sessions[0].csrf_token == CODE_2
 
 
-def test_from_id_incl_dead(app, client):
-    session = Session.from_id('1234567890', include_dead=True)
+def test_from_pk_incl_dead(app, client):
+    session = Session.from_pk('1234567890', include_dead=True)
     assert session.csrf_token == CODE_2
 
 
 def test_get_nonexistent_session(app, client):
-    session = Session.from_id('1234567890')
+    session = Session.from_pk('1234567890')
     assert not session
 
 
 def test_serialize_no_perms(app, client):
-    session = Session.from_id('abcdefghij')
+    session = Session.from_pk('abcdefghij')
     assert NewJSONEncoder()._to_dict(session) is None
 
 
 def test_serialize_detailed(app, authed_client):
     add_permissions(app, 'view_sessions_others')
-    session = Session.from_id('1234567890', include_dead=True)
+    session = Session.from_pk('1234567890', include_dead=True)
     data = NewJSONEncoder()._to_dict(session)
     check_dictionary(data, {
-        'id': '1234567890',
+        'hash': '1234567890',
         'user_id': 2,
         'persistent': False,
         'ip': '0.0.0.0',
@@ -92,10 +92,10 @@ def test_serialize_detailed(app, authed_client):
 
 
 def test_serialize_self(app, authed_client):
-    session = Session.from_id('abcdefghij')
+    session = Session.from_pk('abcdefghij')
     data = NewJSONEncoder()._to_dict(session)
     check_dictionary(data, {
-        'id': 'abcdefghij',
+        'hash': 'abcdefghij',
         'user_id': 1,
         'persistent': True,
         'ip': '0.0.0.0',

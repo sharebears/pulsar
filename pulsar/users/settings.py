@@ -79,7 +79,7 @@ def edit_settings(user_id: int =None,
             raise _401Exception(message='Invalid existing password.')
         user.set_password(new_password)
         Session.update_many(
-            ids=Session.ids_from_user(user.id),
+            pks=Session.hashes_from_user(user.id),
             update={'expired': True})
 
     db.session.commit()

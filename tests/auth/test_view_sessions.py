@@ -7,7 +7,7 @@ from conftest import CODE_2, add_permissions, check_json_response
 
 @pytest.mark.parametrize(
     'session, expected', [
-        ('abcdefghij', {'id': 'abcdefghij', 'expired': False}),
+        ('abcdefghij', {'hash': 'abcdefghij', 'expired': False}),
         ('1234567890', 'Session 1234567890 does not exist.'),
         ('notrealkey', 'Session notrealkey does not exist.'),
     ])
@@ -21,7 +21,7 @@ def test_view_all_sessions(app, authed_client):
     add_permissions(app, 'view_sessions')
     response = authed_client.get('/sessions')
     check_json_response(response, {
-        'id': CODE_2[:10],
+        'hash': CODE_2[:10],
         }, list_=True)
 
 
@@ -37,9 +37,9 @@ def test_create_session_success(client):
         'username': 'lights', 'password': '12345'}))
     response_data = response.get_json()
     assert response_data['response']['expired'] is False
-    assert 'ip' in response_data['response'] and 'id' in response_data['response']
+    assert 'ip' in response_data['response'] and 'hash' in response_data['response']
     with client.session_transaction() as sess:
-        assert 'user_id' in sess and 'session_id' in sess
+        assert 'user_id' in sess and 'session_hash' in sess
 
 
 def test_create_session_success_cached_sessions(client):
@@ -47,9 +47,9 @@ def test_create_session_success_cached_sessions(client):
         'username': 'lights', 'password': '12345'}))
     response_data = response.get_json()
     assert response_data['response']['expired'] is False
-    assert 'ip' in response_data['response'] and 'id' in response_data['response']
+    assert 'ip' in response_data['response'] and 'hash' in response_data['response']
     with client.session_transaction() as sess:
-        assert 'user_id' in sess and 'session_id' in sess
+        assert 'user_id' in sess and 'session_hash' in sess
 
 
 def test_create_session_persistent(client):
@@ -79,13 +79,13 @@ def test_create_session_failure(client):
     ])
 def test_expire_session(app, authed_client, identifier, message):
     add_permissions(app, 'expire_sessions', 'expire_sessions_others')
-    response = authed_client.delete('/sessions', data=json.dumps({'id': identifier}))
+    response = authed_client.delete('/sessions', data=json.dumps({'hash': identifier}))
     check_json_response(response, message)
 
 
 def test_expire_session_not_mine(app, authed_client):
     add_permissions(app, 'expire_sessions')
-    response = authed_client.delete('/sessions', data=json.dumps({'id': '1234567890'}))
+    response = authed_client.delete('/sessions', data=json.dumps({'hash': '1234567890'}))
     check_json_response(response, 'Session 1234567890 does not exist.')
 
 

@@ -83,7 +83,7 @@ def moderate_user(user_id: int,
     :statuscode 400: User unsuccessfully moderated
     :statuscode 403: User does not have permission to moderate some parts of user
     """
-    user = User.from_id(user_id, _404=True)
+    user = User.from_pk(user_id, _404=True)
 
     if password:
         user.set_password(password)
