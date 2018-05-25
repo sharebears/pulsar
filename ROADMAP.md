@@ -8,13 +8,13 @@
 - [ ] Index
 
 # Issues
+- [ ] Automate PK usage based on SQLA object metadata in ModelMixin instead of ID
 - [ ] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
 - [ ] Use a rollback for tests instead of manual table clears?
 - [ ] Post length exemption permission
 - [ ] Create a values() query function per http://xion.io/post/code/sqlalchemy-query-values.html
 - [ ] Unit tests for cache key clear on new subscribed threads / posts in subscribed threads
-- [ ] Automate PK usage based on SQLA object metadata in ModelMixin instead of ID--support composite PK
 
 
 # TODO
