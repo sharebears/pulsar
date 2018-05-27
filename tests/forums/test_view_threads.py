@@ -50,13 +50,13 @@ def test_add_thread(app, authed_client):
     add_permissions(app, 'view_forums', 'create_forum_threads')
     response = authed_client.post('/forums/threads', data=json.dumps({
         'topic': 'New Thread',
-        'forum_id': 1,
+        'forum_id': 5,
         }))
     check_json_response(response, {
         'id': 6,
         'topic': 'New Thread',
         })
-    assert response.get_json()['response']['forum']['id'] == 1
+    assert response.get_json()['response']['forum']['id'] == 5
 
 
 def test_add_thread_nonexistent_category(app, authed_client):
@@ -70,6 +70,7 @@ def test_add_thread_nonexistent_category(app, authed_client):
 
 def test_add_thread_forum_subscriptions(app, authed_client):
     add_permissions(app, 'view_forums', 'create_forum_threads')
+    ForumThread.new_subscriptions(user_id=1)  # cache
     response = authed_client.post('/forums/threads', data=json.dumps({
         'topic': 'New Thread',
         'forum_id': 4,
@@ -78,6 +79,7 @@ def test_add_thread_forum_subscriptions(app, authed_client):
     assert response.get_json()['response']['forum']['id'] == 4
     user_ids = ForumThreadSubscription.user_ids_from_thread(6)
     assert {1, 2} == set(user_ids)
+    assert 6 in {t.id for t in ForumThread.new_subscriptions(user_id=1)}
 
 
 def test_edit_thread(app, authed_client):
@@ -155,32 +157,6 @@ def test_delete_thread_nonexistent(app, authed_client):
     add_permissions(app, 'view_forums', 'modify_forum_threads_advanced')
     response = authed_client.delete('/forums/threads/100')
     check_json_response(response, 'ForumThread 100 does not exist.')
-
-
-def test_subscribe_to_thread(app, authed_client):
-    add_permissions(app, 'modify_forum_subscriptions')
-    response = authed_client.post('/forums/threads/5/subscribe')
-    check_json_response(response, 'Successfully subscribed to thread 5.')
-    assert ForumThreadSubscription.from_attrs(user_id=1, thread_id=5)
-
-
-def test_subscribe_to_thread_already_subscribed(app, authed_client):
-    add_permissions(app, 'modify_forum_subscriptions')
-    response = authed_client.post('/forums/threads/3/subscribe')
-    check_json_response(response, 'You are already subscribed to thread 3.')
-
-
-def test_unsubscribe_from_thread(app, authed_client):
-    add_permissions(app, 'modify_forum_subscriptions')
-    response = authed_client.delete('/forums/threads/3/subscribe')
-    check_json_response(response, 'Successfully unsubscribed from thread 3.')
-    assert not ForumThreadSubscription.from_attrs(user_id=1, thread_id=3)
-
-
-def test_unsubscribe_from_thread_not_subscribed(app, authed_client):
-    add_permissions(app, 'modify_forum_subscriptions')
-    response = authed_client.delete('/forums/threads/5/subscribe')
-    check_json_response(response, 'You are not subscribed to thread 5.')
 
 
 @pytest.mark.parametrize(

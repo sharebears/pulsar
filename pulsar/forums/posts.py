@@ -8,6 +8,7 @@ from pulsar import APIException, db
 from pulsar.forums.models import (ForumPost, ForumPostEditHistory, ForumThread,
                                   ForumThreadSubscription)
 from pulsar.utils import assert_user, require_permission, validate_data
+from pulsar.validators import PostLength
 
 from . import bp
 
@@ -60,7 +61,7 @@ def view_post(id: int) -> flask.Response:
 
 
 CREATE_FORUM_POST_SCHEMA = Schema({
-    'contents': All(str, Length(max=256000)),
+    'contents': All(str, PostLength(max=256000)),
     'thread_id': All(int, Range(min=0, max=2147483648)),
     }, required=True)
 

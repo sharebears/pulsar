@@ -15,7 +15,7 @@ USERNAME_REGEX = r'^[A-Za-z0-9][A-Za-z0-9_\-\.]*$'
 PASSWORD_REGEX = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&\^]).{12,512}$'
 
 
-def val_username(username: str) -> str:
+def ValUsername(username: str) -> str:
     """
     Ensures that a username is not taken by comparing it with existing DB results.
 
@@ -40,7 +40,7 @@ def val_username(username: str) -> str:
     return username
 
 
-def val_invite_code(code: Optional[str]) -> None:
+def ValInviteCode(code: Optional[str]) -> None:
     """
     Check an invite code against existing invite codes;
     Raises an APIException if the code isn't valid.

@@ -9,12 +9,12 @@ from pulsar import APIException, db
 from pulsar.permissions.models import UserPermission
 from pulsar.users.models import User
 from pulsar.validators import (ForumPermissionsDict, PermissionsDict, check_permissions,
-                               permissions_list, permissions_list_of_user)
+                               PermissionsList, PermissionsListOfUser)
 
 
-def test_permissions_list(app, authed_client):
+def test_PermissionsList(app, authed_client):
     permissions = ['change_password', 'modify_permissions']
-    assert permissions == permissions_list(permissions)
+    assert permissions == PermissionsList(permissions)
 
 
 @pytest.mark.parametrize(
@@ -23,23 +23,23 @@ def test_permissions_list(app, authed_client):
          'The following permissions are invalid: sample_one, sample_two,'),
         (False, 'Permissions must be in a list,'),
     ])
-def test_permissions_list_failure(app, authed_client, permissions, error):
+def test_PermissionsListfailure(app, authed_client, permissions, error):
     with pytest.raises(Invalid) as e:
-        permissions_list(permissions)
+        PermissionsList(permissions)
     assert str(e.value) == error
 
 
-def test_permissions_list_of_user(app, authed_client):
+def test_PermissionsListOfUser(app, authed_client):
     permissions = ['sample_one', 'sample_two']
     add_permissions(app, *permissions)
-    assert permissions == permissions_list_of_user(permissions)
+    assert permissions == PermissionsListOfUser(permissions)
 
 
-def test_permissions_list_of_user_failure(app, authed_client):
+def test_PermissionsListOfUser_failure(app, authed_client):
     permissions = ['sample_one', 'sample_two']
     add_permissions(app, 'sample_one', 'sample_three')
     with pytest.raises(Invalid) as e:
-        permissions_list_of_user(permissions)
+        PermissionsListOfUser(permissions)
     assert str(e.value) == 'permissions must be in the user\'s permissions list'
 
 
@@ -48,12 +48,12 @@ def test_permissions_list_of_user_failure(app, authed_client):
         ['samp_perm_four', 'nonexistent_perm'],
         False,
     ])
-def test_permissions_list_of_user_error(app, authed_client, permissions):
+def test_PermissionsListOfUser_error(app, authed_client, permissions):
     @app.route('/test_permissions_error', methods=['POST'])
     def test_permissions_error():
         with pytest.raises(Invalid):
             data = json.loads(flask.request.get_data())
-            permissions_list_of_user(data['permissions'])
+            PermissionsListOfUser(data['permissions'])
         return flask.jsonify('completed')
 
     response = authed_client.post(

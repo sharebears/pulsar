@@ -6,7 +6,9 @@ import pytest
 import pytz
 
 from conftest import add_permissions, check_json_response
-from pulsar.forums.models import ForumPost, ForumPostEditHistory
+from pulsar import cache
+from pulsar.forums.models import (ForumPost, ForumPostEditHistory, ForumThread,
+                                  ForumThreadSubscription)
 
 
 def test_view_post(app, authed_client):
@@ -19,8 +21,14 @@ def test_view_post(app, authed_client):
     assert response.status_code == 200
 
 
-def test_add_post(app, authed_client):
+def test_add_post(app, authed_client, monkeypatch):
     add_permissions(app, 'view_forums', 'create_forum_posts')
+    ForumThreadSubscription.user_ids_from_thread(1)  # cache it
+    ForumThread.new_subscriptions(1)  # cache it
+    monkeypatch.setattr('pulsar.forums.models.ForumThreadSubscription.user_ids_from_thread',
+                        lambda *a, **k: [1])
+    assert cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=1))
+    assert cache.get(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
     response = authed_client.post('/forums/posts', data=json.dumps({
         'thread_id': 1,
         'contents': 'hahe new forum post',
@@ -30,6 +38,8 @@ def test_add_post(app, authed_client):
         'contents': 'hahe new forum post',
         'thread_id': 1,
         })
+    assert not cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=1))
+    assert not cache.get(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
 
 
 def test_add_post_locked(app, authed_client):

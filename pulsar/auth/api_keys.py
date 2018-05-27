@@ -6,7 +6,7 @@ from voluptuous import All, Length, Optional, Schema
 from pulsar import APIException, db
 from pulsar.models import APIKey
 from pulsar.utils import choose_user, require_permission, validate_data
-from pulsar.validators import bool_get, permissions_list_of_user
+from pulsar.validators import BoolGET, PermissionsListOfUser
 
 from . import bp
 
@@ -69,7 +69,7 @@ def view_api_key(hash: str) -> flask.Response:
 
 
 VIEW_ALL_API_KEYS_SCHEMA = Schema({
-    Optional('include_dead', default=True): bool_get,
+    Optional('include_dead', default=True): BoolGET,
     })
 
 
@@ -140,7 +140,7 @@ def view_all_api_keys(include_dead: bool,
 
 
 CREATE_API_KEY_SCHEMA = Schema({
-    'permissions': permissions_list_of_user,
+    'permissions': PermissionsListOfUser,
     })
 
 

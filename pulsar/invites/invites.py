@@ -4,7 +4,7 @@ from voluptuous import Email, Optional, Schema
 from pulsar import APIException, db
 from pulsar.models import Invite
 from pulsar.utils import choose_user, require_permission, validate_data
-from pulsar.validators import bool_get
+from pulsar.validators import BoolGET
 
 from . import bp
 
@@ -72,8 +72,8 @@ def view_invite(code: str) -> flask.Response:
 
 
 VIEW_INVITES_SCHEMA = Schema({
-    Optional('used', default=False): bool_get,
-    Optional('include_dead', default=False): bool_get,
+    Optional('used', default=False): BoolGET,
+    Optional('include_dead', default=False): BoolGET,
     }, required=True)
 
 

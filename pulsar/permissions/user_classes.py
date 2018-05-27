@@ -7,14 +7,14 @@ from voluptuous import All, Length, Optional, Schema
 from pulsar import APIException, db
 from pulsar.models import SecondaryClass, UserClass
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import PermissionsDict, bool_get, permissions_list
+from pulsar.validators import PermissionsDict, BoolGET, PermissionsList
 
 from . import bp
 
 app = flask.current_app
 
 VIEW_USER_CLASS_SCHEMA = Schema({
-    'secondary': bool_get,
+    'secondary': BoolGET,
     })
 
 
@@ -140,8 +140,8 @@ def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
 
 CREATE_USER_CLASS_SCHEMA = Schema({
     'name': All(str, Length(max=24)),
-    'permissions': permissions_list,
-    Optional('secondary', default=False): bool_get,
+    'permissions': PermissionsList,
+    Optional('secondary', default=False): BoolGET,
     }, required=True)
 
 
@@ -256,7 +256,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
     """
     # Determine secondary here because it's a query arg
     request_args = flask.request.args.to_dict()
-    secondary = bool_get(request_args['secondary']) if 'secondary' in request_args else False
+    secondary = BoolGET(request_args['secondary']) if 'secondary' in request_args else False
     u_class: Any = SecondaryClass if secondary else UserClass
 
     user_class = u_class.from_pk(user_class_id, _404=True)
@@ -272,7 +272,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
 
 MODIFY_USER_CLASS_SCHEMA = Schema({
     'permissions': PermissionsDict(),
-    Optional('secondary', default=False): bool_get,
+    Optional('secondary', default=False): BoolGET,
     }, required=True)
 
 

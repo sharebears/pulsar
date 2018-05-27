@@ -205,14 +205,13 @@ class Cache(RedisCache):
         """
         to_cache = {}
         for model in models:
-            if model:
-                data = {}
-                try:
-                    for attr in model.__table__.columns.keys():
-                        data[attr] = getattr(model, attr)
-                except AttributeError:  # pragma: no cover
-                    continue  # TODO: Log this
-                to_cache[model.cache_key] = data
+            data = {}
+            try:
+                for attr in model.__table__.columns.keys():
+                    data[attr] = getattr(model, attr)
+            except AttributeError:  # pragma: no cover
+                continue  # TODO: Log this
+            to_cache[model.cache_key] = data
         self.set_many(to_cache, timeout)
 
 

@@ -4,7 +4,7 @@ from voluptuous import All, Length, Optional, Schema
 from pulsar import APIException, _401Exception, db
 from pulsar.models import Session, User
 from pulsar.utils import choose_user, require_permission, validate_data
-from pulsar.validators import bool_get
+from pulsar.validators import BoolGET
 
 from . import bp
 
@@ -66,7 +66,7 @@ def view_session(hash: int) -> flask.Response:
 
 
 VIEW_ALL_SESSIONS_SCHEMA = Schema({
-    Optional('include_dead', default=True): bool_get,
+    Optional('include_dead', default=True): BoolGET,
     })
 
 

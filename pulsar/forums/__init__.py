@@ -16,4 +16,7 @@ PERMISSIONS = [
     'modify_forum_threads_advanced',  # Manipulate and delete others' forum threads
     'modify_forums',  # Manipulate forum categories (add, delete)
     'forums_post_in_locked_threads',  # Post in locked threads
+    'modify_forum_polls',  # Manipulate answer choices, feature, sticky polls
+    'forums_polls_vote',  # Vote on forum polls
+    'no_post_length_limit',  # No post length limit
     ]

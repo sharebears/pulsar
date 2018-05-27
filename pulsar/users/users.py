@@ -4,7 +4,7 @@ from voluptuous.validators import Email, Match
 
 from pulsar.models import User
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import PASSWORD_REGEX, val_invite_code, val_username
+from pulsar.validators import PASSWORD_REGEX, ValInviteCode, ValUsername
 
 from . import bp
 
@@ -58,7 +58,7 @@ def get_user(user_id: int) -> flask.Response:
 
 
 CREATE_USER_SCHEMA = Schema({
-    'username': val_username,
+    'username': ValUsername,
     'password': Match(PASSWORD_REGEX, msg=(
         'Password must be between 12 and 512 characters and contain at least 1 letter, '
         '1 number, and 1 special character')),
@@ -125,7 +125,7 @@ def register(username: str,
     :statuscode 200: registration successful
     :statuscode 400: registration unsuccessful
     """
-    val_invite_code(code)
+    ValInviteCode(code)
     user = User.new(
         username=username,
         password=password,

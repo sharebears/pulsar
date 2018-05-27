@@ -172,7 +172,9 @@ def alter_permissions(perm_model: Union[Type[ForumPermission], Type[UserPermissi
     :param to_delete:  The permissions to delete
     """
     for permission in to_delete:
-        model: Union[ForumPermission, UserPermission] = perm_model.from_attrs(user.id, permission)
+        model: Union[ForumPermission, UserPermission] = perm_model.from_attrs(
+            user_id=user.id,
+            permission=permission)
         db.session.delete(model)
     db.session.commit()
     for perm_name in to_add:

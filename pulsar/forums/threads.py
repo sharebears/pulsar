@@ -1,11 +1,11 @@
 import flask
 from voluptuous import All, In, Length, Range, Schema
 
-from pulsar import db, APIException
+from pulsar import db
 from pulsar.forums.models import (Forum, ForumPost, ForumSubscription, ForumThread,
-                                  ForumThreadSubscription)
+                                  ForumThreadSubscription, ForumThreadNote)
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import bool_get
+from pulsar.validators import BoolGET
 
 from . import bp
 
@@ -15,7 +15,7 @@ app = flask.current_app
 VIEW_FORUM_THREAD_SCHEMA = Schema({
     'page': All(int, Range(min=0, max=2147483648)),
     'limit': All(int, In((25, 50, 100))),
-    'include_dead': bool_get
+    'include_dead': BoolGET
     })
 
 
@@ -146,8 +146,8 @@ def subscribe_users_to_new_thread(thread: ForumThread) -> None:
 MODIFY_FORUM_THREAD_SCHEMA = Schema({
     'topic': All(str, Length(max=150)),
     'forum_id': All(int, Range(min=0, max=2147483648)),
-    'locked': bool_get,
-    'sticky': bool_get,
+    'locked': BoolGET,
+    'sticky': BoolGET,
     })
 
 
@@ -263,56 +263,20 @@ def delete_thread(id: int) -> flask.Response:
     return flask.jsonify(f'ForumThread {id} ({thread.topic}) has been deleted.')
 
 
-@bp.route('/forums/threads/<int:thread_id>/subscribe', methods=['POST', 'DELETE'])
-@require_permission('modify_forum_subscriptions')
-def alter_thread_subscription(thread_id: int) -> flask.Response:
+ADD_FORUM_THREAD_NOTE_SCHEMA = Schema({
+    'note': All(str, Length(max=10000)),
+    }, required=True)
+
+
+@bp.route('/forums/threads/<int:id>/notes', methods=['POST'])
+@require_permission('modify_forum_threads')
+@validate_data(ADD_FORUM_THREAD_NOTE_SCHEMA)
+def add_thread_note(id: int,
+                    note: str) -> flask.Response:
     """
-    This is the endpoint for forum thread subscription. The ``modify_forum_subscriptions``
-    permission is required to access this endpoint. A POST request creates a subscription,
-    whereas a DELETE request removes a subscription.
-
-    .. :quickref: ForumThread; Subscribe to a forum thread.
-
-    **Example request**:
-
-    .. sourcecode:: http
-
-       PUT /forums/threads/2/subscribe HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
-    **Example response**:
-
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
-       {
-         "status": "success",
-         "response": "Successfully subscribed to thread 2."
-       }
-
-    :>json str response: Success or failure message
-
-    :statuscode 200: Subscription alteration successful
-    :statuscode 400: Subscription alteration unsuccessful
-    :statuscode 404: Forum thread does not exist
+    Endpoint for forum thread note creation. Limited to those with ``modify_forum_threads``
+    permission.
     """
-    thread = ForumThread.from_pk(thread_id, _404=True)
-    subscription = ForumThreadSubscription.from_attrs(
-        flask.g.user.id, thread.id)
-    if flask.request.method == 'POST':
-        if subscription:
-            raise APIException(f'You are already subscribed to thread {thread_id}.')
-        ForumThreadSubscription.new(
-            user_id=flask.g.user.id,
-            thread_id=thread_id)
-        return flask.jsonify(f'Successfully subscribed to thread {thread_id}.')
-    else:  # method = DELETE
-        if not subscription:
-            raise APIException(f'You are not subscribed to thread {thread_id}.')
-        db.session.delete(subscription)
-        db.session.commit()
-        return flask.jsonify(f'Successfully unsubscribed from thread {thread_id}.')
+    return flask.jsonify(ForumThreadNote.new(
+        thread_id=id,
+        note=note))

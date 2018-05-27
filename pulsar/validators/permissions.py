@@ -15,7 +15,7 @@ FORUM_PERMISSION = re.compile(r'forums_forums_permission_\d+')
 THREAD_PERMISSION = re.compile(r'forums_threads_permission_\d+')
 
 
-def permissions_list(perm_list: List[str]) -> List[str]:
+def PermissionsList(perm_list: List[str]) -> List[str]:
     """
     Validates that every permission in the list is a valid permission.
 
@@ -37,7 +37,7 @@ def permissions_list(perm_list: List[str]) -> List[str]:
     return perm_list
 
 
-def permissions_list_of_user(perm_list: List[str]) -> List[str]:
+def PermissionsListOfUser(perm_list: List[str]) -> List[str]:
     """
     Takes a list of items and asserts that all of them are in the permissions list of
     a user.

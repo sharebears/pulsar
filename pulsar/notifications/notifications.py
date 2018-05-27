@@ -1,7 +1,7 @@
 import flask
 
 from pulsar.forums.models import ForumThread
-from pulsar.utils import require_permission, choose_user
+from pulsar.utils import choose_user, require_permission
 
 from . import bp
 

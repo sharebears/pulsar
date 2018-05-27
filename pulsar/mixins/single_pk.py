@@ -3,10 +3,10 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 import flask
 from flask_sqlalchemy import BaseQuery, Model
 from sqlalchemy import func
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.session import make_transient_to_detached
 from sqlalchemy.sql.elements import BinaryExpression
-from sqlalchemy.inspection import inspect
 
 from pulsar import APIException, _403Exception, _404Exception, cache, db
 
@@ -80,6 +80,7 @@ class SinglePKMixin(Model):
                 *,
                 include_dead: bool = False,
                 _404: bool = False,
+                error: bool = False,
                 asrt: str = None) -> Optional[MDL]:
                 # TODO fix response type, this is why we are static optional.
         """
@@ -92,21 +93,24 @@ class SinglePKMixin(Model):
 
         :param id:             The primary key ID of the object to query for
         :param include_dead:   Whether or not to return deleted/revoked/expired objects
+        :param error:          Whether or not to raise a _403Exception when the user cannot
+                               access the object
         :param _404:           Whether or not to raise a _404Exception with the value of
-                               _404 and the class name as the resource name if a model is not found
+                               _404 and the class name as the resource name if an object
+                               is not found
         :param asrt:           Whether or not to check for ownership of the model or a permission.
                                Can be a boolean to purely check for ownership, or a permission
                                string which can override ownership and access the model anyways.
 
         :return:               The object corresponding to the given ID, if it exists
-        :raises _404Exception: If ``_404`` is passed and a model is not found or accessible
+        :raises _404Exception: If ``_404`` is passed and an object is not found nor accessible
         """
         if pk:
             model = cls.from_cache(
                 key=cls.create_cache_key(pk),
                 query=cls.query.filter(getattr(cls, cls.get_primary_key()) == pk))
             if (model is not None
-                    and model.can_access(asrt, error=not _404)
+                    and model.can_access(asrt, error)
                     and (include_dead
                          or not cls.__deletion_attr__
                          or not getattr(model, cls.__deletion_attr__, False))):
@@ -239,7 +243,7 @@ class SinglePKMixin(Model):
 
         :return:                    A list of objects matching the query specifications
         """
-        if not pks:
+        if pks is None:
             pks = cls.get_pks_of_many(key, filter, order, include_dead, expr_override)
         if reverse:
             pks.reverse()
@@ -337,12 +341,9 @@ class SinglePKMixin(Model):
         :raises APIException: If error param is passed and ID is not valid
         """
         obj = cls.from_pk(pk)
-        valid = (obj is not None and (
-            cls.__deletion_attr__ is None
-            or not getattr(obj, cls.__deletion_attr__, False)))
-        if error and not valid:
+        if error and not obj:
             raise APIException(f'Invalid {cls.__name__} {cls.get_primary_key()}.')
-        return valid
+        return obj is not None
 
     @classmethod
     def create_cache_key(cls, pk: Union[int, str]) -> str:
@@ -354,13 +355,13 @@ class SinglePKMixin(Model):
         :return:           The cache key
         :raises NameError: If the cache key is undefined or improperly defined
         """
-        print(cls.get_primary_key())
         if cls.__cache_key__:
             try:
                 return cls.__cache_key__.format(**{cls.get_primary_key(): pk})
             except KeyError:
                 pass
-        raise NameError('The cache key is undefined or improperly defined in this model.')
+        raise NameError(  # pramga: no cover
+            'The cache key is undefined or improperly defined in this model.')
 
     @classmethod
     def update_many(cls, *,
@@ -379,8 +380,9 @@ class SinglePKMixin(Model):
                                     going to be used after updating
         """
         if pks:
-            db.session.query(cls).filter(getattr(cls, cls.get_primary_key()).in_(pks)).update(
-                update, synchronize_session=sychronize_session)
+            db.session.query(cls).filter(
+                    getattr(cls, cls.get_primary_key()).in_(pks)
+                ).update(update, synchronize_session=sychronize_session)
             db.session.commit()
             cache.delete_many(*(cls.create_cache_key(pk) for pk in pks))
 

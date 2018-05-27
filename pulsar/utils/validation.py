@@ -27,7 +27,8 @@ def validate_data(schema: Schema) -> Callable:
                     else:
                         kwargs.update(schema(get_request_data()))
                 except Invalid as e:
-                    raise APIException(f'Invalid data: {e.msg} (key "{".".join(e.path)}")')
+                    raise APIException(
+                        f'Invalid data: {e.msg} (key "{".".join([str(p) for p in e.path])}")')
             else:
                 del kwargs['skip_validation']
             return func(*args, **kwargs)

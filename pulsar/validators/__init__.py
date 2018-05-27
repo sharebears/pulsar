@@ -1,12 +1,11 @@
-from typing import Union
-
 from voluptuous import Invalid
 
 from .permissions import *  # noqa
 from .users import *  # noqa
+from .posts import *  # noqa
 
 
-def bool_get(val: Union[bool, str, None]):
+def BoolGET(val):
     """
     Takes a string value and returns a boolean based on the input, since GET requests
     always come as strings. '1' and 'true' return True, while '0' and 'false'

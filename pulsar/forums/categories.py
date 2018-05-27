@@ -4,7 +4,7 @@ from voluptuous import All, Any, Length, Optional, Range, Schema
 from pulsar import APIException, db
 from pulsar.forums.models import ForumCategory
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import bool_get
+from pulsar.validators import BoolGET
 
 from . import bp
 
@@ -12,7 +12,7 @@ app = flask.current_app
 
 
 VIEW_FORUM_CATEGORY_SCHEMA = Schema({
-    'include_dead': bool_get,
+    'include_dead': BoolGET,
     })
 
 

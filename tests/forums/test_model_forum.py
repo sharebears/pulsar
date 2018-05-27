@@ -23,7 +23,7 @@ def test_forum_cache(app, authed_client):
 def test_forum_no_permission(app, authed_client):
     db.session.execute("DELETE FROM forums_permissions")
     with pytest.raises(_403Exception):
-        Forum.from_pk(1)
+        Forum.from_pk(1, error=True)
 
 
 def test_forum_get_from_category(app, authed_client):

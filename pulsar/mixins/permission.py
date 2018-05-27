@@ -1,37 +1,18 @@
-from typing import Dict, Optional, Type, TypeVar
+from typing import Dict
 
-from sqlalchemy import and_
 from sqlalchemy.ext.declarative import declared_attr
 
 from pulsar import db
+from pulsar.mixins.multi_pk import MultiPKMixin
 
-PMS = TypeVar('PMS', bound='PermissionMixin')
 
-
-class PermissionMixin:
+class PermissionMixin(MultiPKMixin):
     permission: str = db.Column(db.String(36), primary_key=True)
     granted: bool = db.Column(db.Boolean, nullable=False, server_default='t')
 
     @declared_attr
     def user_id(cls) -> int:
         return db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-
-    @classmethod
-    def from_attrs(cls: Type[PMS],
-                   user_id: int,
-                   permission: str) -> Optional[PMS]:
-        """
-        Get a permission from its user_id and permission name attributes.
-
-        :param user_id:    The user ID the permission belongs to
-        :param permission: The name of the permission
-
-        :return:           The permission object
-        """
-        return cls.query.filter(and_(  # type: ignore
-            (cls.user_id == user_id),
-            (cls.permission == permission),
-            )).scalar()
 
     @classmethod
     def from_user(cls, user_id: int) -> Dict[str, bool]:

@@ -57,6 +57,35 @@ def populate_db(app, client):
                       (1, 1), (1, 2), (1, 3), (1, 4), (2, 4)""")
     db.engine.execute("""INSERT INTO forums_threads_subscriptions (user_id, thread_id) VALUES
                       (1, 1), (1, 2), (1, 3), (1, 4), (2, 4)""")
+    db.engine.execute(
+        """INSERT INTO forums_threads_notes (id, thread_id, note, time) VALUES
+        (1, 1, 'NoteA', NOW() - INTERVAL '1 DAY'),
+        (2, 1, 'NoteB', NOW() - INTERVAL '23 HOURS'),
+        (3, 3, 'NoteC', NOW() - INTERVAL '1 HOUR')""")
+    db.engine.execute("ALTER SEQUENCE forums_threads_notes_id_seq RESTART WITH 4")
+    db.engine.execute(
+        """INSERT INTO forums_polls (id, thread_id, closed, featured, question) VALUES
+        (1, 1, 'f', 'f', 'Question 1'),
+        (2, 2, 'f', 'f', 'Question 2'),
+        (3, 3, 'f', 't', 'Quesiton 3'),
+        (4, 4, 't', 'f', 'Question 4')""")
+    db.engine.execute("ALTER SEQUENCE forums_polls_id_seq RESTART WITH 5")
+    db.engine.execute(
+        """INSERT INTO forums_polls_choices (id, poll_id, choice) VALUES
+        (1, 1, 'Choice A'),
+        (2, 1, 'Choice B'),
+        (3, 1, 'Choice C'),
+        (4, 2, 'Choice A'),
+        (5, 2, 'Choice B'),
+        (6, 3, 'Choice A')""")
+    db.engine.execute("ALTER SEQUENCE forums_polls_choices_id_seq RESTART WITH 7")
+    db.engine.execute(
+        """INSERT INTO forums_polls_answers (poll_id, user_id, choice_id) VALUES
+        (1, 1, 1),
+        (1, 3, 1),
+        (1, 2, 2),
+        (2, 1, 4)""")
+
     add_permissions(
         app,
         'forums_forums_permission_1',

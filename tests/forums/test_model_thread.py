@@ -1,6 +1,7 @@
+import json
 import pytest
 
-from conftest import add_permissions, check_dictionary
+from conftest import add_permissions, check_dictionary, check_json_response
 from pulsar import APIException, NewJSONEncoder, _403Exception, cache, db
 from pulsar.forums.models import (ForumLastViewedPost, ForumPost, ForumThread,
                                   ForumThreadSubscription)
@@ -19,7 +20,7 @@ def test_thread_from_pk_deleted(app, authed_client):
 def test_thread_no_permissions(app, authed_client):
     db.session.execute("DELETE FROM forums_permissions")
     with pytest.raises(_403Exception):
-        ForumThread.from_pk(1)
+        ForumThread.from_pk(1, error=True)
 
 
 def test_thread_can_access_implicit_forum(app, authed_client):
@@ -36,7 +37,7 @@ def test_thread_can_access_explicit_disallow(app, authed_client):
     db.session.execute("""INSERT INTO forums_permissions (user_id, permission, granted)
                        VALUES (1, 'forums_threads_permission_1', 'f')""")
     with pytest.raises(_403Exception):
-        ForumThread.from_pk(1)
+        ForumThread.from_pk(1, error=True)
 
 
 def test_thread_cache(app, authed_client):
@@ -203,6 +204,38 @@ def test_thread_last_viewed_none_available(app, authed_client):
     assert thread.last_viewed_post is None
 
 
+def test_add_thread_note(app, authed_client):
+    add_permissions(app, 'modify_forum_threads')
+    response = authed_client.post('/forums/threads/1/notes', data=json.dumps({
+        'note': 'ANotherNote',
+        }))
+    check_json_response(response, {
+        'id': 4,
+        'note': 'ANotherNote',
+        })
+
+
+def test_add_thread_note_nonexistent_thread(app, authed_client):
+    add_permissions(app, 'modify_forum_threads')
+    response = authed_client.post('/forums/threads/99/notes', data=json.dumps({
+        'note': 'ANotherNote',
+        }))
+    check_json_response(response, 'Invalid ForumThread id.')
+
+
+def test_add_thread_note_no_permissions(app, authed_client):
+    db.engine.execute("DELETE FROM forums_permissions")
+    add_permissions(app, 'modify_forum_threads')
+    response = authed_client.post('/forums/threads/1/notes', data=json.dumps({
+        'note': 'ANotherNote',
+        }))
+    check_json_response(response, 'Invalid ForumThread id.')
+
+
+def test_thread_subscribed_property(app, authed_client):
+    assert ForumThread.from_pk(5).subscribed is False
+
+
 def test_thread_subscriptions(app, authed_client):
     threads = ForumThread.from_subscribed_user(1)
     assert all(t.id in {1, 3, 4} for t in threads)
@@ -255,6 +288,7 @@ def test_serialize_no_perms(app, authed_client):
         'locked': True,
         'sticky': True,
         'post_count': 1,
+        'subscribed': True
         })
     assert 'forum' in data and data['forum']['id'] == 2
     assert 'poster' in data and data['poster']['id'] == 2
@@ -264,11 +298,39 @@ def test_serialize_no_perms(app, authed_client):
             and len(data['posts']) == 1
             and data['posts'][0]['id'] == 2)
     assert 'created_time' in data and isinstance(data['created_time'], int)
-    assert len(data) == 11
+    assert 'poll' in data and data['poll']['id'] == 3
+    assert len(data) == 13
+
+
+def test_serialize_detailed(app, authed_client):
+    add_permissions(app, 'modify_forum_threads')
+    category = ForumThread.from_pk(3)
+    data = NewJSONEncoder()._to_dict(category)
+    check_dictionary(data, {
+        'id': 3,
+        'topic': 'Using PHP',
+        'locked': True,
+        'sticky': True,
+        'post_count': 1,
+        'subscribed': True,
+        })
+    assert 'forum' in data and data['forum']['id'] == 2
+    assert 'poster' in data and data['poster']['id'] == 2
+    assert 'last_post' in data and data['last_post']['id'] == 2
+    assert 'last_viewed_post' in data and data['last_viewed_post']['id'] == 2
+    assert ('posts' in data
+            and len(data['posts']) == 1
+            and data['posts'][0]['id'] == 2)
+    assert 'created_time' in data and isinstance(data['created_time'], int)
+    assert 'poll' in data and data['poll']['id'] == 3
+    assert ('thread_notes' in data
+            and len(data['thread_notes']) == 1
+            and data['thread_notes'][0]['id'] == 3)
+    assert len(data) == 14
 
 
 def test_serialize_very_detailed(app, authed_client):
-    add_permissions(app, 'modify_forum_threads_advanced')
+    add_permissions(app, 'modify_forum_threads', 'modify_forum_threads_advanced')
     category = ForumThread.from_pk(3)
     data = NewJSONEncoder()._to_dict(category)
     check_dictionary(data, {
@@ -278,6 +340,7 @@ def test_serialize_very_detailed(app, authed_client):
         'sticky': True,
         'deleted': False,
         'post_count': 1,
+        'subscribed': True,
         })
     assert 'forum' in data and data['forum']['id'] == 2
     assert 'poster' in data and data['poster']['id'] == 2
@@ -287,7 +350,12 @@ def test_serialize_very_detailed(app, authed_client):
             and len(data['posts']) == 1
             and data['posts'][0]['id'] == 2)
     assert 'created_time' in data and isinstance(data['created_time'], int)
-    assert len(data) == 12
+    assert 'poll' in data and data['poll']['id'] == 3
+    assert 'thread_notes' in data
+    assert ('thread_notes' in data
+            and len(data['thread_notes']) == 1
+            and data['thread_notes'][0]['id'] == 3)
+    assert len(data) == 15
 
 
 def test_serialize_nested(app, authed_client):
@@ -301,9 +369,10 @@ def test_serialize_nested(app, authed_client):
         'sticky': True,
         'deleted': False,
         'post_count': 1,
+        'subscribed': True,
         })
     assert 'poster' in data and data['poster']['id'] == 2
     assert 'last_post' in data and data['last_post']['id'] == 2
     assert 'last_viewed_post' in data and data['last_viewed_post']['id'] == 2
     assert 'created_time' in data and isinstance(data['created_time'], int)
-    assert len(data) == 10
+    assert len(data) == 11

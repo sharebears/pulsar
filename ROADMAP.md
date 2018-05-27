@@ -1,20 +1,25 @@
 # Current Path
 
 - [x] Forums
-- [ ] Forum Glitter
-- [ ] Review Documentation
+- [x] Forum Glitter
 - [ ] Rules
+- [ ] Review Documentation
 - [ ] News Posts
 - [ ] Index
 
-# Issues
-- [ ] Automate PK usage based on SQLA object metadata in SinglePKMixin instead of ID
-- [ ] CamelCase validator names
+# Version 0.0.2 Milestone
+- [x] Apply forum thread permissions to forum poll permissions
+- [x] Forum thread notes
+- [x] Post length exemption permission
+- [x] CamelCase validator names
 - [ ] Hypothesis property testing for validators?
 - [ ] Use a rollback for tests instead of manual table clears?
-- [ ] Post length exemption permission
-- [ ] Create a values() query function per http://xion.io/post/code/sqlalchemy-query-values.html
-- [ ] Unit tests for cache key clear on new subscribed threads / posts in subscribed threads
+- [ ] Standardize permission and cache key names
+- [ ] Split up schemas and models and create nested kwarg option serialization
+- [ ] Rules System
+- [ ] Documentation Revisions
+- [ ] Users system extras
+
 
 
 # TODO
@@ -48,8 +53,9 @@
 ## Permissions
 - [x] Primary User Classes
 - [x] Individual Permissions
-- [x] Turn every endpoint into a permission?
+- [x] Endpoint permissoning
 - [x] Secondary User Classes
+- [x] Permissions usage checker dev tool
 - [x] Forum Permissions
 - [ ] Wiki Permissions
 
@@ -61,9 +67,11 @@
 - [x] Posts View
 - [x] Last viewed post in a thread
 - [x] Thread Subscriptions
-- [x] Forum Subscriptions (autosubscribe to new threads in forum)
-- [ ] Polls
-- [ ] Documentation
+- [x] Forum Subscriptions (auto-subscribe to new threads in forum)
+- [x] View (New) Subscriptions
+- [x] Polls
+- [x] Forum Poll Permissions **(beware of featured poll throwing a 403, make sure it returns null)**
+- [x] Forum Thread Notes
 - [ ] Individual category view with 8 threads per sub-forum
 
 ## Rules
