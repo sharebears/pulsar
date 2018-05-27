@@ -449,6 +449,7 @@ class ForumPost(db.Model, SinglePKMixin):
 
     @classmethod
     def new(cls,
+            *,
             thread_id: int,
             poster_id: int,
             contents: str) -> Optional['ForumPost']:
@@ -502,6 +503,7 @@ class ForumPostEditHistory(db.Model, SinglePKMixin):
 
     @classmethod
     def new(cls,
+            *,
             post_id: int,
             editor_id: int,
             contents: str,
@@ -656,6 +658,7 @@ class ForumThreadNote(db.Model, SinglePKMixin):
 
     @classmethod
     def new(cls,
+            *,
             thread_id: int,
             note: str) -> 'ForumThreadNote':
         ForumThread.is_valid(thread_id, error=True)

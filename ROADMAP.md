@@ -2,8 +2,9 @@
 
 - [x] Forums
 - [x] Forum Glitter
-- [ ] Rules
+- [x] Rules
 - [ ] Review Documentation
+-Version 0.0.2 Cutoff-
 - [ ] News Posts
 - [ ] Index
 
@@ -12,11 +13,12 @@
 - [x] Forum thread notes
 - [x] Post length exemption permission
 - [x] CamelCase validator names
+- [x] Rules System
+- [ ] Get rid of the horrible idea that was ``pulsar.models``
 - [ ] Hypothesis property testing for validators?
 - [ ] Use a rollback for tests instead of manual table clears?
 - [ ] Standardize permission and cache key names
 - [ ] Split up schemas and models and create nested kwarg option serialization
-- [ ] Rules System
 - [ ] Documentation Revisions
 - [ ] Users system extras
 
@@ -70,18 +72,20 @@
 - [x] Forum Subscriptions (auto-subscribe to new threads in forum)
 - [x] View (New) Subscriptions
 - [x] Polls
-- [x] Forum Poll Permissions **(beware of featured poll throwing a 403, make sure it returns null)**
+- [x] Forum Poll Permissions
 - [x] Forum Thread Notes
 - [ ] Individual category view with 8 threads per sub-forum
 
 ## Rules
-- [ ] Dictionary files to be imported - enable reload of import without restarting site
+- [x] Cached JSON files.
+- [ ] Populate basic ruleset
 
 ## Index
 (All of these get their own endpoint too)
 - [ ] News Posts
 - [ ] Blog Posts
 - [ ] Site Stats
+- [ ] Featured Poll (make sure permissioned featured poll return null)
 
 ## Wiki
 - [ ] Wiki Pages

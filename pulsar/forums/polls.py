@@ -1,7 +1,7 @@
 from typing import Dict, List  # type: ignore
 
 import flask
-from voluptuous import Schema
+from voluptuous import Schema, Optional
 
 from pulsar import APIException, cache, db
 from pulsar.forums.models import ForumPoll, ForumPollAnswer, ForumPollChoice
@@ -56,8 +56,8 @@ def view_poll(id: int) -> flask.Response:
 
 MODIFY_FORUM_POLL_SCHEMA = Schema({
     'choices': Schema({
-        'add': [str],
-        'delete': [int],
+        Optional('add', default=[]): [str],
+        Optional('delete', default=[]): [int],
         }),
     'closed': BoolGET,
     'featured': BoolGET,
@@ -123,7 +123,10 @@ def modify_poll(id: int,
     if closed is not None:
         poll.closed = closed
     if choices:
-        change_poll_choices(poll, choices['add'], choices['delete'])
+        change_poll_choices(
+            poll,
+            choices['add'],
+            choices['delete'])
     db.session.commit()
     return flask.jsonify(poll)
 

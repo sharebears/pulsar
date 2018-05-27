@@ -77,6 +77,17 @@ def test_modify_poll_choices_errors(app, authed_client):
     assert 'The following poll choices could not be deleted: 5.' in response
 
 
+def test_modify_poll_choices_partial(app, authed_client):
+    add_permissions(app, 'view_forums', 'modify_forum_polls')
+    response = authed_client.put('/forums/polls/1', data=json.dumps({
+        'choices': {
+            'add': ['Choice A', 'Choice B'],
+        }})).get_json()['response']
+    assert 'Choice A' in response
+    assert 'Choice B' in response
+    assert 'The following poll choices could not be added: ' in response
+
+
 def test_vote_poll(app, authed_client):
     add_permissions(app, 'view_forums', 'forums_polls_vote')
     response = authed_client.post('/forums/polls/choices/6/vote')

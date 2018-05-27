@@ -1,16 +1,16 @@
 """empty message
 
-Revision ID: 3637fa2e0f53
+Revision ID: 76e78aad4845
 Revises: 
-Create Date: 2018-05-14 19:40:49.572621
+Create Date: 2018-05-27 09:10:00.678679
 
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '3637fa2e0f53'
+revision = '76e78aad4845'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -26,16 +26,20 @@ def upgrade():
     sa.Column('deleted', sa.Boolean(), server_default='f', nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_forums_categories_deleted'), 'forums_categories', ['deleted'], unique=False)
+    op.create_index(op.f('ix_forums_categories_position'), 'forums_categories', ['position'], unique=False)
     op.create_table('secondary_classes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=24), nullable=False),
-    sa.Column('permissions', postgresql.ARRAY(sa.String(length=32)), nullable=True),
+    sa.Column('permissions', postgresql.ARRAY(sa.String(length=36)), server_default='{}', nullable=False),
+    sa.Column('forum_permissions', postgresql.ARRAY(sa.String(length=36)), server_default='{}', nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user_classes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=24), nullable=False),
-    sa.Column('permissions', postgresql.ARRAY(sa.String(length=32)), nullable=True),
+    sa.Column('permissions', postgresql.ARRAY(sa.String(length=36)), server_default='{}', nullable=False),
+    sa.Column('forum_permissions', postgresql.ARRAY(sa.String(length=36)), server_default='{}', nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('forums',
@@ -49,6 +53,8 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_forums_category_id'), 'forums', ['category_id'], unique=False)
+    op.create_index(op.f('ix_forums_deleted'), 'forums', ['deleted'], unique=False)
+    op.create_index(op.f('ix_forums_position'), 'forums', ['position'], unique=False)
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=32), nullable=False),
@@ -68,24 +74,39 @@ def upgrade():
     )
     op.create_index(op.f('ix_users_inviter_id'), 'users', ['inviter_id'], unique=False)
     op.create_table('api_keys',
-    sa.Column('id', sa.String(length=10), nullable=False),
+    sa.Column('hash', sa.String(length=10), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('keyhashsalt', sa.String(length=128), nullable=True),
     sa.Column('last_used', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('ip', postgresql.INET(), server_default='0.0.0.0', nullable=False),
     sa.Column('user_agent', sa.Text(), nullable=True),
     sa.Column('revoked', sa.Boolean(), server_default='f', nullable=False),
-    sa.Column('permissions', postgresql.ARRAY(sa.String(length=32)), nullable=True),
+    sa.Column('permissions', postgresql.ARRAY(sa.String(length=36)), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('hash')
     )
     op.create_index(op.f('ix_api_keys_revoked'), 'api_keys', ['revoked'], unique=False)
     op.create_index(op.f('ix_api_keys_user_id'), 'api_keys', ['user_id'], unique=False)
+    op.create_table('forums_forums_subscriptions',
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('forum_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['forum_id'], ['forums.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('user_id', 'forum_id')
+    )
+    op.create_table('forums_permissions',
+    sa.Column('permission', sa.String(length=36), nullable=False),
+    sa.Column('granted', sa.Boolean(), server_default='t', nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('permission', 'user_id')
+    )
     op.create_table('forums_threads',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('topic', sa.String(length=255), nullable=False),
+    sa.Column('topic', sa.String(length=150), nullable=False),
     sa.Column('forum_id', sa.Integer(), nullable=False),
     sa.Column('poster_id', sa.Integer(), nullable=False),
+    sa.Column('created_time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('locked', sa.Boolean(), server_default='f', nullable=False),
     sa.Column('sticky', sa.Boolean(), server_default='f', nullable=False),
     sa.Column('deleted', sa.Boolean(), server_default='f', nullable=False),
@@ -93,9 +114,11 @@ def upgrade():
     sa.ForeignKeyConstraint(['poster_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_forums_threads_deleted'), 'forums_threads', ['deleted'], unique=False)
+    op.create_index(op.f('ix_forums_threads_forum_id'), 'forums_threads', ['forum_id'], unique=False)
     op.create_index(op.f('ix_forums_threads_poster_id'), 'forums_threads', ['poster_id'], unique=False)
     op.create_table('invites',
-    sa.Column('id', sa.String(length=24), nullable=False),
+    sa.Column('code', sa.String(length=24), nullable=False),
     sa.Column('inviter_id', sa.Integer(), nullable=False),
     sa.Column('invitee_id', sa.Integer(), nullable=True),
     sa.Column('email', sa.String(length=255), nullable=False),
@@ -104,7 +127,7 @@ def upgrade():
     sa.Column('expired', sa.Boolean(), server_default='f', nullable=False),
     sa.ForeignKeyConstraint(['invitee_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['inviter_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('code')
     )
     op.create_index(op.f('ix_invites_expired'), 'invites', ['expired'], unique=False)
     op.create_index(op.f('ix_invites_invitee_id'), 'invites', ['invitee_id'], unique=False)
@@ -116,7 +139,7 @@ def upgrade():
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], )
     )
     op.create_table('sessions',
-    sa.Column('id', sa.String(length=10), nullable=False),
+    sa.Column('hash', sa.String(length=10), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('persistent', sa.Boolean(), server_default='f', nullable=False),
     sa.Column('last_used', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -125,17 +148,28 @@ def upgrade():
     sa.Column('csrf_token', sa.String(length=24), nullable=False),
     sa.Column('expired', sa.Boolean(), server_default='f', nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('hash')
     )
     op.create_index(op.f('ix_sessions_expired'), 'sessions', ['expired'], unique=False)
     op.create_index(op.f('ix_sessions_user_id'), 'sessions', ['user_id'], unique=False)
     op.create_table('users_permissions',
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('permission', sa.String(length=32), nullable=False),
+    sa.Column('permission', sa.String(length=36), nullable=False),
     sa.Column('granted', sa.Boolean(), server_default='t', nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'permission')
+    sa.PrimaryKeyConstraint('permission', 'user_id')
     )
+    op.create_table('forums_polls',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('thread_id', sa.Integer(), nullable=True),
+    sa.Column('question', sa.Text(), nullable=False),
+    sa.Column('closed', sa.Boolean(), server_default='f', nullable=False),
+    sa.Column('featured', sa.Boolean(), server_default='f', nullable=False),
+    sa.ForeignKeyConstraint(['thread_id'], ['forums_threads.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('thread_id')
+    )
+    op.create_index('ix_polls_featured', 'forums_polls', ['featured'], unique=True, postgresql_where=sa.text("featured = 't'"))
     op.create_table('forums_posts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('thread_id', sa.Integer(), nullable=False),
@@ -144,13 +178,39 @@ def upgrade():
     sa.Column('time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('sticky', sa.Boolean(), server_default='f', nullable=False),
     sa.Column('edited_user_id', sa.Integer(), nullable=True),
+    sa.Column('edited_time', sa.DateTime(timezone=True), nullable=True),
     sa.Column('deleted', sa.Boolean(), server_default='f', nullable=False),
     sa.ForeignKeyConstraint(['edited_user_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['poster_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['thread_id'], ['forums_threads.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_forums_posts_deleted'), 'forums_posts', ['deleted'], unique=False)
     op.create_index(op.f('ix_forums_posts_poster_id'), 'forums_posts', ['poster_id'], unique=False)
+    op.create_index(op.f('ix_forums_posts_thread_id'), 'forums_posts', ['thread_id'], unique=False)
+    op.create_table('forums_threads_notes',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('thread_id', sa.Integer(), nullable=False),
+    sa.Column('note', sa.Text(), nullable=False),
+    sa.Column('time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['thread_id'], ['forums_threads.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_forums_threads_notes_thread_id'), 'forums_threads_notes', ['thread_id'], unique=False)
+    op.create_table('forums_threads_subscriptions',
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('thread_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['thread_id'], ['forums_threads.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('user_id', 'thread_id')
+    )
+    op.create_table('forums_polls_choices',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('poll_id', sa.Integer(), nullable=False),
+    sa.Column('choice', sa.Text(), nullable=False),
+    sa.ForeignKeyConstraint(['poll_id'], ['forums_polls.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('forums_posts_edit_history',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('post_id', sa.Integer(), nullable=False),
@@ -161,14 +221,42 @@ def upgrade():
     sa.ForeignKeyConstraint(['post_id'], ['forums_posts.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('last_viewed_forum_posts',
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('thread_id', sa.Integer(), nullable=False),
+    sa.Column('post_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['post_id'], ['forums_posts.id'], ),
+    sa.ForeignKeyConstraint(['thread_id'], ['forums_threads.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('user_id', 'thread_id')
+    )
+    op.create_table('forums_polls_answers',
+    sa.Column('poll_id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('choice_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['choice_id'], ['forums_polls_choices.id'], ),
+    sa.ForeignKeyConstraint(['poll_id'], ['forums_polls.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('poll_id', 'user_id')
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('forums_polls_answers')
+    op.drop_table('last_viewed_forum_posts')
     op.drop_table('forums_posts_edit_history')
+    op.drop_table('forums_polls_choices')
+    op.drop_table('forums_threads_subscriptions')
+    op.drop_index(op.f('ix_forums_threads_notes_thread_id'), table_name='forums_threads_notes')
+    op.drop_table('forums_threads_notes')
+    op.drop_index(op.f('ix_forums_posts_thread_id'), table_name='forums_posts')
     op.drop_index(op.f('ix_forums_posts_poster_id'), table_name='forums_posts')
+    op.drop_index(op.f('ix_forums_posts_deleted'), table_name='forums_posts')
     op.drop_table('forums_posts')
+    op.drop_index('ix_polls_featured', table_name='forums_polls')
+    op.drop_table('forums_polls')
     op.drop_table('users_permissions')
     op.drop_index(op.f('ix_sessions_user_id'), table_name='sessions')
     op.drop_index(op.f('ix_sessions_expired'), table_name='sessions')
@@ -179,15 +267,23 @@ def downgrade():
     op.drop_index(op.f('ix_invites_expired'), table_name='invites')
     op.drop_table('invites')
     op.drop_index(op.f('ix_forums_threads_poster_id'), table_name='forums_threads')
+    op.drop_index(op.f('ix_forums_threads_forum_id'), table_name='forums_threads')
+    op.drop_index(op.f('ix_forums_threads_deleted'), table_name='forums_threads')
     op.drop_table('forums_threads')
+    op.drop_table('forums_permissions')
+    op.drop_table('forums_forums_subscriptions')
     op.drop_index(op.f('ix_api_keys_user_id'), table_name='api_keys')
     op.drop_index(op.f('ix_api_keys_revoked'), table_name='api_keys')
     op.drop_table('api_keys')
     op.drop_index(op.f('ix_users_inviter_id'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_forums_position'), table_name='forums')
+    op.drop_index(op.f('ix_forums_deleted'), table_name='forums')
     op.drop_index(op.f('ix_forums_category_id'), table_name='forums')
     op.drop_table('forums')
     op.drop_table('user_classes')
     op.drop_table('secondary_classes')
+    op.drop_index(op.f('ix_forums_categories_position'), table_name='forums_categories')
+    op.drop_index(op.f('ix_forums_categories_deleted'), table_name='forums_categories')
     op.drop_table('forums_categories')
     # ### end Alembic commands ###
