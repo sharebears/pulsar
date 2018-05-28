@@ -2,7 +2,7 @@ import flask
 from voluptuous import Email, Optional, Schema
 
 from pulsar import APIException, db
-from pulsar.models import Invite
+from pulsar.invites.models import Invite
 from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import BoolGET
 

@@ -1,4 +1,5 @@
 import json
+
 import pytest
 
 from conftest import add_permissions, check_dictionary, check_json_response

@@ -2,7 +2,7 @@ import flask
 import pytest
 
 from conftest import CODE_1, add_permissions
-from pulsar.models import User
+from pulsar.users.models import User
 
 
 @pytest.mark.parametrize(

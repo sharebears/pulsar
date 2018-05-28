@@ -8,8 +8,8 @@ from conftest import add_permissions, check_dupe_in_list, check_json_response
 from pulsar import APIException, db
 from pulsar.permissions.models import UserPermission
 from pulsar.users.models import User
-from pulsar.validators import (ForumPermissionsDict, PermissionsDict, check_permissions,
-                               PermissionsList, PermissionsListOfUser)
+from pulsar.validators import (ForumPermissionsDict, PermissionsDict, PermissionsList,
+                               PermissionsListOfUser, check_permissions)
 
 
 def test_PermissionsList(app, authed_client):

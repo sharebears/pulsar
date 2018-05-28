@@ -1,7 +1,7 @@
 from typing import Dict, List  # type: ignore
 
 import flask
-from voluptuous import Schema, Optional
+from voluptuous import Optional, Schema
 
 from pulsar import APIException, cache, db
 from pulsar.forums.models import ForumPoll, ForumPollAnswer, ForumPollChoice

@@ -2,7 +2,7 @@ import flask
 from voluptuous import All, Length, Match, Schema
 
 from pulsar import _401Exception, _403Exception, db
-from pulsar.models import Session
+from pulsar.auth.models import Session
 from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import PASSWORD_REGEX
 

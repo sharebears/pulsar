@@ -4,7 +4,8 @@ import pytest
 
 from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
 from pulsar import db
-from pulsar.models import Invite, User
+from pulsar.invites.models import Invite
+from pulsar.users.models import User
 
 
 @pytest.mark.parametrize(

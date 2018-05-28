@@ -1,8 +1,9 @@
+import importlib
+
 import pytest
 
-import pulsar.models as models
 from pulsar.mixins import SinglePKMixin
-from pulsar.models import UserClass
+from pulsar.permissions.models import UserClass
 from pulsar.utils.permissions import get_all_permissions
 
 
@@ -41,26 +42,43 @@ def test_is_valid_data(app, client, data, result):
 def test_all_models_permissions_are_valid():
     """Make sure that all model serialization permissions are valid permissions."""
     all_permissions = get_all_permissions()
-    classes = [cls for _, cls in models.__dict__.items() if
-               isinstance(cls, type) and issubclass(cls, SinglePKMixin)]
-    assert len(classes) > 10
-    for class_ in classes:
-        permissions = (class_.__permission_detailed__, class_.__permission_very_detailed__, )
-        for p in permissions:
-            assert not p or p in all_permissions
+    model_groups = [
+        'auth',
+        'forums',
+        'invites',
+        'permissions',
+        'users'
+        ]
+    for mg in model_groups:
+        models = importlib.import_module(f'pulsar.{mg}.models')
+        classes = [cls for _, cls in models.__dict__.items() if
+                   isinstance(cls, type) and issubclass(cls, SinglePKMixin)]
+        for class_ in classes:
+            permissions = (class_.__permission_detailed__, class_.__permission_very_detailed__, )
+            for p in permissions:
+                assert not p or p in all_permissions
 
 
 def test_all_class_serialization_attributes_valid():
     """Make sure that all model serialization tuples are valid properties."""
-    classes = [cls for _, cls in models.__dict__.items() if
-               isinstance(cls, type) and issubclass(cls, SinglePKMixin)]
-    for class_ in classes:
-        attrs = class_.__dict__.keys()
-        print(class_.__name__)
-        serializes = (
-            class_.__serialize__
-            + class_.__serialize_self__
-            + class_.__serialize_detailed__
-            + class_.__serialize_very_detailed__)
-        for s in serializes:
-            assert s in attrs
+    model_groups = [
+        'auth',
+        'forums',
+        'invites',
+        'permissions',
+        'users'
+        ]
+    for mg in model_groups:
+        models = importlib.import_module(f'pulsar.{mg}.models')
+        classes = [cls for _, cls in models.__dict__.items() if
+                   isinstance(cls, type) and issubclass(cls, SinglePKMixin)]
+        for class_ in classes:
+            attrs = class_.__dict__.keys()
+            print(class_.__name__)
+            serializes = (
+                class_.__serialize__
+                + class_.__serialize_self__
+                + class_.__serialize_detailed__
+                + class_.__serialize_very_detailed__)
+            for s in serializes:
+                assert s in attrs

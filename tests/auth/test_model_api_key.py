@@ -20,7 +20,7 @@ def test_api_key_collision(app, client, monkeypatch):
     # First four are the the id and csrf_token, last one is the 16char key.
     global HEXES
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_1[:16]])
-    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
 
     raw_key, api_key = APIKey.new(2, '127.0.0.2', 'UA')
     assert len(raw_key) == 26

@@ -1,6 +1,7 @@
 from conftest import add_permissions
 from pulsar import db
-from pulsar.models import User, UserPermission
+from pulsar.permissions.models import UserPermission
+from pulsar.users.models import User
 
 
 def test_permissions_from_user(app, client):

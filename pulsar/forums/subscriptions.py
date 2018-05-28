@@ -1,7 +1,8 @@
 import flask
 
 from pulsar import APIException, db
-from pulsar.forums.models import (Forum, ForumThread, ForumSubscription, ForumThreadSubscription)
+from pulsar.forums.models import (Forum, ForumSubscription, ForumThread,
+                                  ForumThreadSubscription)
 from pulsar.utils import require_permission
 
 from . import bp

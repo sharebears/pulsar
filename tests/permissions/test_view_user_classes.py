@@ -4,7 +4,7 @@ import pytest
 
 from conftest import check_json_response
 from pulsar import db
-from pulsar.models import SecondaryClass, UserClass
+from pulsar.permissions.models import SecondaryClass, UserClass
 
 
 def test_view_user_class(app, authed_client):

@@ -7,7 +7,8 @@ import flask
 import pytz
 
 from pulsar import APIException, _312Exception, _403Exception, cache, db
-from pulsar.models import APIKey, Session, User
+from pulsar.auth.models import APIKey, Session
+from pulsar.users.models import User
 
 from . import bp
 

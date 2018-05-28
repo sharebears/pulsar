@@ -1,8 +1,8 @@
 from voluptuous import Invalid
 
 from .permissions import *  # noqa
-from .users import *  # noqa
 from .posts import *  # noqa
+from .users import *  # noqa
 
 
 def BoolGET(val):

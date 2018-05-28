@@ -2,7 +2,7 @@ import flask
 
 from conftest import add_permissions
 from pulsar import cache, db
-from pulsar.models import User
+from pulsar.users.models import User
 
 
 def test_get_from_cache(app, authed_client):

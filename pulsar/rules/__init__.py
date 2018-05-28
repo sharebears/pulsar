@@ -1,9 +1,9 @@
-import os
 import json
+import os
 
 import flask
 
-from pulsar import cache, APIException
+from pulsar import APIException, cache
 from pulsar.utils import require_permission
 
 bp = flask.Blueprint('rules', __name__)

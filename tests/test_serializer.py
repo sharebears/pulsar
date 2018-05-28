@@ -4,7 +4,7 @@ import pytest
 import pytz
 
 from pulsar import NewJSONEncoder
-from pulsar.models import User
+from pulsar.users.models import User
 
 
 def test_to_dict_plain(app, authed_client):

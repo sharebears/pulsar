@@ -14,7 +14,7 @@
 - [x] Post length exemption permission
 - [x] CamelCase validator names
 - [x] Rules System
-- [ ] Get rid of the horrible idea that was ``pulsar.models``
+- [x] Get rid of the horrible idea that was ``pulsar.models``
 - [ ] Hypothesis property testing for validators?
 - [ ] Use a rollback for tests instead of manual table clears?
 - [ ] Standardize permission and cache key names

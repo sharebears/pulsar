@@ -5,7 +5,7 @@ import pytest
 
 from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
 from pulsar import cache
-from pulsar.models import APIKey
+from pulsar.auth.models import APIKey
 from pulsar.utils import require_permission
 
 
@@ -71,7 +71,7 @@ def test_view_empty_api_keys(app, authed_client):
 def test_create_api_key(app, authed_client, monkeypatch):
     global HEXES
     HEXES = iter(['a' * 8, 'a' * 16])
-    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     add_permissions(app, 'create_api_keys')
     response = authed_client.post('/api_keys')
     check_json_response(response, {'key': 'a' * 24})
@@ -82,7 +82,7 @@ def test_create_api_key(app, authed_client, monkeypatch):
 def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     global HEXES
     HEXES = iter(['a' * 8, 'a' * 16])
-    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     add_permissions(app, 'create_api_keys')
     authed_client.post('/api_keys', data=json.dumps({
         'permissions': ['sample_perm_one', 'sample_perm_two']}),

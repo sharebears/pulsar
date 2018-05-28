@@ -7,8 +7,9 @@ from voluptuous import Optional, Schema
 
 from conftest import CODE_1, CODE_2, add_permissions, check_json_response
 from pulsar import APIException, cache, db
+from pulsar.auth.models import Session
 from pulsar.hooks.before import check_rate_limit
-from pulsar.models import Session, User
+from pulsar.users.models import User
 from pulsar.utils import require_permission, validate_data
 
 

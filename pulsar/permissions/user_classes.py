@@ -5,9 +5,9 @@ import flask
 from voluptuous import All, Length, Optional, Schema
 
 from pulsar import APIException, db
-from pulsar.models import SecondaryClass, UserClass
+from pulsar.permissions.models import SecondaryClass, UserClass
 from pulsar.utils import require_permission, validate_data
-from pulsar.validators import PermissionsDict, BoolGET, PermissionsList
+from pulsar.validators import BoolGET, PermissionsDict, PermissionsList
 
 from . import bp
 

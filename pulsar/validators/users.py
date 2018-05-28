@@ -7,7 +7,8 @@ import pytz
 from voluptuous import Invalid
 
 from pulsar import APIException
-from pulsar.models import Invite, User
+from pulsar.invites.models import Invite
+from pulsar.users.models import User
 
 app = flask.current_app
 

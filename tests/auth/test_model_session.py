@@ -19,7 +19,7 @@ def test_new_session(app):
 def test_session_collision(app, monkeypatch):
     global HEXES
     HEXES = iter([CODE_2[:10], CODE_3[:10], CODE_3])
-    monkeypatch.setattr('pulsar.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
     with app.app_context():
         session = Session.new(2, '127.0.0.2', 'ua-example')
         assert session.hash != CODE_2[:10]
