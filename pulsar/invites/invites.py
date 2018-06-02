@@ -222,7 +222,6 @@ def invite_user(email: str):
         email=email,
         ip=flask.request.remote_addr)
     flask.g.user.invites -= 1
-    db.session.add(invite)
     db.session.commit()
     return flask.jsonify(invite)
 

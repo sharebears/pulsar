@@ -4,24 +4,14 @@
 - [x] Forum Glitter
 - [x] Rules
 - [ ] Review Documentation
--Version 0.0.2 Cutoff-
 - [ ] News Posts
 - [ ] Index
 
 # Version 0.0.2 Milestone
-- [x] Apply forum thread permissions to forum poll permissions
-- [x] Forum thread notes
-- [x] Post length exemption permission
-- [x] CamelCase validator names
-- [x] Rules System
-- [x] Get rid of the horrible idea that was ``pulsar.models``
-- [ ] Hypothesis property testing for validators?
-- [ ] Use a rollback for tests instead of manual table clears?
-- [ ] Standardize permission and cache key names
 - [ ] Split up schemas and models and create nested kwarg option serialization
+- [ ] Standardize permission and cache key names
 - [ ] Documentation Revisions
 - [ ] Users system extras
-
 
 
 # TODO
@@ -43,8 +33,8 @@
 - [x] Registration
 - [x] Invites
 - [ ] User Stats model
-- [ ] User Settings -- Define constant defaults and save user overrides of those defaults,
-      creating a user property that caches the overrides and returns a dict of (0, 1, 2) user settings
+- [ ] User Settings -- Define constant defaults and use MTM table
+- [ ] Associate certain settings with certain permissions
 - [ ] Email blacklist
 - [ ] Invite Trees
 
@@ -78,14 +68,14 @@
 
 ## Rules
 - [x] Cached JSON files.
-- [ ] Populate basic ruleset
+- [ ] Default golden rules
 
 ## Index
 (All of these get their own endpoint too)
 - [ ] News Posts
 - [ ] Blog Posts
 - [ ] Site Stats
-- [ ] Featured Poll (make sure permissioned featured poll return null)
+- [ ] Featured Poll (make sure a permissioned featured poll returns null and not 403)
 
 ## Wiki
 - [ ] Wiki Pages

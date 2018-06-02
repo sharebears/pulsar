@@ -61,6 +61,7 @@ def test_create_session_persistent(client):
     response_data = response.get_json()
 
     assert response_data['response']['persistent'] is True
+    assert 'csrf_token' in response_data
 
 
 def test_create_session_failure(client):

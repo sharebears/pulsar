@@ -224,6 +224,7 @@ def create_session(username: str,
         user_agent=flask.request.user_agent.string,
         persistent=persistent)
 
+    flask.g.user_session = session
     flask.session['user_id'] = user.id
     flask.session['session_hash'] = session.hash
     flask.session.permanent = persistent

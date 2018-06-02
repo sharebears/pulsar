@@ -20,7 +20,6 @@ def hook() -> None:
     flask.g.user = None
     flask.g.api_key = None
     flask.g.user_session = None
-    flask.g.csrf_token = None
     flask.g.cache_keys = defaultdict(set)
 
     if not check_user_session():
@@ -53,7 +52,6 @@ def check_user_session() -> bool:
         if session and session.user_id == user_id and not session.expired:
             flask.g.user = User.from_pk(session.user_id)
             flask.g.user_session = session
-            flask.g.csrf_token = session.csrf_token
             if flask.g.user.has_permission('no_ip_history'):
                 flask.request.environ['REMOTE_ADDR'] = '0.0.0.0'
             update_session_or_key(session)
@@ -167,5 +165,5 @@ def check_csrf() -> None:
         raise APIException('Malformed input. Is it JSON?')
 
     # In the rare chance they have no csrf_token, always error.
-    if not flask.g.csrf_token or flask.g.csrf_token != token:
+    if not flask.g.user_session.csrf_token or flask.g.user_session.csrf_token != token:
         raise _403Exception(message='Invalid authorization key.')

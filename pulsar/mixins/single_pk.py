@@ -253,7 +253,8 @@ class SinglePKMixin(Model):
 
         models: Dict[Union[int, str], MDL] = {}
         while len(models) < limit:
-            cls.populate_models_from_pks(models, pks, filter)
+            if pks:
+                cls.populate_models_from_pks(models, pks, filter)
 
             # Check permissions on the models and filter out unwanted ones.
             models = {k: m for k, m in models.items() if m.can_access(asrt)}
