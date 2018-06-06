@@ -3,14 +3,13 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy, event
 from werkzeug import find_modules, import_string
 
-from pulsar.cache import Cache, clear_cache_dirty
+from pulsar.cache import cache, clear_cache_dirty
 from pulsar.exceptions import (APIException, _312Exception, _401Exception,  # noqa
                                _403Exception, _404Exception, _405Exception,
                                _500Exception)
 from pulsar.serializer import NewJSONEncoder
 
 db = SQLAlchemy()
-cache = Cache()
 migrate = Migrate()
 event.listen(db.session, 'before_flush', clear_cache_dirty)
 
@@ -20,7 +19,6 @@ def create_app(config: str) -> flask.Flask:
     app.config.from_pyfile(config)
     app.json_encoder = NewJSONEncoder
 
-    global cache
     db.init_app(app)
     cache.init_app(app)
     migrate.init_app(app, db)

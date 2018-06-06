@@ -251,23 +251,23 @@ class SinglePKMixin(Model):
             all_next_pks = pks[(page - 1) * limit:]
             pks, extra_pks = all_next_pks[:limit], all_next_pks[limit:]
 
-        models: Dict[Union[int, str], MDL] = {}
+        models: List[MDL] = []
         while len(models) < limit:
             if pks:
                 cls.populate_models_from_pks(models, pks, filter)
 
             # Check permissions on the models and filter out unwanted ones.
-            models = {k: m for k, m in models.items() if m.can_access(asrt)}
+            models = [m for m in models if m.can_access(asrt)]
             if required_properties:
-                models = {k: m for k, m in models.items() if all(
-                    getattr(m, rp, False) for rp in required_properties)}
+                models = [m for m in models if all(
+                    getattr(m, rp, False) for rp in required_properties)]
 
             # End pagination loop and return models.
             if not page or not extra_pks:
                 break
             pks = extra_pks[:abs(limit - len(models))]
             extra_pks = extra_pks[abs(limit - len(models)):]
-        return list(models.values())
+        return list(models)
 
     @classmethod
     def get_pks_of_many(cls,
@@ -310,24 +310,28 @@ class SinglePKMixin(Model):
 
     @classmethod
     def populate_models_from_pks(cls,
-                                 models: Dict[Union[int, str], MDL],
+                                 models: List[MDL],
                                  pks: List[Union[str, int]],
                                  filter: BinaryExpression = None) -> None:
         uncached_pks = []
         cached_dict = cache.get_dict(*(cls.create_cache_key(pk) for pk in pks))
         for i, (k, v) in zip(pks, cached_dict.items()):
             if v:
-                models[i] = cls._create_obj_from_cache(v)
+                models.append(cls._create_obj_from_cache(v))
             else:
                 uncached_pks.append(i)
 
         if uncached_pks:
-            qry_models = cls._construct_query(cls.query.filter(
+            qry_models: Dict[Union[int, str], MDL] = {
+                obj.primary_key: obj for obj in
+                cls._construct_query(cls.query.filter(
                     getattr(cls, cls.get_primary_key()).in_(uncached_pks)),
-                filter).all()
-            cache.cache_models(qry_models)
-            for model in qry_models:
-                models[model.primary_key] = model
+                    filter).all()
+                    }
+            cache.cache_models(qry_models.values())  # type: ignore
+            for pk in uncached_pks:
+                if pk in qry_models:
+                    models.append(qry_models[pk])
 
     @classmethod
     def is_valid(cls,

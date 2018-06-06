@@ -8,6 +8,7 @@
 - [ ] Index
 
 # Version 0.0.2 Milestone
+- [ ] Remove session-based authentication
 - [ ] Split up schemas and models and create nested kwarg option serialization
 - [ ] Standardize permission and cache key names
 - [ ] Documentation Revisions

@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import flask
 from flask_sqlalchemy import SignallingSession
-from redis import Redis  # noqa
+from redis import Redis
 from werkzeug.contrib.cache import RedisCache
-
-if TYPE_CHECKING:
-    from pulsar.mixins import SinglePKMixin  # noqa
 
 
 class Cache(RedisCache):
@@ -170,7 +167,7 @@ class Cache(RedisCache):
         return value
 
     def cache_model(self,
-                    model: Optional['SinglePKMixin'],
+                    model,  # TODO: Fix SinglePKMixin circular import.
                     timeout: int = None) -> Optional[str]:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
@@ -193,7 +190,7 @@ class Cache(RedisCache):
         return None
 
     def cache_models(self,
-                     models: List[Optional['SinglePKMixin']],
+                     models: list,  # TODO: Fix SinglePKMixin circular import.
                      timeout: int = None) -> None:
         """
         Cache a SQLAlchemy model. Does nothing when ``model`` is ``None``.
@@ -215,13 +212,15 @@ class Cache(RedisCache):
         self.set_many(to_cache, timeout)
 
 
+cache = Cache()
+
+
 def clear_cache_dirty(session: SignallingSession, _, __) -> None:
     """
     Clear the cache key of every dirty/deleted object before DB flush.
 
     :param session: The database session about to be committed
     """
-    from pulsar import cache
     for obj in session.dirty.union(session.deleted):
         if getattr(obj, '__cache_key__', None):
             cache.delete(obj.cache_key)

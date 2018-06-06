@@ -24,3 +24,4 @@ case insensitive.
    permissions
    invites
    forums
+   rules

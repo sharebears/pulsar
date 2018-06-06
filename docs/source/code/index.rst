@@ -7,6 +7,7 @@ Code documentation for the pulsar project.
 
    style
    hooks
+   mixins
    models
    cache
    validators

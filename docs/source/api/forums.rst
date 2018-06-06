@@ -41,3 +41,14 @@ Posts
    :modules: pulsar.forums.posts
    :groupby: view
    :order: path
+
+Polls
+-----
+
+.. autoflask:: pulsar:create_app('config.py')
+   :undoc-static:
+   :modules: pulsar.forums.polls
+   :groupby: view
+   :order: path
+
+

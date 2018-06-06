@@ -4,13 +4,20 @@ Validators
 Users
 -----
 
-.. automodule:: pulsar.users.validators
+.. automodule:: pulsar.validators.users
     :members:
     :show-inheritance:
 
 Permissions
 -----------
 
-.. automodule:: pulsar.permissions.validators
+.. automodule:: pulsar.validators.permissions
+    :members:
+    :show-inheritance:
+
+Posts
+-----
+
+.. automodule:: pulsar.validators.posts
     :members:
     :show-inheritance:

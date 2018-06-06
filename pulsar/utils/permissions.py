@@ -6,9 +6,6 @@ from werkzeug import find_modules, import_string
 
 from pulsar import _401Exception, _403Exception, _404Exception
 
-if TYPE_CHECKING:
-    from pulsar.users.models import User as User_  # noqa
-
 app = flask.current_app
 
 
@@ -63,7 +60,7 @@ def get_all_permissions() -> List[str]:
 
 
 def choose_user(user_id: Optional[int],
-                permission: str) -> 'User_':
+                permission: str) -> object:  # TODO: Fix circular import for User.
     """
     Takes a user_id and a permission. If the user_id is specified, the user with that
     user id is fetched and then returned if the requesting user has the given permission.

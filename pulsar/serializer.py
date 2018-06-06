@@ -4,9 +4,6 @@ from typing import TYPE_CHECKING, Optional
 import flask
 from flask.json import JSONEncoder
 
-if TYPE_CHECKING:
-    from pulsar.mixins import SinglePKMixin as SinglePKMixin_ # noqa
-
 
 class NewJSONEncoder(JSONEncoder):
     """
@@ -34,7 +31,7 @@ class NewJSONEncoder(JSONEncoder):
             return super().default(obj)
 
     def _to_dict(self,
-                 model: 'SinglePKMixin_',
+                 model,  # TODO: Fix SinglePKMixin circular import.
                  nested: bool = False) -> Optional[dict]:
         """
         Convert the model to a dictionary based on its defined serializable attributes.
