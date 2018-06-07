@@ -32,10 +32,92 @@ def get_rules(section) -> dict:
 @bp.route('/rules', methods=['GET'])
 @require_permission('view_rules')
 def view_rules_overview() -> flask.Response:
+    """
+    View a list of rule sections. Requires the ``view_rules`` permission.
+
+    .. :quickref: Rules; Get rule sections.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       GET /rules HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": [
+            "golden",
+            "upload"
+         ]
+       }
+
+    :>json list response: The list of rule sections
+
+    :statuscode 200: Rules returned
+    :statuscode 403: User does not have permission
+    """
     return flask.jsonify(SECTIONS)
 
 
 @require_permission('view_rules')
 @bp.route('/rules/<section>', methods=['GET'])
 def view_rules(section: str) -> flask.Response:
+    """
+    View a section of rules. Requires the ``view_rules`` permission.
+
+    .. :quickref: Rules; Get a rule section.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+       GET /rules/golden HTTP/1.1
+       Host: pul.sar
+       Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+       HTTP/1.1 200 OK
+       Vary: Accept
+       Content-Type: application/json
+
+       {
+         "status": "success",
+         "response": {
+           "1": {
+             "1": {
+               "main": "Do not create more than one account.",
+               "more": "Users are allowed one account per lifetime."
+             },
+             "2": {
+               "main": "Do not trade, sell, give away, or offer accounts.",
+               "more": "If you no longer wish to use your account, send a Staff PM."
+             },
+           },
+           "2": {
+             "1": {
+               "main": "Do not invite bad users.",
+               "more": "You are responsible for your invitees."
+             }
+           }
+         }
+       }
+
+    :>json dict response: The dictionary representation of the rules
+
+    :statuscode 200: Rule section returned
+    :statuscode 403: User does not have permission
+    """
     return flask.jsonify(get_rules(section))

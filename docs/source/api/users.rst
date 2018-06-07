@@ -32,12 +32,3 @@ Moderation
    :modules: pulsar.users.moderate
    :groupby: view
    :order: path
-
-Registration
-------------
-
-.. autoflask:: pulsar:create_app('config.py')
-   :undoc-static:
-   :groupby: view
-   :modules: pulsar.users.register
-   :order: path

@@ -52,6 +52,7 @@ def moderate_user(user_id: int,
        PUT /users/1/moderate HTTP/1.1
        Host: pul.sar
        Accept: application/json
+       Content-Type: application/json
 
        {
          "password": "an-ev3n-be77er-pa$$w0rd"

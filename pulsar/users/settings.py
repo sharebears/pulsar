@@ -40,6 +40,7 @@ def edit_settings(user_id: int =None,
        PUT /users/settings HTTP/1.1
        Host: pul.sar
        Accept: application/json
+       Content-Type: application/json
 
        {
          "existing_password": "y-&~_Wbt7wjkUJdY<j-K",

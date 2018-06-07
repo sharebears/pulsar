@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 import flask
 from flask.json import JSONEncoder

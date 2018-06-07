@@ -1,4 +1,4 @@
-from conftest import add_permissions
+from conftest import add_permissions, check_json_response
 from pulsar import cache
 
 
@@ -15,6 +15,12 @@ def test_get_rules(app, authed_client):
     assert isinstance(response['response'], dict)
     assert '1' in response['response']
     assert 'main' in response['response']['1']['1']
+
+
+def test_get_rules_nonexistent(app, authed_client):
+    add_permissions(app, 'view_rules')
+    response = authed_client.get('/rules/nonexistent')
+    check_json_response(response, 'nonexistent is not a valid section of the rules.')
 
 
 def test_get_rules_cache(app, authed_client, monkeypatch):
