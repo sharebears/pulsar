@@ -68,12 +68,12 @@ def test_view_empty_api_keys(app, authed_client):
     check_json_response(response, [], list_=True, strict=True)
 
 
-def test_create_api_key(app, authed_client, monkeypatch):
+def test_create_api_key(app, client, monkeypatch):
     global HEXES
     HEXES = iter(['a' * 8, 'a' * 16])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
-    add_permissions(app, 'create_api_keys')
-    response = authed_client.post('/api_keys')
+    response = client.post('/api_keys', data=json.dumps({
+        'username': 'lights', 'password': '12345'}))
     check_json_response(response, {'key': 'a' * 24})
     with pytest.raises(StopIteration):
         hex_generator(None)
@@ -83,7 +83,6 @@ def test_create_api_key_with_permissions(app, authed_client, monkeypatch):
     global HEXES
     HEXES = iter(['a' * 8, 'a' * 16])
     monkeypatch.setattr('pulsar.auth.models.secrets.token_hex', hex_generator)
-    add_permissions(app, 'create_api_keys')
     authed_client.post('/api_keys', data=json.dumps({
         'permissions': ['sample_perm_one', 'sample_perm_two']}),
         content_type='application/json')
@@ -171,7 +170,6 @@ def test_view_resource_with_api_key_restriction(app, client):
     'endpoint, method', [
         ('/api_keys/123', 'GET'),
         ('/api_keys', 'GET'),
-        ('/api_keys', 'POST'),
         ('/api_keys', 'DELETE'),
         ('/api_keys/all', 'DELETE'),
     ])

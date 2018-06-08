@@ -1,13 +1,11 @@
-import json
 from collections import defaultdict, namedtuple
 
 import flask
 import pytest
-from voluptuous import Optional, Schema
+from voluptuous import Schema
 
 from conftest import CODE_1, CODE_2, add_permissions, check_json_response
 from pulsar import APIException, cache, db
-from pulsar.auth.models import Session
 from pulsar.hooks.before import check_rate_limit
 from pulsar.users.models import User
 from pulsar.utils import require_permission, validate_data
@@ -15,89 +13,6 @@ from pulsar.utils import require_permission, validate_data
 
 def cache_num_iter(*args, **kwargs):
     return next(CACHE_NUM)
-
-
-def test_user_session_auth(app, client):
-    """Authentication by session should work and populate the global variable."""
-    @app.route('/test_sess')
-    @require_permission('test_perm')
-    def test_session():
-        assert flask.g.user_session.hash == 'abcdefghij'
-        assert flask.g.user_session.user_agent == 'pulsar-test-client'
-        assert flask.g.user_session.ip == '127.0.0.1'
-        assert flask.g.user.id == 1
-        assert not flask.g.api_key
-        return flask.jsonify('completed')
-
-    add_permissions(app, 'test_perm')
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-    response = client.get('/test_sess', environ_base={
-        'HTTP_USER_AGENT': 'pulsar-test-client',
-        'REMOTE_ADDR': '127.0.0.1',
-        })
-    check_json_response(response, 'completed')
-    session = Session.from_pk('abcdefghij')
-    assert session.user_agent == 'pulsar-test-client'
-
-
-def test_session_auth_and_ip_override(app, client):
-    """The request IP and session IP should not be written with IP override permissions."""
-    @app.route('/test_sess')
-    @require_permission('no_ip_history')
-    def test_session():
-        assert flask.g.user_session.ip == '0.0.0.0'
-        assert flask.g.user.id == 1
-        assert not flask.g.api_key
-        return flask.jsonify('completed')
-
-    add_permissions(app, 'no_ip_history')
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-    response = client.get('/test_sess', environ_base={
-        'HTTP_USER_AGENT': 'pulsar-test-client',
-        'REMOTE_ADDR': '127.0.0.1',
-        })
-    check_json_response(response, 'completed')
-    session = Session.from_pk('abcdefghij')
-    assert session.user_agent == 'pulsar-test-client'
-
-
-@pytest.mark.parametrize(
-    'user_id, session_hash', [
-        ('testings', 'abcdefghij'),
-        ('1', 'notarealkey'),
-    ])
-def test_user_bad_session(app, client, user_id, session_hash):
-    """Bad sessions should raise a 404."""
-    @app.route('/test_sess')
-    @require_permission('test_perm')
-    def test_session():
-        return flask.jsonify('completed')
-
-    add_permissions(app, 'test_perm')
-    with client.session_transaction() as sess:
-        sess['user_id'] = user_id
-        sess['session_hash'] = session_hash
-    response = client.get('/test_sess')
-    check_json_response(response, 'Invalid authorization.')
-
-
-def test_user_expired_session(app, client):
-    """Expired sessions should raise a 404."""
-    @app.route('/test_sess')
-    @require_permission('test_perm')
-    def test_session():
-        return flask.jsonify('completed')
-
-    add_permissions(app, 'test_perm')
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = '1234567890'
-    response = client.get('/test_sess')
-    check_json_response(response, 'Invalid authorization.')
 
 
 def test_api_key_auth_and_ip_override(app, client):
@@ -110,7 +25,6 @@ def test_api_key_auth_and_ip_override(app, client):
         assert flask.g.api_key.user_agent == ''
         assert flask.g.api_key.ip == '0.0.0.0'
         assert flask.g.user.id == 1
-        assert not flask.g.user_session
         return flask.jsonify('completed')
 
     response = client.get('/test_api_key', environ_base={
@@ -156,57 +70,6 @@ def test_user_bad_api_key(app, client, authorization_header):
     check_json_response(response, 'Invalid authorization.')
 
 
-def test_csrf_validation(app, client):
-    """Test that CSRF validation works."""
-    @app.route('/test_csrf', methods=['POST'])
-    @validate_data(Schema({
-        Optional('csrf_token', default='NonExistent'): str,
-        }))
-    def test_csrf(csrf_token):
-        assert csrf_token == 'NonExistent'
-        return flask.jsonify('completed')
-
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-
-    response = client.post('/test_csrf', data=json.dumps({'csrf_token': CODE_1}))
-    resp_data = response.get_json()
-    assert 'csrf_token' in resp_data and resp_data['csrf_token'] == CODE_1
-    check_json_response(response, 'completed')
-
-
-def test_unneeded_csrf_validation(app, client):
-    """
-    Test that CSRF validation functions don't run when authenticating via
-    API key.
-    """
-    @app.route('/test_csrf', methods=['POST'])
-    def test_csrf():
-        return flask.jsonify('completed')
-
-    response = client.post('/test_csrf', headers={
-        'Authorization': f'Token abcdefghij{CODE_1}'})
-    resp_data = response.get_json()
-    assert 'csrf_token' not in resp_data
-    check_json_response(response, 'completed')
-
-
-@pytest.mark.parametrize(
-    'endpoint', [
-        '/users/change_password',
-        '/not/a/real/route',
-    ])
-def test_false_csrf_validation_session(app, client, endpoint):
-    """Assert that no CSRF key throws an invalid auth key error."""
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-
-    response = client.put(endpoint)
-    check_json_response(response, 'Invalid authorization key.')
-
-
 @pytest.mark.parametrize(
     'endpoint', [
         '/users/change_password',
@@ -225,10 +88,9 @@ def test_403_masquerade(app, client):
     def test_session():
         return flask.jsonify('completed')
 
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-    response = client.get('/test_endpoint')
+    response = client.get('/test_endpoint', headers={
+        'Authorization': f'Token abcdefghij{CODE_1}'
+        })
     check_json_response(response, 'Resource does not exist.')
 
 
@@ -245,22 +107,25 @@ def test_403_masquerade_no_auth(app, client):
 
 def test_bad_data(app, client):
     """Assert that bad request data raises an error."""
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
+    @app.route('/fake_endpoint', methods=['POST'])
+    @validate_data(Schema({'a': str}))
+    def fake_endpoint():
+        pass
 
-    response = client.post('/fake_endpoint', data=b'{a malformed ",json"}')
-    check_json_response(response, 'Malformed input. Is it JSON?')
+    response = client.post(
+        '/fake_endpoint',
+        data=b'{a malformed ",json"}',
+        headers={'Authorization': f'Token abcdefghij{CODE_1}'}
+        )
+    check_json_response(response, 'Unable to decode data. Is it valid JSON?')
 
 
 def test_disabled_user(app, client):
     """Disabled users get disabled errors."""
-    db.engine.execute("UPDATE users SET enabled = 'f' where id = 2")
-    with client.session_transaction() as sess:
-        sess['user_id'] = 2
-        sess['session_hash'] = 'bcdefghijk'
-
-    response = client.get('/fake_endpoint')
+    db.engine.execute("UPDATE users SET enabled = 'f' where id = 1")
+    response = client.get('/fake_endpoint', headers={
+        'Authorization': f'Token abcdefghij{CODE_1}'
+        })
     check_json_response(response, 'Your account has been disabled.')
 
 
@@ -268,11 +133,9 @@ def test_rate_limit_fail(app, client, monkeypatch):
     """Exceeding the per-key rate limit should return a failure message."""
     monkeypatch.setattr('pulsar.hooks.before.cache.inc', lambda *a, **k: 51)
     monkeypatch.setattr('pulsar.hooks.before.cache.ttl', lambda *a, **k: 7)
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-
-    response = client.get('/fake_endpoint')
+    response = client.get('/fake_endpoint', headers={
+        'Authorization': f'Token abcdefghij{CODE_1}'
+        })
     check_json_response(response, 'Client rate limit exceeded. 7 seconds until lock expires.')
 
 
@@ -288,7 +151,7 @@ def test_rate_limit_user_fail(app, client, monkeypatch):
     check_json_response(response, 'User rate limit exceeded. 7 seconds until lock expires.')
 
 
-g = namedtuple('g', ['user', 'user_session', 'api_key', 'cache_keys'])
+g = namedtuple('g', ['user', 'api_key', 'cache_keys'])
 api_key = namedtuple('APIKey', ['hash'])
 
 
@@ -296,7 +159,6 @@ def test_rate_limit_function(app, client, monkeypatch):
     """Test that the per-key rate limit function correctly increments and errors."""
     monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
         user=User.from_pk(1),
-        user_session=None,
         api_key=api_key(hash='abcdefghij'),
         cache_keys=defaultdict(set),
         ))
@@ -310,7 +172,6 @@ def test_rate_limit_function_global(app, client, monkeypatch):
     """Test that the per-user rate limit function correctly increments and errors."""
     monkeypatch.setattr('pulsar.hooks.before.flask.g', g(
         user=User.from_pk(1),
-        user_session=None,
         api_key=api_key(hash='abcdefghij'),
         cache_keys=defaultdict(set),
         ))

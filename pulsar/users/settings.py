@@ -2,7 +2,7 @@ import flask
 from voluptuous import All, Length, Match, Schema
 
 from pulsar import _401Exception, _403Exception, db
-from pulsar.auth.models import Session
+from pulsar.auth.models import APIKey
 from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import PASSWORD_REGEX
 
@@ -79,9 +79,9 @@ def edit_settings(user_id: int =None,
         if not existing_password or not user.check_password(existing_password):
             raise _401Exception(message='Invalid existing password.')
         user.set_password(new_password)
-        Session.update_many(
-            pks=Session.hashes_from_user(user.id),
-            update={'expired': True})
+        APIKey.update_many(
+            pks=APIKey.hashes_from_user(user.id),
+            update={'revoked': True})
 
     db.session.commit()
     return flask.jsonify('Settings updated.')

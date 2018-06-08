@@ -1,16 +1,14 @@
 # Current Path
 
-- [x] Forums
-- [x] Forum Glitter
-- [x] Rules
-- [ ] Review Documentation
+- [ ] Version 0.0.2
 - [ ] News Posts
 - [ ] Index
 
 # Version 0.0.2 Milestone
-- [ ] Remove session-based authentication
+- [x] Remove session-based authentication
 - [ ] Split up schemas and models and create nested kwarg option serialization
-- [ ] Standardize permission and cache key names
+- [ ] Null values instead of omission of keys (empty lists = [] and not null)
+- [ ] Standardize permission and cache key names (use constants)
 - [ ] Documentation Revisions
 - [ ] Users system extras
 

@@ -48,7 +48,7 @@ def get_request_data() -> Dict[Any, Any]:
         data = json.loads(raw_data) if raw_data else {}
     except ValueError:
         raise APIException(
-            'Unable to decode data. Please make sure you are sending valid JSON.')
+            'Unable to decode data. Is it valid JSON?')
     if 'csrf_token' in data:
         del data['csrf_token']
     return data

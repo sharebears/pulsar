@@ -11,88 +11,6 @@ from pulsar.mixins import SinglePKMixin
 from pulsar.users.models import User
 
 
-class Session(db.Model, SinglePKMixin):
-    __tablename__ = 'sessions'
-    __cache_key__ = 'sessions_{hash}'
-    __cache_key_of_user__ = 'sessions_user_{user_id}'
-    __deletion_attr__ = 'expired'
-
-    __serialize_self__ = __serialize_detailed__ = (
-        'hash',
-        'user_id',
-        'persistent',
-        'last_used',
-        'ip',
-        'user_agent',
-        'expired')
-
-    __permission_detailed__ = 'view_sessions_others'
-
-    hash: str = db.Column(db.String(10), primary_key=True)
-    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    persistent: bool = db.Column(db.Boolean, nullable=False, server_default='f')
-    last_used: datetime = db.Column(
-        db.DateTime(timezone=True), nullable=False, server_default=func.now())
-    ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
-    user_agent: str = db.Column(db.Text)
-    csrf_token: str = db.Column(db.String(24), nullable=False)
-    expired: bool = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
-
-    @classmethod
-    def new(cls,
-            user_id: int,
-            ip: str,
-            user_agent: str,
-            persistent: bool = False) -> 'Session':
-        """
-        Create a new session with randomly generated secret keys and the
-        user details passed in as params.
-
-        :param user_id:    Session will belong to this user
-        :param ip:         IP the session was created with
-        :param user_agent: User Agent the session was created with
-        :param persistent: Whether or not to persist the session
-
-        :return:           The new Session
-        """
-        while True:
-            hash = secrets.token_hex(5)
-            if not cls.from_pk(hash):
-                break
-        csrf_token = secrets.token_hex(12)
-        cache.delete(cls.__cache_key_of_user__.format(user_id=user_id))
-        return super()._new(
-            user_id=user_id,
-            hash=hash,
-            csrf_token=csrf_token,
-            ip=ip,
-            user_agent=user_agent,
-            persistent=persistent)
-
-    @classmethod
-    def from_user(cls,
-                  user_id: int,
-                  include_dead: bool = False) -> List['Session']:
-        """
-        Get all sessions owned by a user.
-
-        :param user_id:      The User ID of the owner
-        :param include_dead: Whether or not to include dead API keys in the search
-
-        :return:             A list of APIKey objects owned by the user
-        """
-        return cls.get_many(
-            key=cls.__cache_key_of_user__.format(user_id=user_id),
-            filter=cls.user_id == user_id,
-            include_dead=include_dead)
-
-    @classmethod
-    def hashes_from_user(cls, user_id: int) -> List[Union[int, str]]:
-        return cls.get_pks_of_many(
-            key=cls.__cache_key_of_user__.format(user_id=user_id),
-            filter=cls.user_id == user_id)
-
-
 class APIKey(db.Model, SinglePKMixin):
     __tablename__: str = 'api_keys'
     __cache_key__: str = 'api_keys_{hash}'
@@ -114,7 +32,7 @@ class APIKey(db.Model, SinglePKMixin):
     hash: str = db.Column(db.String(10), primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     keyhashsalt: str = db.Column(db.String(128))
-    last_used: str = db.Column(
+    last_used: datetime = db.Column(
         db.DateTime(timezone=True), nullable=False, server_default=func.now())
     ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
     user_agent: str = db.Column(db.Text)
@@ -132,8 +50,8 @@ class APIKey(db.Model, SinglePKMixin):
         user details passed in as params. Generated keys are hashed and
         salted for storage in the database.
 
-        :param user_id:    Session will belong to this user
-        :param ip: IP      The IP that this session was created with
+        :param user_id:    API Key will belong to this user
+        :param ip:         The IP that this session was created with
         :param user_agent: User Agent the session was created with
 
         :return:           A tuple containing the identifier and the new API Key

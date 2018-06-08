@@ -2,7 +2,7 @@ import mock
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from conftest import add_permissions, check_dictionary, check_json_response
+from conftest import CODE_3, add_permissions, check_dictionary, check_json_response
 from pulsar import APIException, NewJSONEncoder, cache, db
 from pulsar.users.models import User
 
@@ -107,22 +107,20 @@ def test_basic_permissions(app, client):
 
 def test_locked_acc_perms_blocked(app, client):
     db.engine.execute("UPDATE users SET locked = 't' where id = 2")
-    with client.session_transaction() as sess:
-        sess['user_id'] = 2
-        sess['session_hash'] = 'bcdefghijk'
 
-    response = client.get('/users/1')
+    response = client.get('/users/1', headers={
+        'Authorization': f'Token bcdefghijk{CODE_3}'
+        })
     check_json_response(response, 'Your account has been locked.')
 
 
 def test_locked_acc_perms_can_access(app, client):
     db.engine.execute("UPDATE users SET locked = 't' where id = 2")
-    with client.session_transaction() as sess:
-        sess['user_id'] = 2
-        sess['session_hash'] = 'bcdefghijk'
     app.config['LOCKED_ACCOUNT_PERMISSIONS'] = {'view_users'}
 
-    response = client.get('/users/1')
+    response = client.get('/users/1', headers={
+        'Authorization': f'Token bcdefghijk{CODE_3}'
+        })
     assert response.status_code == 200
     assert response.get_json()['response']['id'] == 1
 
@@ -155,13 +153,12 @@ def test_serialize_self(app, authed_client):
         'uploaded': 5368709120,
         'downloaded': 0,
         'invites': 1,
-        'sessions': None,
         'permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['hash'] == 'abcdefghij')
-    assert len(data) == 13
+    assert len(data) == 12
 
 
 def test_serialize_detailed(app, authed_client):
@@ -180,14 +177,13 @@ def test_serialize_detailed(app, authed_client):
         'downloaded': 0,
         'invites': 1,
         'inviter': None,
-        'sessions': None,
         'basic_permissions': None,
         'forum_permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['hash'] == 'abcdefghij')
-    assert len(data) == 16
+    assert len(data) == 15
 
 
 def test_serialize_very_detailed(app, authed_client):
@@ -206,7 +202,6 @@ def test_serialize_very_detailed(app, authed_client):
         'downloaded': 0,
         'invites': 1,
         'inviter': None,
-        'sessions': None,
         'basic_permissions': None,
         'forum_permissions': None,
         })
@@ -215,7 +210,7 @@ def test_serialize_very_detailed(app, authed_client):
             and data['api_keys'][0]['hash'] == 'abcdefghij')
     assert 'permissions' in data and set(data['permissions']) == {
         'moderate_users', 'moderate_users_advanced'}
-    assert len(data) == 16
+    assert len(data) == 15
 
 
 def test_serialize_nested(app, authed_client):

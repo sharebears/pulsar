@@ -1,7 +1,7 @@
 import flask
 import pytest
 
-from conftest import CODE_1, add_permissions
+from conftest import add_permissions
 from pulsar.users.models import User
 
 
@@ -24,34 +24,6 @@ def test_status_string(app, authed_client, status_code, status):
         'response': 'test',
         'status': status,
     }
-
-
-def test_csrf_token(app, client):
-    """The CSRF token should be present if the request is made by a session."""
-    @app.route('/test_endpoint')
-    def test_endpoint():
-        return flask.jsonify('test')
-
-    with client.session_transaction() as sess:
-        sess['user_id'] = 1
-        sess['session_hash'] = 'abcdefghij'
-
-    response = client.get('/test_endpoint')
-    assert response.get_json() == {
-        'status': 'success',
-        'csrf_token': CODE_1,
-        'response': 'test',
-        }
-
-
-def test_csrf_token_no_session(app, authed_client):
-    """The CSRF token should not be present if the request isn't made by a session."""
-    @app.route('/test_endpoint')
-    def test_endpoint():
-        return flask.jsonify('test')
-
-    response = authed_client.get('/test_endpoint')
-    assert 'csrf_token' not in response.get_json()
 
 
 def test_cache_keys(app, authed_client):

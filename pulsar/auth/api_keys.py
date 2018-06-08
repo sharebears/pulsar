@@ -3,8 +3,9 @@ from typing import List
 import flask
 from voluptuous import All, Length, Optional, Schema
 
-from pulsar import APIException, db
+from pulsar import APIException, _401Exception, db
 from pulsar.auth.models import APIKey
+from pulsar.users.models import User
 from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import BoolGET, PermissionsListOfUser
 
@@ -140,18 +141,20 @@ def view_all_api_keys(include_dead: bool,
 
 
 CREATE_API_KEY_SCHEMA = Schema({
+    'username': str,
+    'password': str,
     'permissions': PermissionsListOfUser,
     })
 
 
 @bp.route('/api_keys', methods=['POST'])
-@require_permission('create_api_keys')
 @validate_data(CREATE_API_KEY_SCHEMA)
-def create_api_key(permissions: List[str] = None) -> flask.Response:
+def create_api_key(username: str = None,
+                   password: str = None,
+                   permissions: List[str] = None) -> flask.Response:
     """
-    Creates an API key for use. Requires the ``create_api_keys`` permission to
-    create new API keys. Keys are unrecoverable after generation; if a key is lost,
-    a new one will need to be generated.
+    Creates an API key for use. Keys are unrecoverable after generation;
+    if a key is lost, a new one will need to be generated.
 
     .. :quickref: APIKey; Create an API key.
 
@@ -162,6 +165,12 @@ def create_api_key(permissions: List[str] = None) -> flask.Response:
        POST /api_keys HTTP/1.1
        Host: pul.sar
        Accept: application/json
+       Content-Type: application/json
+
+       {
+         "username": "lights",
+         "password": "12345"
+       }
 
     **Example response**:
 
@@ -190,6 +199,12 @@ def create_api_key(permissions: List[str] = None) -> flask.Response:
 
     :statuscode 200: Successfully created API key
     """
+    if not flask.g.user:
+        if username is not None:
+            flask.g.user = User.from_username(username)
+        if not flask.g.user or not flask.g.user.check_password(password):
+            raise _401Exception('Invalid credentials.')
+
     raw_key, api_key = APIKey.new(
         flask.g.user.id,
         flask.request.remote_addr,

@@ -1,6 +1,6 @@
 import pytest
 
-from conftest import CODE_1, CODE_2, CODE_3, HASHED_CODE_1
+from conftest import CODE_1, CODE_2, CODE_3, HASHED_CODE_1, HASHED_CODE_3
 from pulsar import db
 
 
@@ -13,9 +13,7 @@ def populate_db(client):
         (1, 'bright@quas.ar', '{CODE_3}', '2018-03-25 01:09:35.260808+00', 'f')
         """)
     db.engine.execute(
-        f"""INSERT INTO sessions (hash, user_id, csrf_token) VALUES
-        ('bcdefghijk', 2, '{CODE_2}')""")
-    db.engine.execute(
         f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, revoked, permissions) VALUES
         (1, 'abcdefghij', '{HASHED_CODE_1}', 'f',
-         '{{"sample_permission", "sample_2_permission", "sample_3_permission"}}')""")
+         '{{"sample_permission", "sample_2_permission", "sample_3_permission"}}'),
+        (2, 'bcdefghijk', '{HASHED_CODE_3}', 'f', '{{}}')""")

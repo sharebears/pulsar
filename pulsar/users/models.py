@@ -12,7 +12,7 @@ from pulsar.permissions import BASIC_PERMISSIONS
 from pulsar.utils import cached_property
 
 if TYPE_CHECKING:
-    from pulsar.auth.models import APIKey as APIKey_, Session as Session_  # noqa
+    from pulsar.auth.models import APIKey as APIKey_  # noqa
     from pulsar.permissions.models import UserClass as UserClass_  # noqa
     from pulsar.forums.models import Forum as Forum_, ForumThread as ForumThread_ # noqa
 
@@ -37,14 +37,12 @@ class User(db.Model, SinglePKMixin):
         'email',
         'locked',
         'invites',
-        'sessions',
         'api_keys',
         'permissions', )
     __serialize_detailed__ = (
         'email',
         'locked',
         'invites',
-        'sessions',
         'api_keys',
         'basic_permissions',
         'forum_permissions',
@@ -53,7 +51,6 @@ class User(db.Model, SinglePKMixin):
         'permissions', )
     __serialize_nested_exclude__ = (
         'inviter',
-        'sessions',
         'api_keys',
         'basic_permissions',
         'forum_permissions',
@@ -122,11 +119,6 @@ class User(db.Model, SinglePKMixin):
     def api_keys(self) -> List['APIKey_']:
         from pulsar.auth.models import APIKey
         return APIKey.from_user(self.id)
-
-    @cached_property
-    def sessions(self) -> List['Session_']:
-        from pulsar.auth.models import Session
-        return Session.from_user(self.id)
 
     @cached_property
     def permissions(self) -> List[str]:

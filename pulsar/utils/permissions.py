@@ -4,7 +4,7 @@ from typing import Any, Callable, List, Optional
 import flask
 from werkzeug import find_modules, import_string
 
-from pulsar import _401Exception, _403Exception, _404Exception
+from pulsar import _312Exception, _401Exception, _403Exception, _404Exception
 
 app = flask.current_app
 
@@ -31,7 +31,7 @@ def require_permission(permission: str,
 
             if not flask.g.user.has_permission(permission):
                 if flask.g.user.locked and not masquerade:
-                    raise _403Exception(message='Your account has been locked.')
+                    raise _312Exception(lock=True)
                 raise _403Exception(masquerade=masquerade)
 
             if flask.g.api_key and not flask.g.api_key.has_permission(permission):

@@ -26,4 +26,4 @@ def test_invalid_json(app, authed_client):
         return flask.jsonify('completed')
     response = authed_client.post('/test_endpoint', data=b'not-a-json')
     check_json_response(
-        response, 'Unable to decode data. Please make sure you are sending valid JSON.')
+        response, 'Unable to decode data. Is it valid JSON.')
