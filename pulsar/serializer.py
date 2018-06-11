@@ -1,7 +1,5 @@
 from datetime import datetime
-from typing import Optional
 
-import flask
 from flask.json import JSONEncoder
 
 
@@ -25,37 +23,10 @@ class NewJSONEncoder(JSONEncoder):
             return int(obj.timestamp())
         if isinstance(obj, set):
             return list(obj)
-        elif isinstance(obj, SinglePKMixin):
-            return self._to_dict(obj)
-        else:
-            return super().default(obj)
-
-    def _to_dict(self,
-                 model,  # TODO: Fix SinglePKMixin circular import.
-                 nested: bool = False) -> Optional[dict]:
-        """
-        Convert the model to a dictionary based on its defined serializable attributes.
-        ``SinglePKMixin`` objects embedded in the dictionary or lists in the dictionary
-        will be replaced with the result of their ``_to_dict`` methods.
-
-        :param detailed:      Whether or not to include detailed serializable attributes
-        :param very_detailed: Whether or not to include very detailed serializable attributes
-
-        :return: A dictionary containing the serialized object attributes
-        """
-        attrs = model.__serialize__
-        if model.belongs_to_user():
-            attrs += model.__serialize_self__
-        if flask.g.user and flask.g.user.has_permission(model.__permission_detailed__):
-            attrs += model.__serialize_detailed__
-        if flask.g.user and flask.g.user.has_permission(model.__permission_very_detailed__):
-            attrs += model.__serialize_very_detailed__
-        if nested:
-            attrs += model.__serialize_nested_include__
-            attrs = tuple(a for a in attrs if a not in model.__serialize_nested_exclude__)
-
-        return self._objects_to_dict({attr: getattr(model, attr, None)
-                                      for attr in list(set(attrs))}) or None
+        if isinstance(obj, SinglePKMixin):
+            data = obj.serialize()
+            return self._objects_to_dict(data) if data else None
+        return super().default(obj)
 
     def _objects_to_dict(self, dict_: dict) -> dict:
         """
@@ -75,18 +46,18 @@ class NewJSONEncoder(JSONEncoder):
         def iter_handler(value):
             if isinstance(value, dict):
                 return self._objects_to_dict(value)
-            elif isinstance(value, set):
-                return list(value) or None
-            elif isinstance(value, list):
+            if isinstance(value, SinglePKMixin):
+                return self._objects_to_dict(value.serialize(nested=True))
+            if isinstance(value, set):
+                return list(value)
+            if isinstance(value, datetime):
+                return int(value.timestamp())
+            if isinstance(value, list):
                 new_value = []
                 for i, v2 in enumerate(value):
                     if v2 is not None:
                         new_value.append(iter_handler(v2))
-                return new_value or None
-            elif isinstance(value, SinglePKMixin):
-                return self._to_dict(value, nested=True)
-            elif isinstance(value, datetime):
-                return int(value.timestamp())
+                return new_value
             return value
 
         for k, v in dict_.items():

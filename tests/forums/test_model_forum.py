@@ -131,7 +131,7 @@ def test_users_from_forum_subscription(app, authed_client):
 
 def test_serialize_no_perms(app, authed_client):
     category = Forum.from_pk(1)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 1,
         'name': 'Pulsar',
@@ -147,7 +147,7 @@ def test_serialize_no_perms(app, authed_client):
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'modify_forums')
     category = Forum.from_pk(1)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 1,
         'name': 'Pulsar',
@@ -164,7 +164,7 @@ def test_serialize_very_detailed(app, authed_client):
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forums')
     category = Forum.from_pk(1)
-    data = NewJSONEncoder()._to_dict(category, nested=True)
+    data = NewJSONEncoder().default(category, nested=True)
     check_dictionary(data, {
         'id': 1,
         'name': 'Pulsar',

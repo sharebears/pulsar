@@ -4,10 +4,14 @@
 - [ ] News Posts
 - [ ] Index
 
+----
+Fix conftest for invites
+----
+
 # Version 0.0.2 Milestone
 - [x] Remove session-based authentication
-- [ ] Split up schemas and models and create nested kwarg option serialization
-- [ ] Null values instead of omission of keys (empty lists = [] and not null)
+- [-] Split up schemas and models and create nested kwarg option serialization
+- [x] Null values instead of omission of keys (empty lists = [] and not null)
 - [ ] Standardize permission and cache key names (use constants)
 - [ ] Documentation Revisions
 - [ ] Users system extras

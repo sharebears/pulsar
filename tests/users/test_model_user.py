@@ -127,7 +127,7 @@ def test_locked_acc_perms_can_access(app, client):
 
 def test_serialize_no_perms(app, client):
     user = User.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user)
+    data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
         'username': 'lights',
@@ -136,12 +136,13 @@ def test_serialize_no_perms(app, client):
         'secondary_classes': ['FLS'],
         'uploaded': 5368709120,
         'downloaded': 0,
-        }, strict=True)
+        'permissions': None,
+        })
 
 
 def test_serialize_self(app, authed_client):
     user = User.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user)
+    data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
         'username': 'lights',
@@ -153,18 +154,18 @@ def test_serialize_self(app, authed_client):
         'uploaded': 5368709120,
         'downloaded': 0,
         'invites': 1,
-        'permissions': None,
+        'permissions': [],
+        'basic_permissions': None,
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['hash'] == 'abcdefghij')
-    assert len(data) == 12
 
 
 def test_serialize_detailed(app, authed_client):
     add_permissions(app, 'moderate_users')
     user = User.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user)
+    data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
         'username': 'lights',
@@ -177,19 +178,18 @@ def test_serialize_detailed(app, authed_client):
         'downloaded': 0,
         'invites': 1,
         'inviter': None,
-        'basic_permissions': None,
-        'forum_permissions': None,
+        'basic_permissions': [],
+        'forum_permissions': [],
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['hash'] == 'abcdefghij')
-    assert len(data) == 15
 
 
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'moderate_users', 'moderate_users_advanced')
     user = User.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user)
+    data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
         'username': 'lights',
@@ -202,21 +202,20 @@ def test_serialize_very_detailed(app, authed_client):
         'downloaded': 0,
         'invites': 1,
         'inviter': None,
-        'basic_permissions': None,
-        'forum_permissions': None,
+        'basic_permissions': [],
+        'forum_permissions': [],
         })
     assert ('api_keys' in data
             and len(data['api_keys']) == 1
             and data['api_keys'][0]['hash'] == 'abcdefghij')
     assert 'permissions' in data and set(data['permissions']) == {
         'moderate_users', 'moderate_users_advanced'}
-    assert len(data) == 15
 
 
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'moderate_users')
     user = User.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user, nested=True)
+    data = NewJSONEncoder().default(user.serialize(nested=True))
     check_dictionary(data, {
         'id': 1,
         'username': 'lights',
@@ -228,4 +227,9 @@ def test_serialize_nested(app, authed_client):
         'uploaded': 5368709120,
         'downloaded': 0,
         'invites': 1,
+        'api_keys': None,
+        'basic_permissions': None,
+        'forum_permissions': None,
+        'inviter': None,
+        'permissions': None,
         }, strict=True)

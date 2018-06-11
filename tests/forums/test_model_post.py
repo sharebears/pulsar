@@ -95,7 +95,7 @@ def test_post_edit_history_from_cache(app, authed_client):
 
 def test_serialize_no_perms(app, client):
     category = ForumPost.from_pk(1)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 1,
         'thread_id': 2,
@@ -112,7 +112,7 @@ def test_serialize_no_perms(app, client):
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'modify_forum_posts_advanced')
     category = ForumPost.from_pk(1)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 1,
         'thread_id': 2,
@@ -133,7 +133,7 @@ def test_serialize_very_detailed(app, authed_client):
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forum_posts_advanced')
     category = ForumPost.from_pk(1)
-    data = NewJSONEncoder()._to_dict(category, nested=True)
+    data = NewJSONEncoder().default(category, nested=True)
     check_dictionary(data, {
         'id': 1,
         'contents': '!site New yeah',

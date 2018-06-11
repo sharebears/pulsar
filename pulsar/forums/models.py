@@ -12,28 +12,22 @@ from pulsar.mixins import MultiPKMixin, SinglePKMixin
 from pulsar.permissions.models import ForumPermission
 from pulsar.users.models import User
 from pulsar.utils import cached_property
+from pulsar.forums.serializers import (ForumCategorySerializer, ForumSerializer,
+                                       ForumThreadSerializer, ForumPostSerializer,
+                                       ForumPostEditHistorySerializer,
+                                       ForumThreadNoteSerializer,
+                                       ForumPollSerializer,
+                                       ForumPollChoiceSerializer)
 
 app = flask.current_app
 
 
 class ForumCategory(db.Model, SinglePKMixin):
     __tablename__ = 'forums_categories'
+    __serializer__ = ForumCategorySerializer
     __cache_key__ = 'forums_categories_{id}'
     __cache_key_all__ = 'forums_categories_all'
     __deletion_attr__ = 'deleted'
-
-    __serialize__ = (
-        'id',
-        'name',
-        'description',
-        'position',
-        'forums')
-    __serialize_very_detailed__ = (
-        'deleted', )
-    __serialize_nested_exclude__ = (
-        'forums', )
-
-    __permission_very_detailed__ = 'modify_forums'
 
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
@@ -66,30 +60,13 @@ class ForumCategory(db.Model, SinglePKMixin):
 
 class Forum(db.Model, SinglePKMixin):
     __tablename__ = 'forums'
+    __serializer__ = ForumSerializer
     __cache_key__ = 'forums_{id}'
     __cache_key_last_updated__ = 'forums_{id}_last_updated'
     __cache_key_thread_count__ = 'forums_{id}_thread_count'
     __cache_key_of_category__ = 'forums_forums_of_categories_{id}'
     __permission_key__ = 'forums_forums_permission_{id}'
     __deletion_attr__ = 'deleted'
-
-    __serialize__ = (
-        'id',
-        'name',
-        'description',
-        'category',
-        'position',
-        'thread_count',
-        'threads')
-    __serialize_very_detailed__ = (
-        'deleted', )
-    __serialize_nested_include__ = (
-        'last_updated_thread', )
-    __serialize_nested_exclude__ = (
-        'category',
-        'threads')
-
-    __permission_very_detailed__ = 'modify_forums'
 
     _threads: List['ForumThread']
 
@@ -189,38 +166,13 @@ class Forum(db.Model, SinglePKMixin):
 
 class ForumThread(db.Model, SinglePKMixin):
     __tablename__ = 'forums_threads'
+    __serializer__ = ForumThreadSerializer
     __cache_key__ = 'forums_threads_{id}'
     __cache_key_post_count__ = 'forums_threads_{id}_post_count'
     __cache_key_of_forum__ = 'forums_threads_forums_{id}'
     __cache_key_last_post__ = 'forums_threads_{id}_last_post'
     __permission_key__ = 'forums_threads_permission_{id}'
     __deletion_attr__ = 'deleted'
-
-    __serialize__ = (
-        'id',
-        'topic',
-        'forum',
-        'poster',
-        'locked',
-        'sticky',
-        'created_time',
-        'poll',
-        'last_post',
-        'last_viewed_post',
-        'subscribed',
-        'post_count',
-        'posts')
-    __serialize_detailed__ = (
-        'thread_notes', )
-    __serialize_very_detailed__ = (
-        'deleted', )
-    __serialize_nested_exclude__ = (
-        'poll',
-        'forum',
-        'posts')
-
-    __permission_detailed__ = 'modify_forum_threads'
-    __permission_very_detailed__ = 'modify_forum_threads_advanced'
 
     _posts: List['ForumPost']
 
@@ -393,26 +345,10 @@ class ForumThread(db.Model, SinglePKMixin):
 
 class ForumPost(db.Model, SinglePKMixin):
     __tablename__ = 'forums_posts'
+    __serializer__ = ForumPostSerializer
     __cache_key__ = 'forums_posts_{id}'
     __cache_key_of_thread__ = 'forums_posts_threads_{id}'
     __deletion_attr__ = 'deleted'
-
-    __serialize__ = (
-        'id',
-        'thread_id',
-        'poster',
-        'contents',
-        'time',
-        'edited_time',
-        'sticky',
-        'editor', )
-    __serialize_very_detailed__ = (
-        'deleted',
-        'edit_history', )
-    __serialize_nested_exclude__ = (
-        'thread_id', )
-
-    __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
     id: int = db.Column(db.Integer, primary_key=True)
     thread_id: int = db.Column(
@@ -476,16 +412,9 @@ class ForumPost(db.Model, SinglePKMixin):
 
 class ForumPostEditHistory(db.Model, SinglePKMixin):
     __tablename__ = 'forums_posts_edit_history'
+    __serializer__ = ForumPostEditHistorySerializer
     __cache_key__ = 'forums_posts_edit_history_{id}'
     __cache_key_of_post__ = 'forums_posts_edit_history_posts_{id}'
-
-    __serialize_very_detailed__ = (
-        'id',
-        'editor',
-        'contents',
-        'time')
-
-    __permission_very_detailed__ = 'modify_forum_posts_advanced'
 
     id: int = db.Column(db.Integer, primary_key=True)
     post_id: int = db.Column(db.Integer, db.ForeignKey('forums_posts.id'), nullable=False)
@@ -634,14 +563,9 @@ class ForumThreadSubscription(db.Model, MultiPKMixin):
 
 class ForumThreadNote(db.Model, SinglePKMixin):
     __tablename__ = 'forums_threads_notes'
+    __serializer__ = ForumThreadNoteSerializer
     __cache_key__ = 'forums_threads_notes_{id}'
     __cache_key_of_thread__ = 'forums_threads_notes_thread_{thread_id}'
-
-    __serialize_detailed__ = (
-        'id',
-        'note',
-        'time', )
-    __permission_detailed__ = 'modify_forum_threads'
 
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(
@@ -669,21 +593,10 @@ class ForumThreadNote(db.Model, SinglePKMixin):
 
 class ForumPoll(db.Model, SinglePKMixin):
     __tablename__ = 'forums_polls'
+    __serializer__ = ForumPollSerializer
     __cache_key__ = 'forums_polls_{id}'
     __cache_key_featured__ = 'forums_polls_featured'
     __cache_key_of_thread__ = 'forums_polls_threads_{thread_id}'
-
-    __serialize__ = (
-        'id',
-        'thread',
-        'question',
-        'closed',
-        'featured',
-        'choices', )
-    __serialize_nested_include__ = (
-        'thread_id', )
-    __serialize_nested_exclude__ = (
-        'thread', )
 
     id: int = db.Column(db.Integer, primary_key=True)
     thread_id: int = db.Column(db.Integer, db.ForeignKey('forums_threads.id'), unique=True)
@@ -745,14 +658,10 @@ class ForumPoll(db.Model, SinglePKMixin):
 
 class ForumPollChoice(db.Model, SinglePKMixin):
     __tablename__ = 'forums_polls_choices'
+    __serializer__ = ForumPollChoiceSerializer
     __cache_key__ = 'forums_polls_choice_{id}'
     __cache_key_of_poll__ = 'forums_polls_choices_poll_{poll_id}'
     __cache_key_answers__ = 'forums_polls_{id}_answers'
-
-    __serialize__ = (
-        'id',
-        'choice',
-        'answers', )
 
     id = db.Column(db.Integer, primary_key=True)
     poll_id = db.Column(db.Integer, db.ForeignKey('forums_polls.id'), nullable=False)

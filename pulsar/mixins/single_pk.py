@@ -482,6 +482,9 @@ class SinglePKMixin(Model):
         except (AttributeError, KeyError):
             pass
 
+    def serialize(self, **kwargs) -> None:
+        return self.__serializer__.serialize(self, **kwargs)
+
     @staticmethod
     def _construct_query(query: BaseQuery,
                          filter: BinaryExpression = None,

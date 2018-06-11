@@ -9,25 +9,15 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from pulsar import cache, db
 from pulsar.mixins import SinglePKMixin
 from pulsar.users.models import User
+from pulsar.auth.serializers import APIKeySerializer
 
 
 class APIKey(db.Model, SinglePKMixin):
     __tablename__: str = 'api_keys'
+    __serializer__ = APIKeySerializer
     __cache_key__: str = 'api_keys_{hash}'
     __cache_key_of_user__: str = 'api_keys_user_{user_id}'
     __deletion_attr__ = 'revoked'
-
-    __serialize_self__: tuple = (
-        'hash',
-        'user_id',
-        'last_used',
-        'ip',
-        'user_agent',
-        'revoked',
-        'permissions')
-    __serialize_detailed__: tuple = __serialize_self__
-
-    __permission_detailed__ = 'view_api_keys_others'
 
     hash: str = db.Column(db.String(10), primary_key=True)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)

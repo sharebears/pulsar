@@ -1,63 +1,35 @@
 from copy import copy
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
+import secrets
 
 import flask
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.dialects.postgresql import INET
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from pulsar import APIException, cache, db
 from pulsar.mixins import SinglePKMixin
 from pulsar.permissions import BASIC_PERMISSIONS
 from pulsar.utils import cached_property
+from pulsar.users.serializers import UserSerializer, InviteSerializer
 
 if TYPE_CHECKING:
     from pulsar.auth.models import APIKey as APIKey_  # noqa
     from pulsar.permissions.models import UserClass as UserClass_  # noqa
     from pulsar.forums.models import Forum as Forum_, ForumThread as ForumThread_ # noqa
 
+
 app = flask.current_app
 
 
 class User(db.Model, SinglePKMixin):
     __tablename__ = 'users'
+    __serializer__ = UserSerializer
     __cache_key__ = 'users_{id}'
     __cache_key_permissions__ = 'users_{id}_permissions'
     __cache_key_forum_permissions__ = 'users_{id}_forums_permissions'
-
-    __serialize__ = (
-        'id',
-        'username',
-        'enabled',
-        'user_class',
-        'secondary_classes',
-        'uploaded',
-        'downloaded')
-    __serialize_self__ = (
-        'email',
-        'locked',
-        'invites',
-        'api_keys',
-        'permissions', )
-    __serialize_detailed__ = (
-        'email',
-        'locked',
-        'invites',
-        'api_keys',
-        'basic_permissions',
-        'forum_permissions',
-        'inviter', )
-    __serialize_very_detailed__ = (
-        'permissions', )
-    __serialize_nested_exclude__ = (
-        'inviter',
-        'api_keys',
-        'basic_permissions',
-        'forum_permissions',
-        'permissions', )
-
-    __permission_detailed__ = 'moderate_users'
-    __permission_very_detailed__ = 'moderate_users_advanced'
 
     id: int = db.Column(db.Integer, primary_key=True)
     username: str = db.Column(db.String(32), unique=True, nullable=False)
@@ -190,3 +162,78 @@ class User(db.Model, SinglePKMixin):
         """Check whether a user has a permission. Includes regular and forum permissions."""
         return (permission is not None
                 and permission in self.permissions.union(self.forum_permissions))
+
+
+class Invite(db.Model, SinglePKMixin):
+    __tablename__: str = 'invites'
+    __serializer__ = InviteSerializer
+    __cache_key__: str = 'invites_{code}'
+    __cache_key_of_user__: str = 'invites_user_{user_id}'
+    __deletion_attr__ = 'expired'
+
+    code: str = db.Column(db.String(24), primary_key=True)
+    inviter_id: int = db.Column(
+        db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    invitee_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
+    email: str = db.Column(db.String(255), nullable=False)
+    time_sent: datetime = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    from_ip: str = db.Column(INET, nullable=False, server_default='0.0.0.0')
+    expired: bool = db.Column(db.Boolean, nullable=False, index=True, server_default='f')
+
+    @classmethod
+    def new(cls,
+            inviter_id: int,
+            email: str,
+            ip: int) -> 'Invite':
+        """
+        Generate a random invite code.
+
+        :param inviter_id: User ID of the inviter
+        :param email:      E-mail to send the invite to
+        :param ip:         IP address the invite was sent from
+        """
+        while True:
+            code = secrets.token_hex(12)
+            if not cls.from_pk(code, include_dead=True):
+                break
+        cache.delete(cls.__cache_key_of_user__.format(user_id=inviter_id))
+        return super()._new(
+            inviter_id=inviter_id,
+            code=code,
+            email=email.lower().strip(),
+            from_ip=ip)
+
+    @classmethod
+    def from_inviter(cls,
+                     inviter_id: int,
+                     include_dead: bool = False,
+                     used: bool = False) -> List['Invite']:
+        """
+        Get all invites sent by a user.
+
+        :param inviter_id:   The User ID of the inviter.
+        :param include_dead: Whether or not to include dead invites in the list
+        :param used:         Whether or not to include used invites in the list
+
+        :return:             A list of invites sent by the inviter
+        """
+        filter = cls.inviter_id == inviter_id
+        if used:
+            filter = and_(filter, cls.invitee_id.isnot(None))  # type: ignore
+        return cls.get_many(
+            key=cls.__cache_key_of_user__.format(user_id=inviter_id),
+            filter=filter,
+            order=cls.time_sent.desc(),  # type: ignore
+            include_dead=include_dead or used)
+
+    @cached_property
+    def invitee(self) -> User:
+        return User.from_pk(self.invitee_id)
+
+    @cached_property
+    def inviter(self) -> User:
+        return User.from_pk(self.inviter_id)
+
+    def belongs_to_user(self) -> bool:
+        """Returns whether or not the requesting user matches the inviter."""
+        return flask.g.user is not None and self.inviter_id == flask.g.user.id

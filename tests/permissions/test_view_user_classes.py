@@ -37,21 +37,21 @@ def test_view_multiple_user_classes(app, authed_client):
     assert ({'id': 1,
              'name': 'User',
              'permissions': ['modify_permissions', 'edit_settings'],
-             'forum_permissions': None} in response['response']['user_classes'])
+             'forum_permissions': []} in response['response']['user_classes'])
     assert ({'id': 2,
              'name': 'user_v2',
              'permissions': ['modify_permissions', 'edit_settings'],
-             'forum_permissions': None} in response['response']['user_classes'])
+             'forum_permissions': []} in response['response']['user_classes'])
 
     assert len(response['response']['secondary_classes']) == 2
     assert ({'id': 1,
              'name': 'FLS',
              'permissions': ['send_invites'],
-             'forum_permissions': None} in response['response']['secondary_classes'])
+             'forum_permissions': []} in response['response']['secondary_classes'])
     assert ({'id': 2,
              'name': 'user_v2',
              'permissions': ['edit_settings'],
-             'forum_permissions': None} in response['response']['secondary_classes'])
+             'forum_permissions': []} in response['response']['secondary_classes'])
 
 
 def test_create_user_class(app, authed_client):

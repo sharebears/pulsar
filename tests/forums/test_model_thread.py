@@ -282,7 +282,7 @@ def test_forum_thread_subscriptions_cache_keys_user_ids(app, authed_client):
 
 def test_serialize_no_perms(app, authed_client):
     category = ForumThread.from_pk(3)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 3,
         'topic': 'Using PHP',
@@ -306,7 +306,7 @@ def test_serialize_no_perms(app, authed_client):
 def test_serialize_detailed(app, authed_client):
     add_permissions(app, 'modify_forum_threads')
     category = ForumThread.from_pk(3)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 3,
         'topic': 'Using PHP',
@@ -333,7 +333,7 @@ def test_serialize_detailed(app, authed_client):
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'modify_forum_threads', 'modify_forum_threads_advanced')
     category = ForumThread.from_pk(3)
-    data = NewJSONEncoder()._to_dict(category)
+    data = NewJSONEncoder().default(category)
     check_dictionary(data, {
         'id': 3,
         'topic': 'Using PHP',
@@ -362,7 +362,7 @@ def test_serialize_very_detailed(app, authed_client):
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forum_threads_advanced')
     category = ForumThread.from_pk(3)
-    data = NewJSONEncoder()._to_dict(category, nested=True)
+    data = NewJSONEncoder().default(category, nested=True)
     check_dictionary(data, {
         'id': 3,
         'topic': 'Using PHP',

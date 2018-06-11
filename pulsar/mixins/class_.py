@@ -6,19 +6,20 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from pulsar import APIException, db
 from pulsar.mixins.single_pk import SinglePKMixin
+from pulsar.mixins.serializer import Serializer, Attribute
 
 UC = TypeVar('UC', bound='ClassMixin')
 
 
-class ClassMixin(SinglePKMixin):
-    __serialize__ = (
-        'id',
-        'name', )
-    __serialize_detailed__ = (
-        'permissions',
-        'forum_permissions', )
+class ClassSerializer(Serializer):
+    id = Attribute()
+    name = Attribute()
+    permissions = Attribute(permission='modify_user_classes')
+    forum_permissions = Attribute(permission='modify_user_classes')
 
-    __permission_detailed__ = 'modify_user_classes'
+
+class ClassMixin(SinglePKMixin):
+    __serializer__ = ClassSerializer
 
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(24), nullable=False)

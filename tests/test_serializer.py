@@ -4,28 +4,6 @@ import pytest
 import pytz
 
 from pulsar import NewJSONEncoder
-from pulsar.users.models import User
-
-
-def test_to_dict_plain(app, authed_client):
-    """Make sure that _objects_to_dict can iterate over a decently-complex structure."""
-    dict_ = {
-        'key1': {
-            'subkey1': 'subval1',
-            'subkey2': 'subval2',
-            'subkey3': [
-                'subval1',
-                'subval2',
-                {
-                    'subkey1': 'subkey1',
-                    'subkey2': 'subkey2',
-                    'subkey3': 'subval3',
-                },
-            ],
-        },
-        'key2': 123,
-    }
-    assert dict_ == NewJSONEncoder()._objects_to_dict(dict_)
 
 
 def test_failed_serialization_default():
@@ -48,21 +26,3 @@ def test_serialization_of_sets():
     list_ = NewJSONEncoder().default(set_)
     assert isinstance(list_, list)
     assert all(s in list_ for s in set_)
-
-
-def test_serialization_of_datetimes_in_models(app, authed_client):
-    """Make sure that the JSON Encoder can convert datetimes in models."""
-    time = datetime.utcnow().replace(tzinfo=pytz.utc)
-    posix_time = int(time.timestamp())
-    data = {
-        'key': time,
-        'key2': User.from_pk(1),
-        'key3': [time, None, time],
-    }
-
-    response = NewJSONEncoder()._objects_to_dict(data)
-    assert response['key'] == posix_time
-    assert 'id' in response['key2']
-    assert 'username' in response['key2'] and response['key2']['username'] == 'lights'
-    assert len(response['key3']) == 2
-    assert all(k == posix_time for k in response['key3'])

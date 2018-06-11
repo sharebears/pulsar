@@ -27,7 +27,7 @@ perm_regex = re.compile(
     r"@require_permission\('([a-z_]+)'\)|assert_permission\('([a-z_]+'),|"
     r"\.has_permission\('([a-z_]+)'\)|choose_user\(.+, '([a-z_]+)'\)|"
     r"assert_user\(.+, '([a-z_]+)'\)|asrt='([a-z_]+)'|"
-    r"__permission_(?:very_)?detailed__ = '([a-z_]+)'")
+    r"permission='([a-z_]+)'")
 
 for root, dirs, files in os.walk(project_dir):
     for f in files:

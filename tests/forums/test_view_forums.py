@@ -84,6 +84,7 @@ def test_edit_forum(app, authed_client):
         'name': 'Bite',
         'description': 'Very New Description',
         })
+    print(response.get_json())
     assert response.get_json()['response']['category']['id'] == 4
     forum = Forum.from_pk(1)
     assert forum.id == 1

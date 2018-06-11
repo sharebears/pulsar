@@ -49,29 +49,29 @@ def test_api_key_permission(app, client):
 
 
 def test_serialize_no_perms(app, client):
-    session = APIKey.from_pk('abcdefghij')
-    assert NewJSONEncoder()._to_dict(session) is None
+    api_key = APIKey.from_pk('abcdefghij')
+    assert NewJSONEncoder().default(api_key) is None
 
 
 def test_serialize_detailed(app, authed_client):
     add_permissions(app, 'view_api_keys_others')
-    session = APIKey.from_pk('1234567890', include_dead=True)
-    data = NewJSONEncoder()._to_dict(session)
+    api_key = APIKey.from_pk('1234567890', include_dead=True)
+    data = NewJSONEncoder().default(api_key)
     check_dictionary(data, {
         'hash': '1234567890',
         'user_id': 2,
         'ip': '0.0.0.0',
         'user_agent': None,
         'revoked': True,
-        'permissions': None,
+        'permissions': [],
         })
     assert 'last_used' in data and isinstance(data['last_used'], int)
     assert len(data) == 7
 
 
 def test_serialize_self(app, authed_client):
-    session = APIKey.from_pk('abcdefghij')
-    data = NewJSONEncoder()._to_dict(session)
+    api_key = APIKey.from_pk('abcdefghij')
+    data = NewJSONEncoder().default(api_key)
     check_dictionary(data, {
         'hash': 'abcdefghij',
         'user_id': 1,

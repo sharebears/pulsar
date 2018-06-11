@@ -58,7 +58,7 @@ def test_user_secondary_classes_models(app, client):
 
 def test_serialize_user_class_permless(app, client):
     user_class = UserClass.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user_class)
+    data = NewJSONEncoder().default(user_class)
     check_dictionary(data, {
         'id': 1,
         'name': 'User',
@@ -67,10 +67,10 @@ def test_serialize_user_class_permless(app, client):
 
 def test_serialize_user_class_detailed(app, authed_client):
     user_class = UserClass.from_pk(1)
-    data = NewJSONEncoder()._to_dict(user_class)
+    data = NewJSONEncoder().default(user_class)
     check_dictionary(data, {
         'id': 1,
         'name': 'User',
         'permissions': ['modify_permissions', 'edit_settings'],
-        'forum_permissions': None,
+        'forum_permissions': [],
         }, strict=True)

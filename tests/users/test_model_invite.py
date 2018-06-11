@@ -2,7 +2,7 @@ import pytest
 
 from conftest import CODE_1, CODE_2, CODE_3, CODE_4, add_permissions, check_dictionary
 from pulsar import NewJSONEncoder, cache
-from pulsar.invites.models import Invite
+from pulsar.users.models import Invite
 
 
 def hex_generator(_):
@@ -49,7 +49,7 @@ def test_invite_creation_collision(app, monkeypatch):
     """
     global HEXES
     HEXES = iter([CODE_1, '098765432109876543211234'])
-    monkeypatch.setattr('pulsar.invites.models.secrets.token_hex', hex_generator)
+    monkeypatch.setattr('pulsar.users.models.secrets.token_hex', hex_generator)
     with app.app_context():
         invite = Invite.new(2, 'bitsu@puls.ar', '127.0.0.2')
         assert invite.code != CODE_1
@@ -67,25 +67,24 @@ def test_belongs_to_user(app, authed_client, inv_id, result):
 
 def test_serialize_no_perms(app, authed_client):
     invite = Invite.from_pk(CODE_3)
-    assert NewJSONEncoder()._to_dict(invite) is None
+    assert NewJSONEncoder().default(invite) is None
 
 
 def test_serialize_self(app, authed_client):
     invite = Invite.from_pk(CODE_1)
-    data = NewJSONEncoder()._to_dict(invite)
+    data = NewJSONEncoder().default(invite)
     check_dictionary(data, {
         'code': CODE_1,
         'email': 'bright@puls.ar',
         'expired': False,
         'invitee': None})
     assert isinstance(data['time_sent'], int)
-    assert len(data) == 5
 
 
 def test_serialize_detailed(app, authed_client):
     add_permissions(app, 'view_invites_others')
     invite = Invite.from_pk(CODE_1)
-    data = NewJSONEncoder()._to_dict(invite)
+    data = NewJSONEncoder().default(invite)
     check_dictionary(data, {
         'code': CODE_1,
         'email': 'bright@puls.ar',
@@ -94,18 +93,17 @@ def test_serialize_detailed(app, authed_client):
         'from_ip': '0.0.0.0'})
     assert isinstance(data['time_sent'], int)
     assert isinstance(data['inviter'], dict)
-    assert len(data) == 7
 
 
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'view_invites_others')
     invite = Invite.from_pk(CODE_1)
-    data = NewJSONEncoder()._to_dict(invite, nested=True)
+    data = NewJSONEncoder()._objects_to_dict(invite.serialize(nested=True))
     check_dictionary(data, {
         'code': CODE_1,
         'email': 'bright@puls.ar',
         'expired': False,
         'invitee': None,
+        'inviter': None,
         'from_ip': '0.0.0.0'})
     assert isinstance(data['time_sent'], int)
-    assert len(data) == 6
