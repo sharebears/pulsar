@@ -1,4 +1,4 @@
-from pulsar.mixins import Serializer, Attribute
+from pulsar.mixins import Attribute, Serializer
 
 
 class UserSerializer(Serializer):
@@ -27,3 +27,13 @@ class InviteSerializer(Serializer):
     invitee = Attribute(permission='view_invites_others')
     from_ip = Attribute(permission='view_invites_others', self_access=False)
     inviter = Attribute(permission='view_invites_others', nested=False, self_access=False)
+
+
+class APIKeySerializer(Serializer):
+    hash = Attribute(permission='view_api_keys_others')
+    user_id = Attribute(permission='view_api_keys_others')
+    last_used = Attribute(permission='view_api_keys_others')
+    ip = Attribute(permission='view_api_keys_others')
+    user_agent = Attribute(permission='view_api_keys_others')
+    revoked = Attribute(permission='view_api_keys_others')
+    permissions = Attribute(permission='view_api_keys_others')

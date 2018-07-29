@@ -5,8 +5,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declared_attr
 
 from pulsar import APIException, db
+from pulsar.mixins.serializer import Attribute, Serializer
 from pulsar.mixins.single_pk import SinglePKMixin
-from pulsar.mixins.serializer import Serializer, Attribute
 
 UC = TypeVar('UC', bound='ClassMixin')
 

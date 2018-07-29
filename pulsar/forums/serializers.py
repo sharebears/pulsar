@@ -1,4 +1,4 @@
-from pulsar.mixins import Serializer, Attribute
+from pulsar.mixins import Attribute, Serializer
 
 
 class ForumCategorySerializer(Serializer):

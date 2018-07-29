@@ -5,9 +5,8 @@ from typing import Optional
 import flask
 import pytz
 
-from pulsar import APIException, _312Exception, cache, db, _401Exception
-from pulsar.auth.models import APIKey
-from pulsar.users.models import User
+from pulsar import APIException, _312Exception, _401Exception, cache, db
+from pulsar.users.models import APIKey, User
 
 from . import bp
 

@@ -19,8 +19,6 @@ case insensitive.
    :maxdepth: 2
 
    users
-   authentication
    permissions
-   invites
    forums
    rules

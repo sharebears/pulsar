@@ -11,7 +11,7 @@ from . import bp
 app = flask.current_app
 
 
-@bp.route('/users/<int:user_id>', methods=['GET'])
+@bp.route('/<int:user_id>', methods=['GET'])
 @require_permission('view_users')
 def get_user(user_id: int) -> flask.Response:
     """
@@ -67,7 +67,7 @@ CREATE_USER_SCHEMA = Schema({
 }, required=True)
 
 
-@bp.route('/users', methods=['POST'])
+@bp.route('/', methods=['POST'])
 @validate_data(CREATE_USER_SCHEMA)
 def register(username: str,
              password: str,

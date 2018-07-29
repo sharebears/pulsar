@@ -2,7 +2,7 @@ import flask
 from voluptuous import All, Length, Match, Schema
 
 from pulsar import _401Exception, _403Exception, db
-from pulsar.auth.models import APIKey
+from pulsar.users.models import APIKey
 from pulsar.utils import choose_user, require_permission, validate_data
 from pulsar.validators import PASSWORD_REGEX
 
@@ -19,8 +19,8 @@ SETTINGS_SCHEMA = Schema({
     })
 
 
-@bp.route('/users/settings', methods=['PUT'])
-@bp.route('/users/<int:user_id>/settings', methods=['PUT'])
+@bp.route('/settings', methods=['PUT'])
+@bp.route('/<int:user_id>/settings', methods=['PUT'])
 @require_permission('edit_settings')
 @validate_data(SETTINGS_SCHEMA)
 def edit_settings(user_id: int =None,

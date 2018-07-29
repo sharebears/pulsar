@@ -1,8 +1,9 @@
 import inspect
 from typing import Dict, Union
-from pulsar.mixins.single_pk import SinglePKMixin
 
 import flask
+
+from pulsar.mixins.single_pk import SinglePKMixin
 
 
 class Attribute:

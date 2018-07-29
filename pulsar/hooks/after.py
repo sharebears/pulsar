@@ -14,8 +14,7 @@ def hook(response: flask.Response) -> flask.Response:
 def wrap_response(response: flask.Response) -> None:
     """
     Wrap response with the homogenized response dictionary, containing
-    a ``status`` key and, if the request came with session-based
-    authentication, a ``csrf_token`` key.
+    a ``status`` key.
 
     :param response: The flask response en route to user
     """

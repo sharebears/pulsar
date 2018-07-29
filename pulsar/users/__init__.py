@@ -1,6 +1,6 @@
 import flask
 
-bp = flask.Blueprint('users', __name__)
+bp = flask.Blueprint('users', __name__, url_prefix='/users')
 
 PERMISSIONS = [
     'view_users',  # Ability to view a user page
@@ -15,4 +15,8 @@ PERMISSIONS = [
     'view_invites_others',  # View information about all invites
     'revoke_invites',  # Revoke user's own invites
     'revoke_invites_others',  # Revoke any invite
+    'view_api_keys',  # View own API keys
+    'view_api_keys_others',  # View any API key
+    'revoke_api_keys',  # Revoke own API keys
+    'revoke_api_keys_others',  # Revoke any API key
 ]
