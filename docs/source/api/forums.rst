@@ -50,5 +50,3 @@ Polls
    :modules: pulsar.forums.polls
    :groupby: view
    :order: path
-
-

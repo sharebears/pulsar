@@ -9,10 +9,8 @@ Before
 ------
 
 Before relaying the request to its proper controller, check the
-authentication of the requester, either with a session or an
-API key. If the requester has the ``no_ip_history`` permission,
-set their IP to ``0.0.0.0``. If the user authenticated via
-session, also validate their CSRF token.
+authentication of the requester, via API key. If the requester
+has the ``no_ip_history`` permission, set their IP to ``0.0.0.0``.
 
 .. automodule:: pulsar.hooks.before
     :members:
