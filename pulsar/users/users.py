@@ -67,7 +67,7 @@ CREATE_USER_SCHEMA = Schema({
 }, required=True)
 
 
-@bp.route('/', methods=['POST'])
+@bp.route('', methods=['POST'])
 @validate_data(CREATE_USER_SCHEMA)
 def register(username: str,
              password: str,

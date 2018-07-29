@@ -157,9 +157,7 @@ def test_serialize_self(app, authed_client):
         'permissions': [],
         'basic_permissions': None,
         })
-    assert ('api_keys' in data
-            and len(data['api_keys']) == 1
-            and data['api_keys'][0]['hash'] == 'abcdefghij')
+    assert 'api_keys' in data and len(data['api_keys']) == 2
 
 
 def test_serialize_detailed(app, authed_client):
@@ -181,9 +179,7 @@ def test_serialize_detailed(app, authed_client):
         'basic_permissions': [],
         'forum_permissions': [],
         })
-    assert ('api_keys' in data
-            and len(data['api_keys']) == 1
-            and data['api_keys'][0]['hash'] == 'abcdefghij')
+    assert 'api_keys' in data and len(data['api_keys']) == 2
 
 
 def test_serialize_very_detailed(app, authed_client):
@@ -205,9 +201,7 @@ def test_serialize_very_detailed(app, authed_client):
         'basic_permissions': [],
         'forum_permissions': [],
         })
-    assert ('api_keys' in data
-            and len(data['api_keys']) == 1
-            and data['api_keys'][0]['hash'] == 'abcdefghij')
+    assert 'api_keys' in data and len(data['api_keys']) == 2
     assert 'permissions' in data and set(data['permissions']) == {
         'moderate_users', 'moderate_users_advanced'}
 

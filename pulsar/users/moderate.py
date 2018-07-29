@@ -28,7 +28,7 @@ MODERATE_USER_SCHEMA = Schema({
     })
 
 
-@bp.route('/users/<int:user_id>/moderate', methods=['PUT'])
+@bp.route('/<int:user_id>/moderate', methods=['PUT'])
 @require_permission('moderate_users')
 @validate_data(MODERATE_USER_SCHEMA)
 def moderate_user(user_id: int,

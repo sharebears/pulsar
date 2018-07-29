@@ -50,8 +50,8 @@ def test_get_user_detailed(app, authed_client):
     assert response.status_code == 200
     data = response.get_json()
     assert 'api_keys' in data['response']
-    assert len(data['response']['api_keys']) == 1
-    assert data['response']['api_keys'][0]['hash'] == 'abcdefghij'
+    assert len(data['response']['api_keys']) == 2
+    assert any(ak['hash'] == 'abcdefghij' for ak in data['response']['api_keys'])
 
 
 def test_user_does_not_exist(app, authed_client):
