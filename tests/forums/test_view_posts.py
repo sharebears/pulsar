@@ -36,8 +36,8 @@ def test_add_post(app, authed_client, monkeypatch):
     check_json_response(response, {
         'id': 9,
         'contents': 'hahe new forum post',
-        'thread_id': 1,
         })
+    assert response.get_json()['response']['thread']['id'] == 1
     assert not cache.get(ForumThreadSubscription.__cache_key_users__.format(thread_id=1))
     assert not cache.get(ForumThreadSubscription.__cache_key_active__.format(user_id=1))
 
@@ -72,8 +72,8 @@ def test_add_post_double_post(app, authed_client):
     check_json_response(response, {
         'id': 3,
         'contents': 'How do we increase donations?\n\n\nhahe new forum post',
-        'thread_id': 5,
         })
+    assert response.get_json()['response']['thread']['id'] == 5
 
 
 def test_add_post_double_post_and_locked_override(app, authed_client):
@@ -86,8 +86,8 @@ def test_add_post_double_post_and_locked_override(app, authed_client):
     check_json_response(response, {
         'id': 9,
         'contents': 'hahe new forum post',
-        'thread_id': 3,
         })
+    assert response.get_json()['response']['thread']['id'] == 3
 
 
 def test_add_post_nonexistent_thread(app, authed_client):

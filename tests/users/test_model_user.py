@@ -215,7 +215,7 @@ def test_serialize_very_detailed(app, authed_client):
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'moderate_users')
     user = User.from_pk(1)
-    data = NewJSONEncoder().default(user.serialize(nested=True))
+    data = NewJSONEncoder()._objects_to_dict(user.serialize(nested=True))
     check_dictionary(data, {
         'id': 1,
         'username': 'lights',

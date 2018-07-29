@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from conftest import CODE_1, CODE_2, CODE_3, add_permissions, check_json_response
+from conftest import CODE_1, CODE_2, CODE_4, add_permissions, check_json_response
 from pulsar import cache
 
 
@@ -32,8 +32,8 @@ def test_get_user(app, authed_client):
     assert response.status_code == 200
     data = response.get_json()
     assert 'user_class' in data['response']
-    assert 'api_keys' not in data['response']
-    assert 'email' not in data['response']
+    assert not data['response']['api_keys']
+    assert not data['response']['email']
 
 
 def test_get_user_detailed(app, authed_client):
@@ -97,7 +97,7 @@ def test_edit_settings_others(app, authed_client):
         (CODE_1, 200, {'username': 'bright'}),
         (None, 400, 'An invite code is required for registration.'),
         (CODE_2, 400, f'{CODE_2} is not a valid invite code.'),
-        (CODE_3, 400, f'{CODE_3} is not a valid invite code.'),
+        (CODE_4, 400, f'{CODE_4} is not a valid invite code.'),
     ])
 def test_register_with_code(app, client, code, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = True

@@ -29,9 +29,6 @@ def wrap_response(response: flask.Response) -> None:
         'response': data,
         }
 
-    if flask.g.user_session:
-        response_data['csrf_token'] = flask.g.user_session.csrf_token
-
     if flask.g.user and flask.g.user.has_permission('view_cache_keys'):
         # We can't encode sets to JSON.
         response_data['cache_keys'] = {k: list(v) for k, v in flask.g.cache_keys.items()}

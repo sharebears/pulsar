@@ -26,7 +26,6 @@ sphinx-rtd-theme = "*"
 mypy = "*"
 isort = "*"
 sphinx-autodoc-typehints = "*"
-hypothesis = "*"
 lxml = "*"
 
 [requires]

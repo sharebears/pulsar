@@ -1,20 +1,15 @@
 # Current Path
 
-- [ ] Version 0.0.2
+- [-] Version 0.0.2
+- [ ] Users system extras
 - [ ] News Posts
 - [ ] Index
 
-----
-Fix conftest for invites
-----
-
 # Version 0.0.2 Milestone
 - [x] Remove session-based authentication
-- [-] Split up schemas and models and create nested kwarg option serialization
+- [x] Split up schemas and models and create nested kwarg option serialization
 - [x] Null values instead of omission of keys (empty lists = [] and not null)
-- [ ] Standardize permission and cache key names (use constants)
 - [ ] Documentation Revisions
-- [ ] Users system extras
 
 
 # TODO
@@ -23,10 +18,6 @@ Fix conftest for invites
 - [x] Form validation
 - [x] Response wrapper
 - [x] Model caching
-- [ ] More inventive and free serialization - Define objects for serialization and have them
-      use custom kwarg arguments which are passed down to all nested models? General function
-      to process kwarg arguments and compare to defined serializations? Remove default
-      ignores and adds in nested serialization and define those manually in each serialization.
 - [ ] Docker/Vagrant environment
      
 

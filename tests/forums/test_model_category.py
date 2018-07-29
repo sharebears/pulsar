@@ -62,7 +62,6 @@ def test_serialize_no_perms(app, authed_client):
         'position': 1,
         })
     assert 'forums' in data and len(data['forums']) == 2
-    assert len(data) == 5
 
 
 def test_serialize_very_detailed(app, authed_client):
@@ -77,17 +76,17 @@ def test_serialize_very_detailed(app, authed_client):
         'deleted': False,
         })
     assert 'forums' in data and len(data['forums']) == 2
-    assert len(data) == 6
 
 
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forums')
     category = ForumCategory.from_pk(1)
-    data = NewJSONEncoder().default(category, nested=True)
+    data = category.serialize(nested=True)
     check_dictionary(data, {
         'id': 1,
         'name': 'Site',
         'description': 'General site discussion',
+        'forums': None,
         'position': 1,
         'deleted': False,
         }, strict=True)

@@ -130,8 +130,8 @@ def test_users_from_forum_subscription(app, authed_client):
 
 
 def test_serialize_no_perms(app, authed_client):
-    category = Forum.from_pk(1)
-    data = NewJSONEncoder().default(category)
+    forum = Forum.from_pk(1)
+    data = NewJSONEncoder().default(forum)
     check_dictionary(data, {
         'id': 1,
         'name': 'Pulsar',
@@ -141,13 +141,12 @@ def test_serialize_no_perms(app, authed_client):
         })
     assert 'category' in data and data['category']['id'] == 1
     assert 'threads' in data and len(data['threads']) == 1
-    assert len(data) == 7
 
 
 def test_serialize_very_detailed(app, authed_client):
     add_permissions(app, 'modify_forums')
-    category = Forum.from_pk(1)
-    data = NewJSONEncoder().default(category)
+    forum = Forum.from_pk(1)
+    data = NewJSONEncoder().default(forum)
     check_dictionary(data, {
         'id': 1,
         'name': 'Pulsar',
@@ -158,13 +157,12 @@ def test_serialize_very_detailed(app, authed_client):
         })
     assert 'category' in data and data['category']['id'] == 1
     assert 'threads' in data and len(data['threads']) == 1
-    assert len(data) == 8
 
 
 def test_serialize_nested(app, authed_client):
     add_permissions(app, 'modify_forums')
-    category = Forum.from_pk(1)
-    data = NewJSONEncoder().default(category, nested=True)
+    forum = Forum.from_pk(1)
+    data = forum.serialize(nested=True)
     check_dictionary(data, {
         'id': 1,
         'name': 'Pulsar',
@@ -174,4 +172,3 @@ def test_serialize_nested(app, authed_client):
         'deleted': False,
         })
     assert 'last_updated_thread' in data and 'id' in data['last_updated_thread']
-    assert len(data) == 7

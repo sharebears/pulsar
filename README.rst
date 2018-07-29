@@ -78,3 +78,5 @@ There are few things important things to keep in mind when developing this proje
   or inserting an object, the cache key corresponding to lists containing the primary
   keys will need to be cleared manually. If someone can automate this without needless
   queries that would be great!
+- Python typing is a meme and I regret implementing it. I am debating whether or not
+  to remove it.

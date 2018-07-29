@@ -62,7 +62,7 @@ def test_serialize_user_class_permless(app, client):
     check_dictionary(data, {
         'id': 1,
         'name': 'User',
-        }, strict=True)
+        })
 
 
 def test_serialize_user_class_detailed(app, authed_client):

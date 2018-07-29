@@ -398,6 +398,10 @@ class ForumPost(db.Model, SinglePKMixin):
             contents=contents)
 
     @cached_property
+    def thread(self) -> 'ForumThread':
+        return ForumThread.from_pk(self.thread_id)
+
+    @cached_property
     def poster(self) -> User:
         return User.from_pk(self.poster_id)
 
