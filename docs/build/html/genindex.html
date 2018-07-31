@@ -156,6 +156,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
@@ -195,11 +196,15 @@
 </li>
       <li><a href="code/models.html#pulsar.users.models.APIKey">APIKey (class in pulsar.users.models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/utils.html#pulsar.utils.permissions.assert_permission">assert_permission() (in module pulsar.utils.permissions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/utils.html#pulsar.utils.permissions.assert_user">assert_user() (in module pulsar.utils.permissions)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.serializer.Attribute">Attribute (class in pulsar.mixins.serializer)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.serializer.Serializer.attributes">attributes() (pulsar.mixins.serializer.Serializer class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -210,6 +215,8 @@
       <li><a href="code/models.html#pulsar.users.models.Invite.belongs_to_user">belongs_to_user() (Invite method)</a>
 
       <ul>
+        <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.belongs_to_user">(SinglePKMixin method)</a>
+</li>
         <li><a href="code/models.html#pulsar.users.models.User.belongs_to_user">(User method)</a>
 </li>
       </ul></li>
@@ -220,6 +227,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/cache.html#pulsar.cache.Cache">Cache (class in pulsar.cache)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.cache_key">cache_key (SinglePKMixin attribute)</a>
 </li>
       <li><a href="code/cache.html#pulsar.cache.Cache.cache_model">cache_model() (Cache method)</a>
 </li>
@@ -232,7 +241,11 @@
 </li>
         <li><a href="code/models.html#pulsar.forums.models.ForumThread.can_access">(ForumThread method)</a>
 </li>
+        <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.can_access">(SinglePKMixin method)</a>
+</li>
       </ul></li>
+      <li><a href="code/mixins.html#pulsar.mixins.serializer.Attribute.can_serialize">can_serialize() (Attribute method)</a>
+</li>
       <li><a href="code/hooks.html#pulsar.hooks.before.check_api_key">check_api_key() (in module pulsar.hooks.before)</a>
 </li>
   </ul></td>
@@ -247,9 +260,17 @@
 </li>
       <li><a href="code/utils.html#pulsar.utils.permissions.choose_user">choose_user() (in module pulsar.utils.permissions)</a>
 </li>
+      <li><a href="code/mixins.html#pulsar.mixins.class_.ClassMixin">ClassMixin (class in pulsar.mixins.class_)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.class_.ClassSerializer">ClassSerializer (class in pulsar.mixins.class_)</a>
+</li>
       <li><a href="code/cache.html#pulsar.cache.clear_cache_dirty">clear_cache_dirty() (in module pulsar.cache)</a>
 </li>
       <li><a href="code/models.html#pulsar.forums.models.ForumThreadSubscription.clear_cache_keys">clear_cache_keys() (pulsar.forums.models.ForumThreadSubscription class method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.count">count() (SinglePKMixin method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.create_cache_key">create_cache_key() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -258,6 +279,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/serialization.html#pulsar.serializer.NewJSONEncoder.default">default() (NewJSONEncoder method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.del_property_cache">del_property_cache() (SinglePKMixin method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -287,12 +310,12 @@
 </li>
       <li><a href="code/models.html#pulsar.forums.models.ForumPollChoice">ForumPollChoice (class in pulsar.forums.models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/models.html#pulsar.forums.models.ForumPost">ForumPost (class in pulsar.forums.models)</a>
 </li>
       <li><a href="code/models.html#pulsar.forums.models.ForumPostEditHistory">ForumPostEditHistory (class in pulsar.forums.models)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/models.html#pulsar.forums.models.ForumSubscription">ForumSubscription (class in pulsar.forums.models)</a>
 </li>
       <li><a href="code/models.html#pulsar.forums.models.ForumThread">ForumThread (class in pulsar.forums.models)</a>
@@ -301,10 +324,22 @@
 </li>
       <li><a href="code/models.html#pulsar.forums.models.ForumThreadSubscription">ForumThreadSubscription (class in pulsar.forums.models)</a>
 </li>
+      <li><a href="code/mixins.html#pulsar.mixins.multi_pk.MultiPKMixin.from_attrs">from_attrs() (pulsar.mixins.multi_pk.MultiPKMixin class method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.from_cache">from_cache() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
+</li>
       <li><a href="code/models.html#pulsar.users.models.Invite.from_inviter">from_inviter() (pulsar.users.models.Invite class method)</a>
 </li>
-      <li><a href="code/models.html#pulsar.users.models.APIKey.from_user">from_user() (pulsar.users.models.APIKey class method)</a>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.from_pk">from_pk() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
 </li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.from_query">from_query() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.permission.PermissionMixin.from_user">from_user() (pulsar.mixins.permission.PermissionMixin class method)</a>
+
+      <ul>
+        <li><a href="code/models.html#pulsar.users.models.APIKey.from_user">(pulsar.users.models.APIKey class method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -315,11 +350,17 @@
 </li>
       <li><a href="code/utils.html#pulsar.utils.permissions.get_all_permissions">get_all_permissions() (in module pulsar.utils.permissions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/cache.html#pulsar.cache.Cache.get_dict">get_dict() (Cache method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.get_many">get_many() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.get_pks_of_many">get_pks_of_many() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
+</li>
       <li><a href="code/utils.html#pulsar.utils.validation.get_request_data">get_request_data() (in module pulsar.utils.validation)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.serializer.Attribute.get_value">get_value() (Attribute method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -345,11 +386,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/cache.html#pulsar.cache.Cache.inc">inc() (Cache method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/cache.html#pulsar.cache.Cache.init_app">init_app() (Cache method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/models.html#pulsar.users.models.Invite">Invite (class in pulsar.users.models)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.is_valid">is_valid() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/mixins.html#pulsar.mixins.multi_pk.MultiPKMixin">MultiPKMixin (class in pulsar.mixins.multi_pk)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -377,6 +428,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/hooks.html#pulsar.hooks.before.parse_key">parse_key() (in module pulsar.hooks.before)</a>
 </li>
+      <li><a href="code/mixins.html#pulsar.mixins.permission.PermissionMixin">PermissionMixin (class in pulsar.mixins.permission)</a>
+</li>
       <li><a href="code/validators.html#pulsar.validators.permissions.PermissionsDict">PermissionsDict (class in pulsar.validators.permissions)</a>
 </li>
       <li><a href="code/validators.html#pulsar.validators.permissions.PermissionsList">PermissionsList() (in module pulsar.validators.permissions)</a>
@@ -395,9 +448,17 @@
 </li>
       <li><a href="code/hooks.html#module-pulsar.hooks.before">pulsar.hooks.before (module)</a>
 </li>
+      <li><a href="code/mixins.html#module-pulsar.mixins.class_">pulsar.mixins.class_ (module)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/mixins.html#module-pulsar.mixins">pulsar.mixins (module)</a>
+      <li><a href="code/mixins.html#module-pulsar.mixins.multi_pk">pulsar.mixins.multi_pk (module)</a>
+</li>
+      <li><a href="code/mixins.html#module-pulsar.mixins.permission">pulsar.mixins.permission (module)</a>
+</li>
+      <li><a href="code/mixins.html#module-pulsar.mixins.serializer">pulsar.mixins.serializer (module)</a>
+</li>
+      <li><a href="code/mixins.html#module-pulsar.mixins.single_pk">pulsar.mixins.single_pk (module)</a>
 </li>
       <li><a href="code/models.html#module-pulsar.permissions.models">pulsar.permissions.models (module)</a>
 </li>
@@ -433,11 +494,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/models.html#pulsar.permissions.models.SecondaryClass">SecondaryClass (class in pulsar.permissions.models)</a>
 </li>
+      <li><a href="code/mixins.html#pulsar.mixins.serializer.Serializer.serialize">serialize() (pulsar.mixins.serializer.Serializer class method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.serializer.Serializer">Serializer (class in pulsar.mixins.serializer)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/cache.html#pulsar.cache.Cache.set">set() (Cache method)</a>
 </li>
       <li><a href="code/cache.html#pulsar.cache.Cache.set_many">set_many() (Cache method)</a>
+</li>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin">SinglePKMixin (class in pulsar.mixins.single_pk)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -455,10 +522,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/hooks.html#pulsar.hooks.before.update_api_key">update_api_key() (in module pulsar.hooks.before)</a>
 </li>
-      <li><a href="code/models.html#pulsar.users.models.User">User (class in pulsar.users.models)</a>
+      <li><a href="code/mixins.html#pulsar.mixins.single_pk.SinglePKMixin.update_many">update_many() (pulsar.mixins.single_pk.SinglePKMixin class method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/models.html#pulsar.users.models.User">User (class in pulsar.users.models)</a>
+</li>
       <li><a href="code/models.html#pulsar.permissions.models.UserClass">UserClass (class in pulsar.permissions.models)</a>
 </li>
       <li><a href="code/models.html#pulsar.permissions.models.UserPermission">UserPermission (class in pulsar.permissions.models)</a>

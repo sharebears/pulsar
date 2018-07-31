@@ -157,8 +157,523 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-pulsar.mixins">
-<span id="model-mixins"></span><h1>Model Mixins<a class="headerlink" href="#module-pulsar.mixins" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-pulsar.mixins.class_">
+<span id="model-mixins"></span><h1>Model Mixins<a class="headerlink" href="#module-pulsar.mixins.class_" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pulsar.mixins.class_.ClassMixin">
+<em class="property">class </em><code class="descname">ClassMixin</code><a class="headerlink" href="#pulsar.mixins.class_.ClassMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pulsar.mixins.class_.ClassSerializer">
+<em class="property">class </em><code class="descname">ClassSerializer</code><a class="headerlink" href="#pulsar.mixins.class_.ClassSerializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pulsar.mixins.serializer.Serializer" title="pulsar.mixins.serializer.Serializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.serializer.Serializer</span></code></a></p>
+</dd></dl>
+
+<span class="target" id="module-pulsar.mixins.multi_pk"></span><dl class="class">
+<dt id="pulsar.mixins.multi_pk.MultiPKMixin">
+<em class="property">class </em><code class="descname">MultiPKMixin</code><a class="headerlink" href="#pulsar.mixins.multi_pk.MultiPKMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">flask_sqlalchemy.model.Model</span></code></p>
+<p>A model mixin for models with multiple primary keys, typically representative
+of many-to-many relational tables.</p>
+<dl class="classmethod">
+<dt id="pulsar.mixins.multi_pk.MultiPKMixin.from_attrs">
+<em class="property">classmethod </em><code class="descname">from_attrs</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.multi_pk.MultiPKMixin.from_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an instance of the model from its attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~MPK]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pulsar.mixins.permission"></span><dl class="class">
+<dt id="pulsar.mixins.permission.PermissionMixin">
+<em class="property">class </em><code class="descname">PermissionMixin</code><a class="headerlink" href="#pulsar.mixins.permission.PermissionMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pulsar.mixins.multi_pk.MultiPKMixin" title="pulsar.mixins.multi_pk.MultiPKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></a></p>
+<dl class="classmethod">
+<dt id="pulsar.mixins.permission.PermissionMixin.from_user">
+<em class="property">classmethod </em><code class="descname">from_user</code><span class="sig-paren">(</span><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.permission.PermissionMixin.from_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a dict of all custom permissions assigned to a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user_id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – User ID the permissions belong to</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Dict of permissions with the name as the
+key and the <code class="docutils literal notranslate"><span class="pre">granted</span></code> value as the value</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pulsar.mixins.serializer"></span><dl class="class">
+<dt id="pulsar.mixins.serializer.Attribute">
+<em class="property">class </em><code class="descname">Attribute</code><span class="sig-paren">(</span><em>permission=None</em>, <em>self_access=True</em>, <em>default=True</em>, <em>nested=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.serializer.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A serializable attribute for a model. This is where the attribute filtering
+and permissioning happens.</p>
+<dl class="method">
+<dt id="pulsar.mixins.serializer.Attribute.can_serialize">
+<code class="descname">can_serialize</code><span class="sig-paren">(</span><em>name</em>, <em>obj</em>, <em>nested</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.serializer.Attribute.can_serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines whether or not the attribute can be serialized. Checks if the
+either the permission or ownership requirement specified in the attribute
+initialization are valid, and whether or not the attribute meets nested
+requirements.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pulsar.mixins.serializer.Attribute.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>name</em>, <em>obj</em>, <em>nested</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.serializer.Attribute.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the attribute of a object, or a null value if the serialization kwargs
+and/or requesting user don’t meet the necessary requirements.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pulsar.mixins.serializer.Serializer">
+<em class="property">class </em><code class="descname">Serializer</code><a class="headerlink" href="#pulsar.mixins.serializer.Serializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Intended to be passed into model arguments as a __serializer__ attr.
+TODO: More documentation.</p>
+<dl class="classmethod">
+<dt id="pulsar.mixins.serializer.Serializer.attributes">
+<em class="property">classmethod </em><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.serializer.Serializer.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all non-method attributes of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="#pulsar.mixins.serializer.Attribute" title="pulsar.mixins.serializer.Attribute"><code class="xref py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.serializer.Serializer.serialize">
+<em class="property">classmethod </em><code class="descname">serialize</code><span class="sig-paren">(</span><em>obj</em>, <em>nested=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.serializer.Serializer.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes the attributes in the serializer and adds them to
+the serialized dictionary, if they match the passed kwarg criteria and
+user permissions.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-pulsar.mixins.single_pk"></span><dl class="class">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin">
+<em class="property">class </em><code class="descname">SinglePKMixin</code><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">flask_sqlalchemy.model.Model</span></code></p>
+<p>This is a custom model mixin for the pulsar project, which adds caching
+and JSON serialization functionality to the base model. Subclasses are
+expected to define their serializable attributes, permission restrictions,
+and cache key template with the following class attributes. They are required
+if one wants to cache or serialize data for a model. By default, all “serialize”
+tuples are empty, so only the populated ones need to be defined. This mixin is
+not designed for models with composite primary keys.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">__cache_key__</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__serialize__</span></code> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__serialize_self__</span></code> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__serialize_detailed__</span></code> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__serialize_very_detailed__</span></code> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__serialize_nested_include__</span></code> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__serialize_nested_exclude__</span></code> (<code class="docutils literal notranslate"><span class="pre">tuple</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__permission_detailed__</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">__permission_very_detailed__</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</li>
+</ul>
+<p>When a model is serialized in an API response, the permissions assigned to a user
+and the permissions listed in the above attributes will determine which properties
+of the model are returned. Attributes in <code class="docutils literal notranslate"><span class="pre">__serialize__</span></code> are viewable to anyone
+with permission to access the resource, attributes in <code class="docutils literal notranslate"><span class="pre">__serialize_self__</span></code> are
+viewable by anyone who passes the <code class="docutils literal notranslate"><span class="pre">belongs_to_user</span></code> function. Attributes in
+<code class="docutils literal notranslate"><span class="pre">__serialize_detailed__</span></code> and <code class="docutils literal notranslate"><span class="pre">__serialize_very_detailed__</span></code> are viewable by users
+with the permissions defined in <code class="docutils literal notranslate"><span class="pre">__permission_detailed__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">__permission_very_detailed__</span></code>, respectively.</p>
+<p>Other models or values built off from column values can be serialized into JSON by
+taking advantage of the &#64;property decorator. Property names can be included in the
+serialization tuples, and their functions can return (multiple) other models.</p>
+<p>Nested model properties will also be serialized if they are the value of a <code class="docutils literal notranslate"><span class="pre">dict</span></code>
+or in a <code class="docutils literal notranslate"><span class="pre">list</span></code>. When nested models are serialized, all attributes listed in
+<code class="docutils literal notranslate"><span class="pre">__serialize_nested_exclude__</span></code> will be excluded, while all attributes in
+<code class="docutils literal notranslate"><span class="pre">__serialize_nested_include__</span></code> will be included. For example, when embedding a user
+in the forum post JSON response, the nested list of APIKey models can be excluded.</p>
+<p>Due to how models are cached, writing out the logic to obtain from cache and,
+if the cache call returned nothing, execute a query for every model is tedious
+and repetitive. Generalized functions to abstract those are included in this class,
+and are expected to be utilized wherever possible.</p>
+<p>It’s not a true mixin in that it’s monolithic and inherits from the base class,
+but let’s pretend it is so our type analysis works.</p>
+<dl class="method">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.belongs_to_user">
+<code class="descname">belongs_to_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.belongs_to_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to determine whether or not the model “belongs” to a user by comparing
+against flask.g.user This is meant to be overridden by subclasses, although, by default,
+if the model has a <code class="docutils literal notranslate"><span class="pre">user_id</span></code> column, it compares <code class="docutils literal notranslate"><span class="pre">flask.g.user</span></code> with that column.
+If that column does not exist, <code class="docutils literal notranslate"><span class="pre">False</span></code> will be returned by default.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether or not the object “belongs” to the user</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.cache_key">
+<code class="descname">cache_key</code><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.cache_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default property for cache key which should be overridden if the
+cache key is not formatted with an ID column. If the cache key
+string for the model only takes an {id} param, then this function
+will suffice.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The cache key of the model</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><strong>NameError</strong> – If the model does not have a cache key</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.can_access">
+<code class="descname">can_access</code><span class="sig-paren">(</span><em>permission=None</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.can_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines whether or not the requesting user can access the following resource.
+If no permission is specified, any user can access the resource. If a permission is
+specified, then access is restricted to users with that permission or “ownership”
+of this object. Ownership is determined with the <code class="docutils literal notranslate"><span class="pre">belongs_to_user</span></code> method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>permission</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – Permission to restrict access to</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Whether or not the requesting user can access the resource</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.count">
+<code class="descname">count</code><span class="sig-paren">(</span><em>*</em>, <em>key</em>, <em>attribute</em>, <em>filter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>An abstracted function for counting a number of elements matching a query. If the
+passed cache key exists, its value will be returned; otherwise, the passed query
+will be ran and the resultant count cached and returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The cache key to check</li>
+<li><strong>attribute</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">InstrumentedAttribute</span></code>) – The attribute to count; a model’s column</li>
+<li><strong>filter</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – The SQLAlchemy filter expression</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The number of rows matching the query element</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.create_cache_key">
+<em class="property">classmethod </em><code class="descname">create_cache_key</code><span class="sig-paren">(</span><em>pk</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.create_cache_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the <code class="docutils literal notranslate"><span class="pre">__cache_key__</span></code> class attribute with the kwargs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> – The keywords that will be fed into the <code class="docutils literal notranslate"><span class="pre">str.format</span></code> function</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The cache key</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>NameError</strong> – If the cache key is undefined or improperly defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.del_property_cache">
+<code class="descname">del_property_cache</code><span class="sig-paren">(</span><em>prop</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.del_property_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a property from the property cache.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>prop</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The property to delete</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.from_cache">
+<em class="property">classmethod </em><code class="descname">from_cache</code><span class="sig-paren">(</span><em>key</em>, <em>*</em>, <em>query=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.from_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the cache for an instance of this model and attempt to load
+its attributes from the cache instead of from the database.
+If found, the object is merged into the database session and returned.
+Otherwise, if a query is passed, the query is ran and the result is cached and
+returned. Model returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if the object doesn’t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The cache key to get</li>
+<li><strong>query</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseQuery</span></code>]) – The SQLAlchemy query</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~MDL]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">An instance of this class, if the cache key or query produced results</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.from_pk">
+<em class="property">classmethod </em><code class="descname">from_pk</code><span class="sig-paren">(</span><em>pk</em>, <em>*</em>, <em>include_dead=False</em>, <em>_404=False</em>, <em>error=False</em>, <em>asrt=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.from_pk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default classmethod constructor to get an object by its PK ID.
+If the object has a deleted/revoked/expired column, it will compare a
+<code class="docutils literal notranslate"><span class="pre">include_dead</span></code> kwarg against it. This function first attempts to load
+an object from the cache by formatting its <code class="docutils literal notranslate"><span class="pre">__cache_key__</span></code> with the
+ID parameter, and executes a query if the object isn’t cached.
+Can optionally raise a <code class="docutils literal notranslate"><span class="pre">_404Exception</span></code> if the object is not queried.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>id</strong> – The primary key ID of the object to query for</li>
+<li><strong>include_dead</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to return deleted/revoked/expired objects</li>
+<li><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to raise a _403Exception when the user cannot
+access the object</li>
+<li><strong>_404</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to raise a _404Exception with the value of
+_404 and the class name as the resource name if an object
+is not found</li>
+<li><strong>asrt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – Whether or not to check for ownership of the model or a permission.
+Can be a boolean to purely check for ownership, or a permission
+string which can override ownership and access the model anyways.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~MDL]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The object corresponding to the given ID, if it exists</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="exceptions.html#pulsar.exceptions._404Exception" title="pulsar.exceptions._404Exception"><strong>_404Exception</strong></a> – If <code class="docutils literal notranslate"><span class="pre">_404</span></code> is passed and an object is not found nor accessible</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.from_query">
+<em class="property">classmethod </em><code class="descname">from_query</code><span class="sig-paren">(</span><em>*</em>, <em>key=None</em>, <em>filter=None</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.from_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to get a single object from the database (via <code class="docutils literal notranslate"><span class="pre">limit(1)</span></code>, <code class="docutils literal notranslate"><span class="pre">query.first()</span></code>).
+Getting the object via the provided cache key will be attempted first; if
+it does not exist, then a query will be constructed with the other
+parameters. The resultant object (if exists) will be cached and returned.</p>
+<p><strong>The queried model must have a primary key column named ``id`` and a
+``from_pk`` classmethod constructor.</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – The cache key belonging to the object</li>
+<li><strong>filter</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy expression to filter the query with</li>
+<li><strong>order</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy expression to order the query by</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~MDL]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The queried model, if it exists</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.get_many">
+<em class="property">classmethod </em><code class="descname">get_many</code><span class="sig-paren">(</span><em>*</em>, <em>key=None</em>, <em>filter=None</em>, <em>order=None</em>, <em>required_properties=()</em>, <em>include_dead=False</em>, <em>asrt=None</em>, <em>page=None</em>, <em>limit=50</em>, <em>reverse=False</em>, <em>pks=None</em>, <em>expr_override=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.get_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>An abstracted function to get a list of PKs from the cache with a cache key,
+and query for those IDs if the key does not exist. If the query needs to be ran,
+a list will be created from the first element in every returned tuple result, like so:
+<code class="docutils literal notranslate"><span class="pre">[x[0]</span> <span class="pre">for</span> <span class="pre">x</span> <span class="pre">in</span> <span class="pre">cls.query.all()]</span></code></p>
+<p>That list will be converted into models, using passed keyword arguments to modify
+which elements are included and which aren’t. Pagination occurs here, although it is
+optional and ignored if neither page nor limit is set.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – The cache key to check (and return if present)</li>
+<li><strong>filter</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy filter expression to be applied to the query</li>
+<li><strong>order</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy order_by expression to be applied to the query</li>
+<li><strong>required_properties</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>) – Properties required to validate to <code class="docutils literal notranslate"><span class="pre">True</span></code>. This can break
+pagination (varying # on one page)
+for a retrieved item to be included in the returned list</li>
+<li><strong>include_dead</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to include deleted/revoked/expired models</li>
+<li><strong>asrt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – Whether or not to check for ownership of the model or a
+permission. Can be a boolean to purely check for ownership,
+or a permission string which can override ownership and
+access the model anyways.</li>
+<li><strong>page</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – The page number of results to return</li>
+<li><strong>limit</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – The limit of results to return, defaults to 50 if page
+is set, otherwise infinite</li>
+<li><strong>reverse</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to reverse the order of the list</li>
+<li><strong>ids</strong> – A list of previously-generated IDs to be used in lieu
+of re-generating the IDs</li>
+<li><strong>expr_override</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – If passed, this will override filter and order, and be
+called verbatim in a <code class="docutils literal notranslate"><span class="pre">db.session.execute</span></code> if the cache
+key does not exist</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~MDL]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of objects matching the query specifications</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.get_pks_of_many">
+<em class="property">classmethod </em><code class="descname">get_pks_of_many</code><span class="sig-paren">(</span><em>key=None</em>, <em>filter=None</em>, <em>order=None</em>, <em>include_dead=False</em>, <em>expr_override=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.get_pks_of_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of object IDs meeting query criteria. Fetching from the
+cache with the provided cache key will be attempted first; if the cache
+key does not exist then a query will be ran. Calls with <code class="docutils literal notranslate"><span class="pre">include_dead=True</span></code> are
+saved under a different cache key. <code class="docutils literal notranslate"><span class="pre">include_dead</span></code> does not affect the query results
+when passing <code class="docutils literal notranslate"><span class="pre">expr_override</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – The cache key to check (and return if present)</li>
+<li><strong>filter</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy filter expression to be applied to the query</li>
+<li><strong>order</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy order_by expression to be applied to the query</li>
+<li><strong>include_dead</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to include dead results in the IDs list</li>
+<li><strong>expr_override</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – If passed, this will override filter and order, and be
+called verbatim in a <code class="docutils literal notranslate"><span class="pre">db.session.execute</span></code> if the cache
+key does not exist</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of IDs</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.is_valid">
+<em class="property">classmethod </em><code class="descname">is_valid</code><span class="sig-paren">(</span><em>pk</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether or not the object exists and isn’t deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>id</strong> – The object ID to validate</li>
+<li><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to raise an APIException on validation fail</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity of the object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="exceptions.html#pulsar.exceptions.APIException" title="pulsar.exceptions.APIException"><strong>APIException</strong></a> – If error param is passed and ID is not valid</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pulsar.mixins.single_pk.SinglePKMixin.update_many">
+<em class="property">classmethod </em><code class="descname">update_many</code><span class="sig-paren">(</span><em>*</em>, <em>pks</em>, <em>update</em>, <em>sychronize_session=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.mixins.single_pk.SinglePKMixin.update_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and execute a query affecting all objects with PKs in the
+list of PKs passed to this function. This is only meant to be used for
+models with an PK primary key and cache key formatted by PK.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pks</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – The list of primary key PKs to update</li>
+<li><strong>update</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – The dictionary of column values to update</li>
+<li><strong>synchronize_session</strong> – Whether or not to update the session after
+the query; should be True if the objects are
+going to be used after updating</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
