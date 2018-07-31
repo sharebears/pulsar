@@ -33,7 +33,7 @@ def view_thread(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /forums/threads/1 HTTP/1.1
        Host: pul.sar
@@ -41,7 +41,7 @@ def view_thread(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -91,7 +91,7 @@ def create_thread(topic: str,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /forums/threads HTTP/1.1
        Host: pul.sar
@@ -105,7 +105,7 @@ def create_thread(topic: str,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -168,7 +168,7 @@ def modify_thread(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/threads/6 HTTP/1.1
        Host: pul.sar
@@ -185,7 +185,7 @@ def modify_thread(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -228,7 +228,7 @@ def delete_thread(id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        DELETE /forums/threads/2 HTTP/1.1
        Host: pul.sar
@@ -237,7 +237,7 @@ def delete_thread(id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

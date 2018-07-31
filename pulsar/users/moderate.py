@@ -47,12 +47,9 @@ def moderate_user(user_id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /users/1/moderate HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "password": "an-ev3n-be77er-pa$$w0rd"
@@ -60,7 +57,7 @@ def moderate_user(user_id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -68,17 +65,11 @@ def moderate_user(user_id: int,
 
        {
          "status": "success",
-         "response": {
-           "id": 1,
-           "username": "lights",
-           "email": "lights@pul.sar"
-         }
+         "response": "<User>"
        }
 
     :json string password: User's new password. Must be 12+ characters and contain
         at least one letter, one number, and one special character.
-
-    :>json string response: Success message
 
     :statuscode 200: User successfully moderated
     :statuscode 400: User unsuccessfully moderated

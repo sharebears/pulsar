@@ -25,7 +25,7 @@ def view_post(id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /forums/posts/1 HTTP/1.1
        Host: pul.sar
@@ -34,7 +34,7 @@ def view_post(id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -79,7 +79,7 @@ def create_post(contents: str,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /forums/posts HTTP/1.1
        Host: pul.sar
@@ -93,7 +93,7 @@ def create_post(contents: str,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -154,7 +154,7 @@ def modify_post(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/posts/6 HTTP/1.1
        Host: pul.sar
@@ -168,7 +168,7 @@ def modify_post(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -221,7 +221,7 @@ def delete_post(id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        DELETE /forums/posts/2 HTTP/1.1
        Host: pul.sar
@@ -230,7 +230,7 @@ def delete_post(id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

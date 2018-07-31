@@ -18,7 +18,7 @@ def view_permissions(user_id: int = None,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /permissions HTTP/1.1
        Host: pul.sar
@@ -26,7 +26,7 @@ def view_permissions(user_id: int = None,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

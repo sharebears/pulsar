@@ -6,15 +6,6 @@ Users
    :blueprints: users
    :order: path
 
-Users
------
-
-.. autoflask:: pulsar:create_app('config.py')
-   :undoc-static:
-   :modules: pulsar.users.users
-   :groupby: view
-   :order: path
-
 API Keys
 --------
 pulsar supports token (API key) authentication. API keys are generated on
@@ -43,6 +34,15 @@ Settings
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:
    :modules: pulsar.users.settings
+   :groupby: view
+   :order: path
+
+Users
+-----
+
+.. autoflask:: pulsar:create_app('config.py')
+   :undoc-static:
+   :modules: pulsar.users.users
    :groupby: view
    :order: path
 

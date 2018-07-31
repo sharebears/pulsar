@@ -28,12 +28,9 @@ def view_invite(code: str) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /invite HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "code": "an-invite-code"
@@ -41,7 +38,7 @@ def view_invite(code: str) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -49,20 +46,8 @@ def view_invite(code: str) -> flask.Response:
 
        {
          "status": "success",
-         "response": {
-           "expired": false,
-           "code": "an-invite-code",
-           "time-sent": "1970-01-01T00:00:00.000001+00:00",
-           "email": "bright@pul.sar",
-           "invitee": null
-         }
+         "response": "<Invite>"
        }
-
-    :>jsonarr boolean expired: Whether or not the invite is expired
-    :>jsonarr string code: The invite code
-    :>jsonarr string time-sent: When the invite was sent
-    :>jsonarr string email: The email that the invite was sent to
-    :>jsonarr dict invitee: The user invited by the invite
 
     :statuscode 200: View successful
     :statuscode 404: Invite does not exist or user cannot view invite
@@ -91,43 +76,15 @@ def view_invites(used: bool,
 
     .. :quickref: Invite; View multiple invites.
 
-    **Example request**:
-
-    .. sourcecode:: http
-
-       GET /invites HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
          "response": [
-           {
-             "expired": false,
-             "code": "an-invite-code",
-             "time-sent": "1970-01-01T00:00:00.000001+00:00",
-             "email": "bright@pul.sar",
-             "invitee": null
-           },
-           {
-             "expired": true,
-             "code": "another-invite-code",
-             "time-sent": "1970-01-01T00:00:00.000002+00:00",
-             "email": "bitsu@qua.sar",
-             "invitee": {
-               "id": 2,
-               "username": "bitsu",
-               "other-keys": "other-values"
-             }
-           }
+            "<Invite>",
+            "<Invite>"
          ]
        }
 
@@ -135,13 +92,7 @@ def view_invites(used: bool,
         (overrides ``include_dead``)
     :query boolean include_dead: (Optional) Whether or not to include expired invites
 
-    :>json list response: A list of invite data
-
-    :>jsonarr boolean expired: Whether or not the invite is expired
-    :>jsonarr string id: The invite code
-    :>jsonarr string time-sent: When the invite was sent
-    :>jsonarr string email: The email that the invite was sent to
-    :>jsonarr dict invitee: The user invited by the invite
+    :>json list response: A list of invites
 
     :statuscode 200: View successful
     :statuscode 403: User does not have permission to view user's invites
@@ -169,12 +120,9 @@ def invite_user(email: str):
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /invites/an-invite-code HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "email": "bright@puls.ar"
@@ -182,30 +130,14 @@ def invite_user(email: str):
 
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
-         "response": {
-           "expired": true,
-           "id": "an-invite-code",
-           "time-sent": "1970-01-01T00:00:00.000001+00:00",
-           "email": "bright@pul.sar",
-           "invitee": null
-         }
+         "response": "<Invite>"
        }
 
     :<json string email: E-mail to send the invite to
-
-    :>jsonarr boolean expired: Whether or not the invite is expired (always false)
-    :>jsonarr string id: The invite code
-    :>jsonarr string time-sent: When the invite was sent
-    :>jsonarr string email: The email that the invite was sent to
-    :>jsonarr dict invitee: The user invited by the invite
 
     :statuscode 200: Successfully sent invite
     :statuscode 400: Unable to send invites or incorrect email
@@ -240,11 +172,9 @@ def revoke_invite(code: str) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        DELETE /invite HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
 
        {
          "id": "an-invite-code"
@@ -252,28 +182,12 @@ def revoke_invite(code: str) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
-         "response": {
-           "expired": true,
-           "id": "an-invite-code",
-           "time-sent": "1970-01-01T00:00:00.000001+00:00",
-           "email": "bright@pul.sar",
-           "invitee": null
-         }
+         "response": "<Invite>"
        }
-
-    :>jsonarr boolean expired: Whether or not the invite is expired (always true)
-    :>jsonarr string id: The invite code
-    :>jsonarr string time-sent: When the invite was sent
-    :>jsonarr string email: The email that the invite was sent to
-    :>jsonarr dict invitee: The user invited by the invite
 
     :statuscode 200: Revocation successful
     :statuscode 403: Unauthorized to revoke invites

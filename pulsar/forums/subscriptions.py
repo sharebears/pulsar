@@ -20,7 +20,7 @@ def alter_thread_subscription(thread_id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/threads/2/subscribe HTTP/1.1
        Host: pul.sar
@@ -28,7 +28,7 @@ def alter_thread_subscription(thread_id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -76,7 +76,7 @@ def alter_forum_subscription(forum_id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/2/subscribe HTTP/1.1
        Host: pul.sar
@@ -84,7 +84,7 @@ def alter_forum_subscription(forum_id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

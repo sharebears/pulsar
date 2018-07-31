@@ -23,7 +23,7 @@ def view_poll(id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /forums/polls/1 HTTP/1.1
        Host: pul.sar
@@ -31,7 +31,7 @@ def view_poll(id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -80,7 +80,7 @@ def modify_poll(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/threads/6 HTTP/1.1
        Host: pul.sar
@@ -97,7 +97,7 @@ def modify_poll(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -185,7 +185,7 @@ def vote_on_poll(choice_id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /forums/polls/choices/6 HTTP/1.1
        Host: pul.sar
@@ -193,7 +193,7 @@ def vote_on_poll(choice_id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

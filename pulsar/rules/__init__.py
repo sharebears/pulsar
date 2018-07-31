@@ -39,7 +39,7 @@ def view_rules_overview() -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /rules HTTP/1.1
        Host: pul.sar
@@ -47,7 +47,7 @@ def view_rules_overview() -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -79,7 +79,7 @@ def view_rules(section: str) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /rules/golden HTTP/1.1
        Host: pul.sar
@@ -87,7 +87,7 @@ def view_rules(section: str) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

@@ -22,17 +22,9 @@ def get_user(user_id: int) -> flask.Response:
 
     .. :quickref: User; Get user information.
 
-    **Example request**:
-
-    .. sourcecode:: http
-
-       GET /users/1 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -40,16 +32,8 @@ def get_user(user_id: int) -> flask.Response:
 
        {
          "status": "success",
-         "response": {
-           "id": 1,
-           "username": "lights",
-           "invites": 2
-         }
+         "response": "<User>"
        }
-
-    :>jsonarr int id: User ID of user
-    :>jsonarr string username: Username of user
-    :>jsonarr int invites: (Restricted to self view) Invites available to user
 
     :statuscode 200: User exists
     :statuscode 404: User does not exist
@@ -81,12 +65,9 @@ def register(username: str,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /register HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "username": "lights",
@@ -97,11 +78,7 @@ def register(username: str,
 
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",

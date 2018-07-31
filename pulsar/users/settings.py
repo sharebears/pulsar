@@ -31,16 +31,13 @@ def edit_settings(user_id: int =None,
     Requires the ``moderate_users`` permission to change another user's
     settings, which can be done by specifying a ``user_id``.
 
-    .. :quickref: UserSettings; Change settings.
+    .. :quickref: Settings; Change settings.
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /users/settings HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "existing_password": "y-&~_Wbt7wjkUJdY<j-K",
@@ -49,11 +46,7 @@ def edit_settings(user_id: int =None,
 
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
@@ -64,8 +57,6 @@ def edit_settings(user_id: int =None,
         if setting another user's password with ``moderate_user`` permission.
     :json string new_password: User's new password. Must be 12+ characters and contain
         at least one letter, one number, and one special character.
-
-    :>json string response: Success message
 
     :statuscode 200: Settings successfully updated
     :statuscode 400: Settings unsuccessfully updated

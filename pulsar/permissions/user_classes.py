@@ -31,7 +31,7 @@ def view_user_class(user_class_id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /user_classes/1 HTTP/1.1
        Host: pul.sar
@@ -39,7 +39,7 @@ def view_user_class(user_class_id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -82,7 +82,7 @@ def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /user_classes HTTP/1.1
        Host: pul.sar
@@ -90,7 +90,7 @@ def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -158,7 +158,7 @@ def create_user_class(name: str,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /user_classes HTTP/1.1
        Host: pul.sar
@@ -174,7 +174,7 @@ def create_user_class(name: str,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -221,7 +221,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /user_classes HTTP/1.1
        Host: pul.sar
@@ -233,7 +233,7 @@ def delete_user_class(user_class_id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -290,7 +290,7 @@ def modify_user_class(user_class_id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /user_classes/user HTTP/1.1
        Host: pul.sar
@@ -306,7 +306,7 @@ def modify_user_class(user_class_id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

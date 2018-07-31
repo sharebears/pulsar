@@ -29,7 +29,7 @@ def view_categories(include_dead: bool = False) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /forums/categories HTTP/1.1
        Host: pul.sar
@@ -38,7 +38,7 @@ def view_categories(include_dead: bool = False) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -83,7 +83,7 @@ def add_category(name: str,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /forums/categories HTTP/1.1
        Host: pul.sar
@@ -98,7 +98,7 @@ def add_category(name: str,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -145,7 +145,7 @@ def edit_category(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/categories/6 HTTP/1.1
        Host: pul.sar
@@ -161,7 +161,7 @@ def edit_category(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -202,7 +202,7 @@ def delete_category(id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        DELETE /forums/categories/2 HTTP/1.1
        Host: pul.sar
@@ -211,7 +211,7 @@ def delete_category(id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept

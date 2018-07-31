@@ -35,7 +35,7 @@ def view_forum(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        GET /forums/1 HTTP/1.1
        Host: pul.sar
@@ -44,7 +44,7 @@ def view_forum(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -98,7 +98,7 @@ def create_forum(name: str,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /forums HTTP/1.1
        Host: pul.sar
@@ -113,7 +113,7 @@ def create_forum(name: str,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -163,7 +163,7 @@ def modify_forum(id: int,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        PUT /forums/6 HTTP/1.1
        Host: pul.sar
@@ -179,7 +179,7 @@ def modify_forum(id: int,
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
@@ -223,7 +223,7 @@ def delete_forum(id: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        DELETE /forums/2 HTTP/1.1
        Host: pul.sar
@@ -232,7 +232,7 @@ def delete_forum(id: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        HTTP/1.1 200 OK
        Vary: Accept
