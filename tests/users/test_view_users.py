@@ -116,7 +116,7 @@ def test_register_with_code(app, client, code, status_code, expected):
     'username, status_code, expected', [
         ('bright', 200, {'username': 'bright'}),
         ('user_one', 400, 'Invalid data: another user already has the username '
-                        'user_one (key "username")'),
+                          'user_one (key "username")'),
     ])
 def test_registration(app, client, username, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = False

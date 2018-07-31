@@ -18,10 +18,10 @@ def test_user_creation(app, client):
 
 def test_user_creation_dupe_username(app, client):
     """Creation of a user with dupe username should raise an APIException."""
-    error_str = '<APIException (Code: 400) [Message: The username ligHts is already in use.]>'
+    error_str = '<APIException (Code: 400) [Message: The username user_OnE is already in use.]>'
     with pytest.raises(APIException) as e:
         User.new(
-            username='ligHts',
+            username='user_OnE',
             password='13579',
             email='bright@puls.ar')
     assert repr(e.value) == error_str
@@ -34,13 +34,13 @@ def test_user_creation_dupe_username_database(app, client):
     with pytest.raises(IntegrityError):
         db.session.execute(
             """INSERT INTO users (username, passhash, email) VALUES
-            ('LiGhTs', '13579', 'bright@puls.ar')""")
+            ('UsER_one', '13579', 'bright@puls.ar')""")
 
 
 def test_user_obj_from_pk_and_username(app, client):
     """User objects should equal from both from_pk and from_username."""
     user_id = User.from_pk(1)
-    user_name = User.from_username('lightS')
+    user_name = User.from_username('user_One')
     assert repr(user_id) == f'<User 1>'
     assert user_id == user_name
 

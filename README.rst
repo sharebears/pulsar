@@ -1,5 +1,11 @@
 pulsar
 ======
+
+.. image:: https://travis-ci.org/ligh7s/pulsar.svg?branch=master
+    :target: https://travis-ci.org/ligh7s/pulsar
+.. image:: https://coveralls.io/repos/github/ligh7s/pulsar/badge.svg?branch=master
+    :target: https://coveralls.io/github/ligh7s/pulsar?branch=master
+
 A BitTorrent Indexer written in python using the Flask micro-framework for the backend,
 meant to succeed Gazelle.
 

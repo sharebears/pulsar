@@ -232,4 +232,4 @@ def revoke_all_api_keys(user_id: int = None) -> flask.Response:
         pks=APIKey.hashes_from_user(user.id),
         update={'revoked': True})
     db.session.commit()
-    return flask.jsonify('Alm api keys have been revoked.')
+    return flask.jsonify('All api keys have been revoked.')

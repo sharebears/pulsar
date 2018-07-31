@@ -10,11 +10,15 @@ services:
   - redis-server
 
 before_install:
-   psql -c "CREATE DATABASE pulsar-testing;" -U postgres
+  - pip install pipenv
+  - psql -c "CREATE DATABASE \"pulsar-testing\";" -U postgres
 
 install:
-  - pip install -r requirements.txt
-  - sed -i "s/postgresql:\/\//postgresql:\/\/postgres:/" instance/test_config.py
+  - pipenv install --dev
+  - sed -i "s/postgresql:\/\//postgresql:\/\/postgres@/" instance/test_config.py
 
 script:
   - make tests
+
+after_success:
+  - coveralls
