@@ -9,6 +9,8 @@ pulsar
 A BitTorrent Indexer written in python using the Flask micro-framework for the backend,
 meant to succeed Gazelle.
 
+Documentation available here: https://ligh7s.github.io/pulsar/index.html.
+
 Config
 ------
 An explanation of configuration options is available in ``config.py.example``. All
@@ -78,8 +80,7 @@ click cli interface.
 There are few things important things to keep in mind when developing this project
 
 - All permission checks should be abstracted to a utility function, such as
-  ``require_permission``, ``require_auth``, or ``choose_user``; or to the user model
-  (``User.has_permission``).
+  ``require_permission`` or ``choose_user``; or to the user model (``User.has_permission``).
 - Individual model cache clears are taken care of upon database commit. When deleting
   or inserting an object, the cache key corresponding to lists containing the primary
   keys will need to be cleared manually. If someone can automate this without needless

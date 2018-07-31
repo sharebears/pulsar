@@ -6,5 +6,4 @@ config.py
 !.flake8
 !.coveragerc
 !.travis.yml
-
-docs/build
+!.nojekyll

@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utils &mdash; pulsar 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Exceptions" href="exceptions.html" />
+    <link rel="prev" title="JSON Serialization" href="serialization.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> pulsar
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="style.html">Style Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hooks.html">Request Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mixins.html">Model Mixins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="validators.html">Validators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="serialization.html">JSON Serialization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-pulsar.utils.permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pulsar.utils.validation">Validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pulsar.utils.memoization">Memoization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html">Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pulsar</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Code Documentation</a> &raquo;</li>
+        
+      <li>Utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="utils">
+<h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-pulsar.utils.permissions">
+<span id="permissions"></span><h2>Permissions<a class="headerlink" href="#module-pulsar.utils.permissions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pulsar.utils.permissions.assert_permission">
+<code class="descname">assert_permission</code><span class="sig-paren">(</span><em>permission</em>, <em>masquerade=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.permissions.assert_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that the requesting user has a permission, raise a 403 if they do not.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pulsar.utils.permissions.assert_user">
+<code class="descname">assert_user</code><span class="sig-paren">(</span><em>user_id</em>, <em>permission=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.permissions.assert_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that a user_id belongs to the requesting user, or that
+the requesting user has a given permission.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pulsar.utils.permissions.choose_user">
+<code class="descname">choose_user</code><span class="sig-paren">(</span><em>user_id</em>, <em>permission</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.permissions.choose_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a user_id and a permission. If the user_id is specified, the user with that
+user id is fetched and then returned if the requesting user has the given permission.
+Otherwise, the requester’s user is returned. This function needs to be behind a
+<code class="docutils literal notranslate"><span class="pre">&#64;require_permission</span></code> decorated view.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user_id</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – The user_id of the requested user.</li>
+<li><strong>permission</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The permission needed to get the other user’s user object.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The chosen user</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="exceptions.html#pulsar.exceptions._403Exception" title="pulsar.exceptions._403Exception"><strong>_403Exception</strong></a> – The requesting user does not have the specified permission</li>
+<li><a class="reference internal" href="exceptions.html#pulsar.exceptions._404Exception" title="pulsar.exceptions._404Exception"><strong>_404Exception</strong></a> – The requested user does not exist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pulsar.utils.permissions.get_all_permissions">
+<code class="descname">get_all_permissions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.permissions.get_all_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate all the permissions listed in module __init__ files by iterating
+through them and adding their PERMISSIONS attr to a list.
+Restrict all uses of this function to users with the “get_all_permissions” permission.
+Returns the list of aggregated permissions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The list of permissions</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pulsar.utils.permissions.require_permission">
+<code class="descname">require_permission</code><span class="sig-paren">(</span><em>permission</em>, <em>masquerade=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.permissions.require_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requires a user to have the specified permission to access the view function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>permission</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The permission required to access the API endpoint</li>
+<li><strong>masquerade</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to disguise the failed view attempt as a 404</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="exceptions.html#pulsar.exceptions._403Exception" title="pulsar.exceptions._403Exception"><strong>_403Exception</strong></a> – If the user does not exist or does not have enough
+permission to view the resource. Locked accounts are
+given a different message. This can be masqueraded as a 404</li>
+<li><a class="reference internal" href="exceptions.html#pulsar.exceptions._403Exception" title="pulsar.exceptions._403Exception"><strong>_403Exception</strong></a> – If an API Key is used and does not have enough permissions to
+access the resource</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pulsar.utils.validation">
+<span id="validation"></span><h2>Validation<a class="headerlink" href="#module-pulsar.utils.validation" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pulsar.utils.validation.get_request_data">
+<code class="descname">get_request_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.validation.get_request_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn the incoming json data into a dictionary and remove the CSRF key if present.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The unserialized dict sent by the requester.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="exceptions.html#pulsar.exceptions.APIException" title="pulsar.exceptions.APIException"><strong>APIException</strong></a> – If the sent data cannot be decoded from JSON.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pulsar.utils.validation.validate_data">
+<code class="descname">validate_data</code><span class="sig-paren">(</span><em>schema</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.utils.validation.validate_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare a request’s form data to a provided Voluptuous schema. If the
+request data is invalid, an APIException is raised.  If an endpoint is
+decorated with this function and you wish to call it directly, it can be
+bypassed with by passing a <code class="docutils literal notranslate"><span class="pre">skip_validation</span></code> kwarg that evaluates to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>schema</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Schema</span></code>) – A voluptuous Schema object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pulsar.utils.memoization">
+<span id="memoization"></span><h2>Memoization<a class="headerlink" href="#module-pulsar.utils.memoization" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="exceptions.html" class="btn btn-neutral float-right" title="Exceptions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="serialization.html" class="btn btn-neutral" title="JSON Serialization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, lights.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

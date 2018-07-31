@@ -1,0 +1,893 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Users &mdash; pulsar 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Permissions" href="permissions.html" />
+    <link rel="prev" title="Objects" href="objects.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> pulsar
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Users</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#api-keys">API Keys</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#invites">Invites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#settings">Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#moderation">Moderation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="permissions.html">Permissions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forums.html">Forums</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rules.html">Rules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pulsar</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">API Documentation</a> &raquo;</li>
+        
+      <li>Users</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="users">
+<h1>Users<a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="colwidths-given docutils">
+<colgroup>
+<col width="20%" />
+<col width="45%" />
+<col width="35%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Resource</th>
+<th class="head">Operation</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>APIKey</td>
+<td><a class="reference external" href="#post--users-api_keys">POST /users/api_keys</a></td>
+<td>Create an API key.</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#delete--users-api_keys">DELETE /users/api_keys</a></td>
+<td>Revoke an API key.</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-api_keys-(hash)">GET /users/api_keys/(hash)</a></td>
+<td>View an API key.</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#delete--users-api_keys-all-user-(int-user_id)">DELETE /users/api_keys/all/user/(int:user_id)</a></td>
+<td>Revoke all API keys.</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="#delete--users-api_keys-all">DELETE /users/api_keys/all</a></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-api_keys-user-(int-user_id)">GET /users/api_keys/user/(int:user_id)</a></td>
+<td>View multiple API keys.</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-api_keys">GET /users/api_keys</a></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Invite</td>
+<td><a class="reference external" href="#delete--users-invite">DELETE /users/invite</a></td>
+<td>Revoke an active invite.</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-invite">GET /users/invite</a></td>
+<td>View an active invite.</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#post--users-invites">POST /users/invites</a></td>
+<td>Send an invite.</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-invites-user-(int-user_id)">GET /users/invites/user/(int:user_id)</a></td>
+<td>View multiple invites.</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-invites">GET /users/invites</a></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Settings</td>
+<td><a class="reference external" href="#put--users-(int-user_id)-settings">PUT /users/(int:user_id)/settings</a></td>
+<td>Change settings.</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#put--users-settings">PUT /users/settings</a></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>User</td>
+<td><a class="reference external" href="#post--users">POST /users</a></td>
+<td>Register a new user.</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td><a class="reference external" href="#get--users-(int-user_id)">GET /users/(int:user_id)</a></td>
+<td>Get user information.</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><a class="reference external" href="#put--users-(int-user_id)-moderate">PUT /users/(int:user_id)/moderate</a></td>
+<td>Moderate user.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="api-keys">
+<h2>API Keys<a class="headerlink" href="#api-keys" title="Permalink to this headline">¶</a></h2>
+<p>pulsar supports token (API key) authentication. API keys are generated on
+request, and must be manually granted permissions (blank for full permissions).
+To authenticate with an API key, send it in the request header as
+<code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">Token</span> <span class="pre">a-long-api-key</span></code>.</p>
+<dl class="post">
+<dt id="post--users-api_keys">
+<code class="descname">POST </code><code class="descname">/users/api_keys</code><a class="headerlink" href="#post--users-api_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an API key for use. Keys are unrecoverable after generation;
+if a key is lost, a new one will need to be generated.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">api_keys</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;lights&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;12345&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;hash&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefghij&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefghijklmnopqrstuvwx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;permissions&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&quot;view_api_keys&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;send_invites&quot;</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Response JSON Array of Objects:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>hash</strong> (<em>string</em>) – The identification id of the API key</li>
+<li><strong>key</strong> (<em>string</em>) – The full API key</li>
+<li><strong>permissions</strong> (<em>list</em>) – A list of permissions allowed to the API key,
+encoded as <code class="docutils literal notranslate"><span class="pre">str</span></code></li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Successfully created API key</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="delete">
+<dt id="delete--users-api_keys">
+<code class="descname">DELETE </code><code class="descname">/users/api_keys</code><a class="headerlink" href="#delete--users-api_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Revokes an API key currently in use by the user. Requires the
+<code class="docutils literal notranslate"><span class="pre">revoke_api_keys</span></code> permission to revoke one’s own API keys, and the
+<code class="docutils literal notranslate"><span class="pre">revoke_api_keys_others</span></code> permission to revoke the keys of other users.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">api_keys</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;hash&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefghij&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;API Key abcdefghij has been revoked.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Request JSON Object:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>hash</strong> (<em>str</em>) – The hash of the API key</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Successfully revoked API keys</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> – API key does not exist or user does not have permission
+to revoke the API key</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get--users-api_keys-(hash)">
+<code class="descname">GET </code><code class="descname">/users/api_keys/</code><span class="sig-paren">(</span><em>hash</em><span class="sig-paren">)</span><a class="headerlink" href="#get--users-api_keys-(hash)" title="Permalink to this definition">¶</a></dt>
+<dd><p>View info of an API key. Requires the <code class="docutils literal notranslate"><span class="pre">view_api_keys</span></code> permission to view
+one’s own API keys, and the <code class="docutils literal notranslate"><span class="pre">view_api_keys_others</span></code> permission to view
+the API keys of another user.</p>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;APIKey&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Response JSON Object:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>response</strong> (<em>dict</em>) – An API key</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Successfully viewed API key.</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> – API key does not exist.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="delete">
+<dt id="delete--users-api_keys-all-user-(int-user_id)">
+<code class="descname">DELETE </code><code class="descname">/users/api_keys/all/user/</code><span class="sig-paren">(</span><em class="property">int: </em><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#delete--users-api_keys-all-user-(int-user_id)" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="delete">
+<dt id="delete--users-api_keys-all">
+<code class="descname">DELETE </code><code class="descname">/users/api_keys/all</code><a class="headerlink" href="#delete--users-api_keys-all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Revokes all API keys currently in use by the user. Requires the
+<code class="docutils literal notranslate"><span class="pre">revoke_api_keys</span></code> permission to revoke one’s own API keys, and the
+<code class="docutils literal notranslate"><span class="pre">revoke_api_keys_others</span></code> permission to revoke the keys of other users.</p>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;All api keys have been revoked.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Successfully revoked API keys</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – User does not have permission to revoke API keys</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get--users-api_keys-user-(int-user_id)">
+<code class="descname">GET </code><code class="descname">/users/api_keys/user/</code><span class="sig-paren">(</span><em class="property">int: </em><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#get--users-api_keys-user-(int-user_id)" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="get">
+<dt id="get--users-api_keys">
+<code class="descname">GET </code><code class="descname">/users/api_keys</code><a class="headerlink" href="#get--users-api_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>View all API keys of a user. Requires the <code class="docutils literal notranslate"><span class="pre">view_api_keys</span></code> permission to view
+one’s own API keys, and the <code class="docutils literal notranslate"><span class="pre">view_api_keys_others</span></code> permission to view
+the API keys of another user.</p>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="p">[</span>
+     <span class="s2">&quot;&lt;APIKey&gt;&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;&lt;APIKey&gt;&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Query Parameters:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>include_dead</strong> (<em>boolean</em>) – Include dead (previously used) API keys</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Response JSON Object:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>response</strong> (<em>list</em>) – A list of API keys</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Successfully viewed API keys</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – User does not have permission to view user’s API keys</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> – User does not exist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="invites">
+<h2>Invites<a class="headerlink" href="#invites" title="Permalink to this headline">¶</a></h2>
+<dl class="delete">
+<dt id="delete--users-invite">
+<code class="descname">DELETE </code><code class="descname">/users/invite</code><a class="headerlink" href="#delete--users-invite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Revokes an active invite code, preventing it from being used. The
+invite is returned to the user’s account. Requires the
+<code class="docutils literal notranslate"><span class="pre">revoke_invites</span></code> permission to revoke one’s own sent invite, and the
+<code class="docutils literal notranslate"><span class="pre">revoke_invites_others</span></code> permission to revoke another user’s invites.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">invite</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;an-invite-code&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Invite&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Revocation successful</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – Unauthorized to revoke invites</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> – Invite does not exist or user cannot view invite</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get--users-invite">
+<code class="descname">GET </code><code class="descname">/users/invite</code><a class="headerlink" href="#get--users-invite" title="Permalink to this definition">¶</a></dt>
+<dd><p>View the details of an invite. Requires the <code class="docutils literal notranslate"><span class="pre">view_invites</span></code> permission.
+Requires the <code class="docutils literal notranslate"><span class="pre">view_invites_others</span></code> permission to view another user’s invites.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">invite</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;an-invite-code&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">200</span> <span class="n">OK</span>
+<span class="n">Vary</span><span class="p">:</span> <span class="n">Accept</span>
+<span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Invite&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – View successful</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> – Invite does not exist or user cannot view invite</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="post">
+<dt id="post--users-invites">
+<code class="descname">POST </code><code class="descname">/users/invites</code><a class="headerlink" href="#post--users-invites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends an invite to the provided email address. Requires the <code class="docutils literal notranslate"><span class="pre">send_invites</span></code>
+permission. If the site is open registration, this endpoint will raise a
+400 Exception.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">invites</span><span class="o">/</span><span class="n">an</span><span class="o">-</span><span class="n">invite</span><span class="o">-</span><span class="n">code</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;bright@puls.ar&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;Invite&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Request JSON Object:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>email</strong> (<em>string</em>) – E-mail to send the invite to</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Successfully sent invite</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> – Unable to send invites or incorrect email</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – Unauthorized to send invites</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get--users-invites-user-(int-user_id)">
+<code class="descname">GET </code><code class="descname">/users/invites/user/</code><span class="sig-paren">(</span><em class="property">int: </em><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#get--users-invites-user-(int-user_id)" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="get">
+<dt id="get--users-invites">
+<code class="descname">GET </code><code class="descname">/users/invites</code><a class="headerlink" href="#get--users-invites" title="Permalink to this definition">¶</a></dt>
+<dd><p>View sent invites. If a user_id is specified, only invites sent by that user
+will be returned, otherwise only your invites are returned. If requester has
+the <code class="docutils literal notranslate"><span class="pre">view_invites_others</span></code> permission, they can view sent invites of another user.</p>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="p">[</span>
+     <span class="s2">&quot;&lt;Invite&gt;&quot;</span><span class="p">,</span>
+     <span class="s2">&quot;&lt;Invite&gt;&quot;</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Query Parameters:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>used</strong> (<em>boolean</em>) – (Optional) Whether or not to only show used invites
+(overrides <code class="docutils literal notranslate"><span class="pre">include_dead</span></code>)</li>
+<li><strong>include_dead</strong> (<em>boolean</em>) – (Optional) Whether or not to include expired invites</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Response JSON Object:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>response</strong> (<em>list</em>) – A list of invites</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – View successful</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – User does not have permission to view user’s invites</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="settings">
+<h2>Settings<a class="headerlink" href="#settings" title="Permalink to this headline">¶</a></h2>
+<dl class="put">
+<dt id="put--users-(int-user_id)-settings">
+<code class="descname">PUT </code><code class="descname">/users/</code><span class="sig-paren">(</span><em class="property">int: </em><em>user_id</em><span class="sig-paren">)</span><code class="descname">/settings</code><a class="headerlink" href="#put--users-(int-user_id)-settings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="put">
+<dt id="put--users-settings">
+<code class="descname">PUT </code><code class="descname">/users/settings</code><a class="headerlink" href="#put--users-settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change a user’s settings. Requires the <code class="docutils literal notranslate"><span class="pre">edit_settings</span></code> permission.
+Requires the <code class="docutils literal notranslate"><span class="pre">moderate_users</span></code> permission to change another user’s
+settings, which can be done by specifying a <code class="docutils literal notranslate"><span class="pre">user_id</span></code>.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">settings</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;existing_password&quot;</span><span class="p">:</span> <span class="s2">&quot;y-&amp;~_Wbt7wjkUJdY&lt;j-K&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;new_password&quot;</span><span class="p">:</span> <span class="s2">&quot;an-ev3n-be77er-pa$$w0rd&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;Settings updated.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">JSON Parameters:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>existing_password</strong> (<em>string</em>) – User’s existing password, not needed
+if setting another user’s password with <code class="docutils literal notranslate"><span class="pre">moderate_user</span></code> permission.</li>
+<li><strong>new_password</strong> (<em>string</em>) – User’s new password. Must be 12+ characters and contain
+at least one letter, one number, and one special character.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – Settings successfully updated</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> – Settings unsuccessfully updated</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – User does not have permission to change user’s settings</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="id1">
+<h2>Users<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<dl class="post">
+<dt id="post--users">
+<code class="descname">POST </code><code class="descname">/users</code><a class="headerlink" href="#post--users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a user account with the provided credentials.
+An invite code may be required for registration.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">register</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;user_one&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;y-&amp;~_Wbt7wjkUJdY&lt;j-K&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;user_one@pul.sar&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;my-invite-code&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;lights&quot;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">JSON Parameters:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> – Desired username: must start with an alphanumeric
+character and can only contain alphanumeric characters,
+underscores, hyphens, and periods.</li>
+<li><strong>password</strong> – Desired password: must be 12+ characters and contain
+at least one letter, one number, and one special character.</li>
+<li><strong>email</strong> – A valid email address to receive the confirmation email,
+as well as account or security related emails in the future.</li>
+<li><strong>code</strong> – (Optional) An invite code from another member. Required
+for registration if the site is invite only, otherwise ignored.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Response JSON Array of Objects:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<em>string</em>) – username the user signed up with</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – registration successful</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> – registration unsuccessful</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="get">
+<dt id="get--users-(int-user_id)">
+<code class="descname">GET </code><code class="descname">/users/</code><span class="sig-paren">(</span><em class="property">int: </em><em>user_id</em><span class="sig-paren">)</span><a class="headerlink" href="#get--users-(int-user_id)" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return general information about a user with the given user ID.  If the
+user is getting information about themselves, the API will return more
+detailed data about the user. If the requester has the
+<code class="docutils literal notranslate"><span class="pre">moderate_users</span></code> permission, the API will return <em>even more</em> data.</p>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">200</span> <span class="n">OK</span>
+<span class="n">Vary</span><span class="p">:</span> <span class="n">Accept</span>
+<span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;User&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – User exists</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5">404 Not Found</a> – User does not exist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="moderation">
+<h2>Moderation<a class="headerlink" href="#moderation" title="Permalink to this headline">¶</a></h2>
+<dl class="put">
+<dt id="put--users-(int-user_id)-moderate">
+<code class="descname">PUT </code><code class="descname">/users/</code><span class="sig-paren">(</span><em class="property">int: </em><em>user_id</em><span class="sig-paren">)</span><code class="descname">/moderate</code><a class="headerlink" href="#put--users-(int-user_id)-moderate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moderate a user - change password for them, alter stats, modify basic permissions,
+etc.</p>
+<p><strong>Example request</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">moderate</span> <span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;an-ev3n-be77er-pa$$w0rd&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Example response</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span><span class="o">/</span><span class="mf">1.1</span> <span class="mi">200</span> <span class="n">OK</span>
+<span class="n">Vary</span><span class="p">:</span> <span class="n">Accept</span>
+<span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
+
+<span class="p">{</span>
+  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;User&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">JSON Parameters:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first simple">
+<li><strong>password</strong> (<em>string</em>) – User’s new password. Must be 12+ characters and contain
+at least one letter, one number, and one special character.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Status Codes:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.1">200 OK</a> – User successfully moderated</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1">400 Bad Request</a> – User unsuccessfully moderated</li>
+<li><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4">403 Forbidden</a> – User does not have permission to moderate some parts of user</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="permissions.html" class="btn btn-neutral float-right" title="Permissions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="objects.html" class="btn btn-neutral" title="Objects" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, lights.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
