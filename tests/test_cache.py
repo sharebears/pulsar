@@ -24,7 +24,7 @@ def test_cache_model(app, authed_client):
     cache.cache_model(user, timeout=60)
     user_data = cache.get('users_1')
     assert user_data['id'] == 1
-    assert user_data['username'] == 'lights'
+    assert user_data['username'] == 'user_one'
     assert user_data['enabled'] is True
     assert user_data['inviter_id'] is None
 
@@ -40,7 +40,7 @@ def test_from_cache(app, authed_client):
     cache.cache_model(user, timeout=60)
     user_new = User.from_cache('users_1')
     assert user_new.id == 1
-    assert user_new.email == 'lights@puls.ar'
+    assert user_new.email == 'user_one@puls.ar'
     assert user_new.enabled is True
     assert user_new.inviter_id is None
 

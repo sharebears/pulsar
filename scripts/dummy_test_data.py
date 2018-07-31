@@ -76,13 +76,13 @@ db.session.execute(
     ('user_v2', '{"list_permissions"}')""")
 db.session.execute(
     f"""INSERT INTO users (username, passhash, email, invites, inviter_id) VALUES
-    ('lights', '{HASHED_PASSWORD_1}', 'lights@puls.ar', 1, NULL),
-    ('paffu', '{HASHED_PASSWORD_2}', 'paffu@puls.ar', 0, 1)
+    ('user_one', '{HASHED_PASSWORD_1}', 'user_one@puls.ar', 1, NULL),
+    ('user_two', '{HASHED_PASSWORD_2}', 'user_two@puls.ar', 0, 1)
     """)
 db.session.execute(
     f"""INSERT INTO invites (inviter_id, email, id, time_sent, expired, invitee_id) VALUES
     (1, 'bright@puls.ar', '{CODE_1}', NOW(), 'f', NULL),
-    (1, 'bitsu@puls.ar', '{CODE_2}', NOW(), 't', 2),
+    (1, 'user_three@puls.ar', '{CODE_2}', NOW(), 't', 2),
     (1, 'bright@quas.ar', '{CODE_3}', '2018-03-25 01:09:35.260808+00', 'f', NULL)
     """)
 db.session.execute(
@@ -123,7 +123,7 @@ db.session.execute(
     """INSERT INTO forums (id, name, description, category_id, position, deleted) VALUES
     (1, 'Pulsar', 'Stuff about pulsar', 1, 1, 'f'),
     (2, 'Bugs', 'Squishy Squash', 1, 2, 'f'),
-    (3, 'Bitsu Fan Club', 'Discuss bitsu!', 1, 2, 't'),
+    (3, 'Bitsu Fan Club', 'Discuss user_three!', 1, 2, 't'),
     (4, '/_\\', 'grey roses die.. the gardens', 2, 10, 'f'),
     (5, 'Yacht Funding', 'First priority', 4, 1, 'f'),
     (6, 'Delet!', 'deleted', 3, 2, 'f')""")

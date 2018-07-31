@@ -18,7 +18,7 @@ def populate_db(app, client):
         """INSERT INTO forums (id, name, description, category_id, position, deleted) VALUES
         (1, 'Pulsar', 'Stuff about pulsar', 1, 1, 'f'),
         (2, 'Bugs', 'Squishy Squash', 1, 2, 'f'),
-        (3, 'Bitsu Fan Club', 'Discuss bitsu!', 1, 2, 't'),
+        (3, 'Bitsu Fan Club', 'Discuss user_three!', 1, 2, 't'),
         (4, '/_\\', 'grey roses die.. the gardens', 2, 10, 'f'),
         (5, 'Yacht Funding', 'First priority', 4, 1, 'f'),
         (6, 'Delet!', 'deleted', 3, 2, 'f')""")

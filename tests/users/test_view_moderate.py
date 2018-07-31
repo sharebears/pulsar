@@ -42,12 +42,12 @@ def test_moderate_user_incomplete(app, authed_client):
         }))
     check_json_response(response, {
         'id': 2,
-        'email': 'paffu@puls.ar',
+        'email': 'user_two@puls.ar',
         'downloaded': 0,
         })
     user = User.from_pk(2)
     assert user.check_password('abcdefGHIfJK12#')
-    assert user.email == 'paffu@puls.ar'
+    assert user.email == 'user_two@puls.ar'
 
 
 def test_moderate_user_not_found(app, authed_client):

@@ -59,7 +59,7 @@ User
 .. parsed-literal::
   {
     "id": 1,
-    "username": "lights",
+    "username": "user_one",
     "enabled": true,
     "user_class": "User",
     "secondary_classes": [
@@ -68,7 +68,7 @@ User
     ],
     "uploaded": 5368709120,
     "downloaded": 0,
-    "email": "lights@puls.ar",
+    "email": "user_one@puls.ar",
     "locked": false,
     "invites": 1,
     "inviter": "<User>",

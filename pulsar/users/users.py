@@ -70,9 +70,9 @@ def register(username: str,
        POST /register HTTP/1.1
 
        {
-         "username": "lights",
+         "username": "user_one",
          "password": "y-&~_Wbt7wjkUJdY<j-K",
-         "email": "lights@pul.sar",
+         "email": "user_one@pul.sar",
          "code": "my-invite-code"
        }
 

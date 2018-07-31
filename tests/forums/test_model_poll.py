@@ -51,16 +51,16 @@ def test_poll_choice_from_poll_nonexistent(app, authed_client):
 
 
 def test_poll_new_choice(app, authed_client):
-    choice = ForumPollChoice.new(poll_id=3, choice='bitsu!')
+    choice = ForumPollChoice.new(poll_id=3, choice='user_three!')
     assert choice.id == 7
     assert choice.poll_id == 3
-    assert choice.choice == 'bitsu!'
+    assert choice.choice == 'user_three!'
     assert {6, 7} == set(c.id for c in ForumPoll.from_pk(3).choices)
 
 
 def test_poll_new_choice_nonexistent_poll(app, authed_client):
     with pytest.raises(APIException):
-        ForumPollChoice.new(poll_id=99, choice='bitsu!')
+        ForumPollChoice.new(poll_id=99, choice='user_three!')
 
 
 def test_poll_answers(app, authed_client):

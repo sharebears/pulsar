@@ -73,7 +73,7 @@ def test_create_api_key(app, client, monkeypatch):
     HEXES = iter(['a' * 8, 'a' * 16])
     monkeypatch.setattr('pulsar.users.models.secrets.token_hex', hex_generator)
     response = client.post('/users/api_keys', data=json.dumps({
-        'username': 'lights', 'password': '12345'}))
+        'username': 'user_one', 'password': '12345'}))
     check_json_response(response, {'key': 'a' * 24})
     with pytest.raises(StopIteration):
         hex_generator(None)

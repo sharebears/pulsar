@@ -139,9 +139,9 @@ def populate_db():
     db.engine.execute("""INSERT INTO secondary_classes (name) VALUES ('FLS')""")
     db.engine.execute(
         f"""INSERT INTO users (username, passhash, email, invites, inviter_id, user_class_id) VALUES
-        ('lights', '{HASHED_PASSWORD_1}', 'lights@puls.ar', 1, NULL, 1),
-        ('paffu', '{HASHED_PASSWORD_2}', 'paffu@puls.ar', 0, 1, 1),
-        ('bitsu', '{HASHED_PASSWORD_3}', 'bitsu@puls.ar', 0, NULL, 1)
+        ('user_one', '{HASHED_PASSWORD_1}', 'user_one@puls.ar', 1, NULL, 1),
+        ('user_two', '{HASHED_PASSWORD_2}', 'user_two@puls.ar', 0, 1, 1),
+        ('user_three', '{HASHED_PASSWORD_3}', 'user_three@puls.ar', 0, NULL, 1)
         """)
     db.engine.execute("""INSERT INTO secondary_class_assoc VALUES (1, 1)""")
 

@@ -11,14 +11,14 @@ def test_get_user_self_and_caches(app, authed_client):
     response = authed_client.get('/users/1')
     check_json_response(response, {
         'id': 1,
-        'username': 'lights',
+        'username': 'user_one',
         'secondary_classes': ['FLS'],
         })
     assert response.status_code == 200
     user_data = cache.get('users_1')
     assert user_data['user_class_id'] == 1
     assert user_data['id'] == 1
-    assert user_data['username'] == 'lights'
+    assert user_data['username'] == 'user_one'
 
 
 def test_get_user(app, authed_client):
@@ -26,7 +26,7 @@ def test_get_user(app, authed_client):
     response = authed_client.get('/users/2')
     check_json_response(response, {
         'id': 2,
-        'username': 'paffu',
+        'username': 'user_two',
         'user_class': 'User',
         })
     assert response.status_code == 200
@@ -41,11 +41,11 @@ def test_get_user_detailed(app, authed_client):
     response = authed_client.get('/users/1')
     check_json_response(response, {
         'id': 1,
-        'username': 'lights',
+        'username': 'user_one',
         'user_class': 'User',
         'secondary_classes': ['FLS'],
         'downloaded': 0,
-        'email': 'lights@puls.ar',
+        'email': 'user_one@puls.ar',
         })
     assert response.status_code == 200
     data = response.get_json()
@@ -115,8 +115,8 @@ def test_register_with_code(app, client, code, status_code, expected):
 @pytest.mark.parametrize(
     'username, status_code, expected', [
         ('bright', 200, {'username': 'bright'}),
-        ('lights', 400, 'Invalid data: another user already has the username '
-                        'lights (key "username")'),
+        ('user_one', 400, 'Invalid data: another user already has the username '
+                        'user_one (key "username")'),
     ])
 def test_registration(app, client, username, status_code, expected):
     app.config['REQUIRE_INVITE_CODE'] = False

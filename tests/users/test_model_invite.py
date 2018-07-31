@@ -51,7 +51,7 @@ def test_invite_creation_collision(app, monkeypatch):
     HEXES = iter([CODE_1, '098765432109876543211234'])
     monkeypatch.setattr('pulsar.users.models.secrets.token_hex', hex_generator)
     with app.app_context():
-        invite = Invite.new(2, 'bitsu@puls.ar', '127.0.0.2')
+        invite = Invite.new(2, 'user_three@puls.ar', '127.0.0.2')
         assert invite.code != CODE_1
         with pytest.raises(StopIteration):
             hex_generator(None)

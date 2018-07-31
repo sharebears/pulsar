@@ -130,7 +130,7 @@ def test_serialize_no_perms(app, client):
     data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
-        'username': 'lights',
+        'username': 'user_one',
         'enabled': True,
         'user_class': 'User',
         'secondary_classes': ['FLS'],
@@ -145,8 +145,8 @@ def test_serialize_self(app, authed_client):
     data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
-        'username': 'lights',
-        'email': 'lights@puls.ar',
+        'username': 'user_one',
+        'email': 'user_one@puls.ar',
         'enabled': True,
         'locked': False,
         'user_class': 'User',
@@ -166,8 +166,8 @@ def test_serialize_detailed(app, authed_client):
     data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
-        'username': 'lights',
-        'email': 'lights@puls.ar',
+        'username': 'user_one',
+        'email': 'user_one@puls.ar',
         'enabled': True,
         'locked': False,
         'user_class': 'User',
@@ -188,8 +188,8 @@ def test_serialize_very_detailed(app, authed_client):
     data = NewJSONEncoder().default(user)
     check_dictionary(data, {
         'id': 1,
-        'username': 'lights',
-        'email': 'lights@puls.ar',
+        'username': 'user_one',
+        'email': 'user_one@puls.ar',
         'enabled': True,
         'locked': False,
         'user_class': 'User',
@@ -212,8 +212,8 @@ def test_serialize_nested(app, authed_client):
     data = NewJSONEncoder()._objects_to_dict(user.serialize(nested=True))
     check_dictionary(data, {
         'id': 1,
-        'username': 'lights',
-        'email': 'lights@puls.ar',
+        'username': 'user_one',
+        'email': 'user_one@puls.ar',
         'enabled': True,
         'locked': False,
         'user_class': 'User',
