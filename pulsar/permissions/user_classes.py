@@ -29,40 +29,16 @@ def view_user_class(user_class_id: int,
 
     .. :quickref: UserClass; View a user class.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /user_classes/1 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-           "id": 1,
-           "name": "user",
-           "permissions": [
-             "change_password",
-             "list_permissions"
-           ]
-         }
+         "response": "<UserClass> or <SecondaryUserClass>"
        }
 
     :query boolean secondary: Whether or not to view a secondary or primary user class
-
-    :>jsonarr int id: The ID of the user class
-    :>jsonarr string name: The name of the user class
-    :>jsonarr list permissions: A list of permissions, encoded as strings,
-        assigned to that user class
 
     :statuscode 200: View successful
     """
@@ -80,54 +56,20 @@ def view_multiple_user_classes(secondary: bool = False) -> flask.Response:
 
     .. :quickref: UserClass; View multiple user classes.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /user_classes HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
     .. parsed-literal::
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
          "response": [
-           {
-             "id": 1,
-             "name": "User",
-             "permissions": [
-               "change_password",
-               "list_permissions"
-             ]
-           },
-           {
-             "id": 2,
-             "name": "Power User",
-             "permissions": [
-               "change_password",
-               "list_permissions",
-               "send_invites",
-               "revoke_invites"
-             ]
-           }
+           "<UserClass or SecondaryUserClass>",
+           "<UserClass or SecondaryUserClass>"
          ]
        }
 
     :query boolean secondary: Whether or not to view secondary or primary user classes
 
     :>json list response: A list of user classes
-
-    :>jsonarr int id: The ID of the user class
-    :>jsonarr string name: The name of the user class
-    :>jsonarr list permissions: A list of permissions, encoded as strings,
-        assigned to that user class
 
     :statuscode 200: View successful
     :statuscode 404: User class does not exist
@@ -161,8 +103,6 @@ def create_user_class(name: str,
     .. parsed-literal::
 
        POST /user_classes HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
 
        {
          "name": "user_v2",
@@ -182,25 +122,13 @@ def create_user_class(name: str,
 
        {
          "status": "success",
-         "response": {
-           "id": 2,
-           "name": "user_v2",
-           "permissions": [
-             "send_invites",
-             "change_password"
-           ]
-         }
+         "response": "<UserClass> or <SecondaryUserClass>"
        }
 
     :json string name: Name of the user class
     :json list permissions: A list of permissions encoded as strings
     :json boolean secondary: Whether or not to create a secondary or primary class
         (Default False)
-
-    :>jsonarr int id: The ID of the user class
-    :>jsonarr string name: The name of the user class
-    :>jsonarr list permissions: A list of permissions, encoded as strings,
-        assigned to that user class
 
     :statuscode 200: User class successfully created
     :statuscode 400: User class name taken or invalid permissions
@@ -224,8 +152,6 @@ def delete_user_class(user_class_id: int) -> flask.Response:
     .. parsed-literal::
 
        PUT /user_classes HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
 
        {
          "name": "user_v2"
@@ -235,20 +161,14 @@ def delete_user_class(user_class_id: int) -> flask.Response:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": "User class user_v2 has been deleted."
+         "response": "UserClass user_v2 has been deleted."
        }
 
     :query boolean secondary: Whether or not to delete a secondary or primary user class
 
     :json string name: Name of the user class
-
-    :>json string response: Success or failure message
 
     :statuscode 200: Userclass successfully deleted
     :statuscode 400: Unable to delete user class
@@ -293,8 +213,6 @@ def modify_user_class(user_class_id: int,
     .. parsed-literal::
 
        PUT /user_classes/user HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
 
        {
          "permissions": {
@@ -308,31 +226,15 @@ def modify_user_class(user_class_id: int,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-           "id": 1,
-           "name": "User",
-           "permissions": [
-             "change_password",
-             "list_permissions"
-           ]
-         }
+         "response": "<UserClass> or <SecondaryUserClass>"
        }
 
     :>json dict permissions: A dictionary of permissions to add/remove, with
         the permission name as the key and a boolean (True = add, False = remove)
         as the value.
     :>json boolean secondary: Whether or not to modify a secondary or primary user class
-
-    :>jsonarr int id: The ID of the user class
-    :>jsonarr string name: The name of the user class
-    :>jsonarr list permissions: A list of permissions, encoded as strings,
-        assigned to that user class
 
     :statuscode 200: Userclass successfully modified
     :statuscode 400: Permissions cannot be applied

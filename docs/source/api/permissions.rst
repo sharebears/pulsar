@@ -6,8 +6,8 @@ Permissions
    :blueprints: permissions
    :order: path
 
-Users
------
+Permissions
+-----------
 
 .. autoflask:: pulsar:create_app('config.py')
    :undoc-static:

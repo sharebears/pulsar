@@ -1,5 +1,6 @@
 # Current Path
 
+- [ ] Handle forum permissions in class mixin - why are they separated?
 - [ ] Users system extras
 - [ ] News Posts
 - [ ] Index

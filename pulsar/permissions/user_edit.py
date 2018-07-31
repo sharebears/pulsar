@@ -16,21 +16,9 @@ def view_permissions(user_id: int = None,
 
     .. :quickref: Permission; View available permissions.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /permissions HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
     .. parsed-literal::
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
 
        {
          "status": "success",
