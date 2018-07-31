@@ -15,10 +15,13 @@ used as well. For boolean query arguments, ``1`` and ``true`` are accepted as Tr
 ``0`` and ``false`` are accepted as False. Booleans in query arguments are interpreted
 case insensitive.
 
+In many example API responses, "<Class>" is used in place of a full JSON output. Example
+JSON output for those classes can be found in the top-level JSON Object Documentation
+section.
+
 .. toctree::
    :maxdepth: 2
 
-   objects
    users
    permissions
    forums

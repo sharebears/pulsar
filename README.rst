@@ -58,6 +58,9 @@ Development
 pulsar runs on the Flask micro-framework. It has great documentation, which can answer
 most or all of your questions about the underlying framework objects used by pulsar.
 
+Code documentation, including the style guide, is available here:
+https://ligh7s.github.io/pulsar/build/html/code/index.html.
+
 A script to generate dummy data is located in `scripts/dummy_test_data.py`. It will
 drop all tables and recreate them per the current model schema, using the
 `instance/config.py` configuration. If there are more than 10 users in the database,

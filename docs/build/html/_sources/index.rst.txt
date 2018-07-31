@@ -6,4 +6,5 @@ A BitTorrent indexer API written in python using the Flask micro-framework.
    :maxdepth: 2
 
    api/index
+   objects/index
    code/index
