@@ -8,5 +8,3 @@ config.py
 !.travis.yml
 
 docs/build
-docs/source/_static
-docs/source/_templates

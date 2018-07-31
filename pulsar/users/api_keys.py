@@ -23,43 +23,16 @@ def view_api_key(hash: str) -> flask.Response:
 
     .. :quickref: APIKey; View an API key.
 
-    **Example request**:
-
-    .. sourcecode:: http
-
-       GET /api_keys/abcdefghij HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
-         "response": {
-           "revoked": false,
-           "hash": "abcdefghij",
-           "ip": "127.0.0.1",
-           "last_used": "1970-01-01T00:00:00.000001+00:00",
-           "user-agent": "curl/7.59.0",
-           "permissions": [
-             "view_api_keys",
-             "send_invites"
-           ]
-         }
+         "response": "<APIKey>"
        }
 
-    :>jsonarr boolean revoked: Whether or not the API key is revoked
-    :>jsonarr string hash: The identification id of the API key
-    :>jsonarr string ip: The last IP to access the API key
-    :>jsonarr string user-agent: The last User Agent to access the API key
-    :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``
+    :>json dict response: An API key
 
     :statuscode 200: Successfully viewed API key.
     :statuscode 404: API key does not exist.
@@ -86,49 +59,21 @@ def view_all_api_keys(include_dead: bool,
 
     .. :quickref: APIKey; View multiple API keys.
 
-    **Example request**:
-
-    .. sourcecode:: http
-
-       GET /api_keys HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
          "response": [
-           {
-             "revoked": false,
-             "hash": "abcdefghij",
-             "ip": "127.0.0.1",
-             "last_used": "1970-01-01T00:00:00.000001+00:00",
-             "user-agent": "curl/7.59.0",
-             "permissions": [
-               "view_api_keys",
-               "send_invites"
-             ]
-           }
+            "<APIKey>",
+            "<APIKey>"
          ]
        }
 
     :query boolean include_dead: Include dead (previously used) API keys
 
     :>json list response: A list of API keys
-
-    :>jsonarr boolean revoked: Whether or not the API key is revoked
-    :>jsonarr string hash: The identification id of the API key
-    :>jsonarr string ip: The last IP to access the API key
-    :>jsonarr string user-agent: The last User Agent to access the API key
-    :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``
 
     :statuscode 200: Successfully viewed API keys
     :statuscode 403: User does not have permission to view user's API keys
@@ -159,12 +104,9 @@ def create_api_key(username: str = None,
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        POST /api_keys HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "username": "lights",
@@ -173,11 +115,7 @@ def create_api_key(username: str = None,
 
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
@@ -234,12 +172,9 @@ def revoke_api_key(hash: int) -> flask.Response:
 
     **Example request**:
 
-    .. sourcecode:: http
+    .. parsed-literal::
 
        DELETE /api_keys HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "hash": "abcdefghij"
@@ -247,11 +182,7 @@ def revoke_api_key(hash: int) -> flask.Response:
 
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
@@ -259,11 +190,6 @@ def revoke_api_key(hash: int) -> flask.Response:
        }
 
     :<json str hash: The hash of the API key
-
-    :>jsonarr string hash: The hash of the API key
-    :>jsonarr string key: The full API key
-    :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``
 
     :statuscode 200: Successfully revoked API keys
     :statuscode 404: API key does not exist or user does not have permission
@@ -289,31 +215,14 @@ def revoke_all_api_keys(user_id: int = None) -> flask.Response:
 
     .. :quickref: APIKey; Revoke all API keys.
 
-    **Example request**:
-
-    .. sourcecode:: http
-
-       DELETE /api_keys/all HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
-    .. sourcecode:: http
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
+    .. parsed-literal::
 
        {
          "status": "success",
          "response": "All api keys have been revoked."
        }
-
-    :>jsonarr string hash: The identification id of the API key
-    :>jsonarr string key: The full API key
-    :>jsonarr list permissions: A list of permissions allowed to the API key,
-        encoded as ``str``
 
     :statuscode 200: Successfully revoked API keys
     :statuscode 403: User does not have permission to revoke API keys
@@ -323,4 +232,4 @@ def revoke_all_api_keys(user_id: int = None) -> flask.Response:
         pks=APIKey.hashes_from_user(user.id),
         update={'revoked': True})
     db.session.commit()
-    return flask.jsonify('All api keys have been revoked.')
+    return flask.jsonify('Alm api keys have been revoked.')

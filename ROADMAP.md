@@ -1,15 +1,8 @@
 # Current Path
 
-- [-] Version 0.0.2
 - [ ] Users system extras
 - [ ] News Posts
 - [ ] Index
-
-# Version 0.0.2 Milestone
-- [x] Remove session-based authentication
-- [x] Split up schemas and models and create nested kwarg option serialization
-- [x] Null values instead of omission of keys (empty lists = [] and not null)
-- [ ] Documentation Revisions
 
 
 # TODO
@@ -19,7 +12,6 @@
 - [x] Response wrapper
 - [x] Model caching
 - [ ] Docker/Vagrant environment
-     
 
 ## Users
 - [x] Administration Functions

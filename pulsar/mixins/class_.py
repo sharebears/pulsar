@@ -24,7 +24,7 @@ class ClassMixin(SinglePKMixin):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(24), nullable=False)
     permissions: List[str] = db.Column(ARRAY(db.String(36)), nullable=False, server_default='{}')
-    forum_permissions: List[str] = db.Column(  # noqa TODO: Why E701?
+    forum_permissions: List[str] = db.Column(  # noqa: E701
         ARRAY(db.String(36)), nullable=False, server_default='{}')
 
     @declared_attr

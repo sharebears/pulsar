@@ -18,6 +18,7 @@ case insensitive.
 .. toctree::
    :maxdepth: 2
 
+   objects
    users
    permissions
    forums
