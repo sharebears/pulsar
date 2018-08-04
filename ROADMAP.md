@@ -1,5 +1,6 @@
 # Current Path
 
+* [ ] Fix /users/api_keys/user/<id> routes
 - [ ] Handle forum permissions in class mixin - why are they separated?
 - [ ] Users system extras
 - [ ] News Posts

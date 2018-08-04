@@ -38,17 +38,13 @@ def validate_data(schema: Schema) -> Callable:
 
 def get_request_data() -> Dict[Any, Any]:
     """
-    Turn the incoming json data into a dictionary and remove the CSRF key if present.
+    Turn the incoming json data into a dictionary.
 
     :return:              The unserialized dict sent by the requester.
     :raises APIException: If the sent data cannot be decoded from JSON.
     """
     try:
         raw_data = flask.request.get_data()
-        data = json.loads(raw_data) if raw_data else {}
+        return json.loads(raw_data) if raw_data else {}
     except ValueError:
-        raise APIException(
-            'Unable to decode data. Is it valid JSON?')
-    if 'csrf_token' in data:
-        del data['csrf_token']
-    return data
+        raise APIException('Unable to decode data. Is it valid JSON?')

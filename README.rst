@@ -9,7 +9,7 @@ pulsar
 A BitTorrent Indexer written in python using the Flask micro-framework for the backend,
 meant to succeed Gazelle.
 
-Documentation available here: https://ligh7s.github.io/pulsar/index.html.
+Documentation available here: https://sharebears.github.io/pulsar/index.html.
 
 Config
 ------
@@ -59,26 +59,26 @@ pulsar runs on the Flask micro-framework. It has great documentation, which can 
 most or all of your questions about the underlying framework objects used by pulsar.
 
 Code documentation, including the style guide, is available here:
-https://ligh7s.github.io/pulsar/build/html/code/index.html.
+https://sharebears.github.io/pulsar/build/html/code/index.html.
 
-A script to generate dummy data is located in `scripts/dummy_test_data.py`. It will
+A script to generate dummy data is located in ``scripts/dummy_test_data.py``. It will
 drop all tables and recreate them per the current model schema, using the
-`instance/config.py` configuration. If there are more than 10 users in the database,
+``instance/config.py`` configuration. If there are more than 10 users in the database,
 the script will error out, as a protection against accidental usage in production.  
 
 Several development tools are used to maintain code quality.
 
-- Our code linter is `flake8`.
-- We also use `isort` to lint and auto-sort import statements.
-- `pytest` is used for testing.
-- `mypy` is used for static type analysis.
+- Our code linter is ``flake8``.
+- We also use ``isort`` to lint and auto-sort import statements.
+- ``pytest`` is used for testing.
+- ``mypy`` is used for static type analysis.
 
 Development commands and database migrations can be accessed through flask's
 click cli interface.
 
 - ``flask run`` runs the development server.In order to run in debug mode,
-  run `FLASK_DEBUG=True flask run`.
-- ``flask db`` runs the `flask-migrate` database management script.
+  run ``FLASK_DEBUG=True flask run`.
+- ``flask db`` runs the ``flask-migrate`` database management script.
 
 There are few things important things to keep in mind when developing this project
 
