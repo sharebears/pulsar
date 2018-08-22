@@ -214,6 +214,7 @@ def test_add_thread_note(app, authed_client):
         'id': 4,
         'note': 'ANotherNote',
         })
+    assert response.get_json()['response']['user']['id'] == 1
 
 
 def test_add_thread_note_nonexistent_thread(app, authed_client):

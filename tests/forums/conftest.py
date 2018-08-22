@@ -58,10 +58,10 @@ def populate_db(app, client):
     db.engine.execute("""INSERT INTO forums_threads_subscriptions (user_id, thread_id) VALUES
                       (1, 1), (1, 2), (1, 3), (1, 4), (2, 4)""")
     db.engine.execute(
-        """INSERT INTO forums_threads_notes (id, thread_id, note, time) VALUES
-        (1, 1, 'NoteA', NOW() - INTERVAL '1 DAY'),
-        (2, 1, 'NoteB', NOW() - INTERVAL '23 HOURS'),
-        (3, 3, 'NoteC', NOW() - INTERVAL '1 HOUR')""")
+        """INSERT INTO forums_threads_notes (id, thread_id, user_id, note, time) VALUES
+        (1, 1, 1, 'NoteA', NOW() - INTERVAL '1 DAY'),
+        (2, 1, 1, 'NoteB', NOW() - INTERVAL '23 HOURS'),
+        (3, 3, 2, 'NoteC', NOW() - INTERVAL '1 HOUR')""")
     db.engine.execute("ALTER SEQUENCE forums_threads_notes_id_seq RESTART WITH 4")
     db.engine.execute(
         """INSERT INTO forums_polls (id, thread_id, closed, featured, question) VALUES

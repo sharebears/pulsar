@@ -573,6 +573,8 @@ class ForumThreadNote(db.Model, SinglePKMixin):
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(
         db.Integer, db.ForeignKey('forums_threads.id'), nullable=False, index=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'), nullable=False)
     note = db.Column(db.Text, nullable=False)
     time = db.Column(db.DateTime(timezone=True), nullable=False, server_default=func.now())
 
@@ -587,11 +589,18 @@ class ForumThreadNote(db.Model, SinglePKMixin):
     def new(cls,
             *,
             thread_id: int,
+            user_id: int,
             note: str) -> 'ForumThreadNote':
         ForumThread.is_valid(thread_id, error=True)
+        User.is_valid(user_id, error=True)
         return super()._new(
             thread_id=thread_id,
+            user_id=user_id,
             note=note)
+
+    @cached_property
+    def user(self):
+        return User.from_pk(self.user_id)
 
 
 class ForumPoll(db.Model, SinglePKMixin):

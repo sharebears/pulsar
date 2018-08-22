@@ -279,4 +279,5 @@ def add_thread_note(id: int,
     """
     return flask.jsonify(ForumThreadNote.new(
         thread_id=id,
+        user_id=flask.g.user.id,
         note=note))

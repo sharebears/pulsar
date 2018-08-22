@@ -14,7 +14,7 @@ class ForumSerializer(Serializer):
     id = Attribute()
     name = Attribute()
     description = Attribute()
-    category = Attribute(nested=('id',))
+    category = Attribute(nested=('id', 'name'))
     position = Attribute()
     thread_count = Attribute()
     threads = Attribute(nested=False)
@@ -63,6 +63,7 @@ class ForumPostEditHistorySerializer(Serializer):
 class ForumThreadNoteSerializer(Serializer):
     id = Attribute(permission='modify_forum_threads')
     note = Attribute(permission='modify_forum_threads')
+    user = Attribute(nested=('id', 'username'), permission='modify_forum_threads')
     time = Attribute(permission='modify_forum_threads')
 
 

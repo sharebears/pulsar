@@ -55,7 +55,7 @@ migrations by hand.
 
 Development
 -----------
-pulsar runs on the Flask micro-framework. It has great documentation, which can answer
+pulsar runs on the Flask micro-framework. Flask has great documentation, which can answer
 most or all of your questions about the underlying framework objects used by pulsar.
 
 Code documentation, including the style guide, is available here:

@@ -81,6 +81,7 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api/index.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../objects/index.html">JSON Object Documentation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Code Documentation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="style.html">Style Guide</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hooks.html">Request Hooks</a></li>
@@ -169,7 +170,7 @@
 <dl class="class">
 <dt id="pulsar.users.models.APIKey">
 <em class="property">class </em><code class="descname">APIKey</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.users.models.APIKey" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 <dl class="method">
 <dt id="pulsar.users.models.APIKey.check_key">
 <code class="descname">check_key</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.users.models.APIKey.check_key" title="Permalink to this definition">¶</a></dt>
@@ -264,7 +265,7 @@ salted for storage in the database.</p>
 <dl class="class">
 <dt id="pulsar.users.models.Invite">
 <em class="property">class </em><code class="descname">Invite</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.users.models.Invite" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 <dl class="method">
 <dt id="pulsar.users.models.Invite.belongs_to_user">
 <code class="descname">belongs_to_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.users.models.Invite.belongs_to_user" title="Permalink to this definition">¶</a></dt>
@@ -331,7 +332,7 @@ salted for storage in the database.</p>
 <dl class="class">
 <dt id="pulsar.users.models.User">
 <em class="property">class </em><code class="descname">User</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.users.models.User" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 <dl class="method">
 <dt id="pulsar.users.models.User.belongs_to_user">
 <code class="descname">belongs_to_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.users.models.User.belongs_to_user" title="Permalink to this definition">¶</a></dt>
@@ -383,25 +384,25 @@ lowercases and strips leading and trailing spaces from the email.</p>
 <dl class="class">
 <dt id="pulsar.permissions.models.ForumPermission">
 <em class="property">class </em><code class="descname">ForumPermission</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.permissions.models.ForumPermission" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.permission.PermissionMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.permission.PermissionMixin" title="pulsar.mixins.permission.PermissionMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.permission.PermissionMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.permissions.models.SecondaryClass">
 <em class="property">class </em><code class="descname">SecondaryClass</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.permissions.models.SecondaryClass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.class_.ClassMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.class_.ClassMixin" title="pulsar.mixins.class_.ClassMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.class_.ClassMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.permissions.models.UserClass">
 <em class="property">class </em><code class="descname">UserClass</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.permissions.models.UserClass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.class_.ClassMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.class_.ClassMixin" title="pulsar.mixins.class_.ClassMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.class_.ClassMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.permissions.models.UserPermission">
 <em class="property">class </em><code class="descname">UserPermission</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.permissions.models.UserPermission" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.permission.PermissionMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.permission.PermissionMixin" title="pulsar.mixins.permission.PermissionMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.permission.PermissionMixin</span></code></a></p>
 </dd></dl>
 
 </div>
@@ -410,7 +411,7 @@ lowercases and strips leading and trailing spaces from the email.</p>
 <dl class="class">
 <dt id="pulsar.forums.models.Forum">
 <em class="property">class </em><code class="descname">Forum</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.Forum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 <dl class="method">
 <dt id="pulsar.forums.models.Forum.can_access">
 <code class="descname">can_access</code><span class="sig-paren">(</span><em>permission=None</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.Forum.can_access" title="Permalink to this definition">¶</a></dt>
@@ -430,7 +431,7 @@ lowercases and strips leading and trailing spaces from the email.</p>
 <dl class="class">
 <dt id="pulsar.forums.models.ForumCategory">
 <em class="property">class </em><code class="descname">ForumCategory</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumCategory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
@@ -442,7 +443,7 @@ lowercases and strips leading and trailing spaces from the email.</p>
 <dl class="class">
 <dt id="pulsar.forums.models.ForumPoll">
 <em class="property">class </em><code class="descname">ForumPoll</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumPoll" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 <dl class="method">
 <dt id="pulsar.forums.models.ForumPoll.can_access">
 <code class="descname">can_access</code><span class="sig-paren">(</span><em>permission=None</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumPoll.can_access" title="Permalink to this definition">¶</a></dt>
@@ -469,37 +470,37 @@ of this object. Ownership is determined with the <code class="docutils literal n
 <dl class="class">
 <dt id="pulsar.forums.models.ForumPollAnswer">
 <em class="property">class </em><code class="descname">ForumPollAnswer</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumPollAnswer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.multi_pk.MultiPKMixin" title="pulsar.mixins.multi_pk.MultiPKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.forums.models.ForumPollChoice">
 <em class="property">class </em><code class="descname">ForumPollChoice</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumPollChoice" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.forums.models.ForumPost">
 <em class="property">class </em><code class="descname">ForumPost</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumPost" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.forums.models.ForumPostEditHistory">
 <em class="property">class </em><code class="descname">ForumPostEditHistory</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumPostEditHistory" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.forums.models.ForumSubscription">
 <em class="property">class </em><code class="descname">ForumSubscription</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumSubscription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.multi_pk.MultiPKMixin" title="pulsar.mixins.multi_pk.MultiPKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.forums.models.ForumThread">
 <em class="property">class </em><code class="descname">ForumThread</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumThread" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 <dl class="method">
 <dt id="pulsar.forums.models.ForumThread.can_access">
 <code class="descname">can_access</code><span class="sig-paren">(</span><em>permission=None</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumThread.can_access" title="Permalink to this definition">¶</a></dt>
@@ -519,13 +520,13 @@ of this object. Ownership is determined with the <code class="docutils literal n
 <dl class="class">
 <dt id="pulsar.forums.models.ForumThreadNote">
 <em class="property">class </em><code class="descname">ForumThreadNote</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumThreadNote" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.single_pk.SinglePKMixin" title="pulsar.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.single_pk.SinglePKMixin</span></code></a></p>
 </dd></dl>
 
 <dl class="class">
 <dt id="pulsar.forums.models.ForumThreadSubscription">
 <em class="property">class </em><code class="descname">ForumThreadSubscription</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumThreadSubscription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code>, <a class="reference internal" href="mixins.html#pulsar.mixins.multi_pk.MultiPKMixin" title="pulsar.mixins.multi_pk.MultiPKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pulsar.mixins.multi_pk.MultiPKMixin</span></code></a></p>
 <dl class="classmethod">
 <dt id="pulsar.forums.models.ForumThreadSubscription.clear_cache_keys">
 <em class="property">classmethod </em><code class="descname">clear_cache_keys</code><span class="sig-paren">(</span><em>user_ids=None</em>, <em>thread_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pulsar.forums.models.ForumThreadSubscription.clear_cache_keys" title="Permalink to this definition">¶</a></dt>
