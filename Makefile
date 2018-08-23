@@ -6,6 +6,6 @@ _tests:
 	mypy --no-strict-optional pulsar/ # --html-report .mypy-html pulsar/
 	pytest --cov-report term-missing --cov-branch --cov=pulsar tests/
 _docs:
-	sphinx-build -M html docs/source docs/build
+	sphinx-build -M html docs ../pulsar-docs
 tests: _tests
 docs: _docs
