@@ -15,14 +15,14 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'pulsar'
-copyright = '2018, lights'
-author = 'lights'
+copyright = '2018, sharebears'
+author = 'sharebears'
 
 # The short X.Y version
 version = ''
