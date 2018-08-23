@@ -9,7 +9,7 @@ pulsar
 A BitTorrent Indexer written in python using the Flask micro-framework for the backend,
 meant to succeed Gazelle.
 
-Documentation available here: https://sharebears.github.io/pulsar/index.html.
+Documentation available here: https://sharebears.github.io/pulsar-docs/index.html.
 
 Config
 ------
@@ -59,7 +59,7 @@ pulsar runs on the Flask micro-framework. Flask has great documentation, which c
 most or all of your questions about the underlying framework objects used by pulsar.
 
 Code documentation, including the style guide, is available here:
-https://sharebears.github.io/pulsar/build/html/code/index.html.
+https://sharebears.github.io/pulsar-docs/html/code/index.html.
 
 A script to generate dummy data is located in ``scripts/dummy_test_data.py``. It will
 drop all tables and recreate them per the current model schema, using the
