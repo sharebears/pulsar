@@ -21,27 +21,15 @@ def view_poll(id: int) -> flask.Response:
 
     .. :quickref: ForumPoll; View a forum poll.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /forums/polls/1 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
          "response": [
-           {
-           }
+           "<ForumPoll>",
+           "<ForumPoll>"
          ]
        }
 
@@ -72,26 +60,26 @@ def modify_poll(id: int,
                 closed: bool = None,
                 featured: bool = None) -> flask.Response:
     """
-    This is the endpoint for forum thread editing. The ``modify_forum_threads``
-    permission is required to access this endpoint. The topic, forum_id,
-    locked, and sticky attributes can be changed here.
+    This is the endpoint for forum poll editing. The ``modify_forum_polls``
+    permission is required to access this endpoint. The choices can be edited
+    here, as well as the closed and featured statuses.
 
-    .. :quickref: ForumThread; Edit a forum thread.
+    .. :quickref: ForumPoll; Edit a forum poll.
 
     **Example request**:
 
     .. parsed-literal::
 
-       PUT /forums/threads/6 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
+       PUT /forums/polls/6 HTTP/1.1
 
        {
-         "topic": "This does not contain typos.",
-         "forum_id": 2,
-         "locked": true,
-         "sticky": false
+         "id": 1,
+         "choices": {
+           "add": ["Yes", "No"],
+           "delete": ["Placeholder1", "Placeholder2"]
+         },
+         "closed": true,
+         "featured": false
        }
 
 
@@ -99,21 +87,16 @@ def modify_poll(id: int,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<ForumPoll>"
        }
 
-    :>json dict response: The edited forum thread
+    :>json dict response: The edited forum poll
 
     :statuscode 200: Editing successful
     :statuscode 400: Editing unsuccessful
-    :statuscode 404: Forum thread does not exist
+    :statuscode 404: Forum poll does not exist
     """
     poll = ForumPoll.from_pk(id, _404=True)
     if featured is not None:
@@ -181,31 +164,18 @@ def vote_on_poll(choice_id: int) -> flask.Response:
     This is the endpoint for forum poll voting. The ``forums_polls_vote``
     permission is required to access this endpoint.
 
-    .. :quickref: ForumPoll; Vote on a forum poll.
-
-    **Example request**:
-
-    .. parsed-literal::
-
-       POST /forums/polls/choices/6 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
+    .. :quickref: ForumPollChoice; Vote on a forum poll choice.
 
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "You have successfully voted for choice 1032."
        }
 
-    :>json dict response: The poll choice
+    :>json str response: The result message
 
     :statuscode 200: Voting successful
     :statuscode 400: Voting unsuccessful

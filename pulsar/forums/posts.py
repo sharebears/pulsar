@@ -23,32 +23,16 @@ def view_post(id: int) -> flask.Response:
 
     .. :quickref: ForumPost; View a forum post.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /forums/posts/1 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": [
-           {
-           }
-         ]
+         "response": "<ForumPost>"
        }
 
-    :>json list response: A forum post
+    :>json dict response: A forum post
 
     :statuscode 200: View successful
     :statuscode 403: User does not have permission to view post
@@ -82,9 +66,6 @@ def create_post(contents: str,
     .. parsed-literal::
 
        POST /forums/posts HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "topic": "How do I get easy ration?",
@@ -95,17 +76,12 @@ def create_post(contents: str,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<ForumPost>"
        }
 
-    :>json list response: The newly created forum post
+    :>json dict response: The newly created forum post
 
     :statuscode 200: Creation successful
     :statuscode 400: Creation unsuccessful
@@ -157,9 +133,6 @@ def modify_post(id: int,
     .. parsed-literal::
 
        PUT /forums/posts/6 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "sticky": true
@@ -170,14 +143,9 @@ def modify_post(id: int,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<ForumPost>"
        }
 
     :>json dict response: The modified forum post
@@ -219,30 +187,16 @@ def delete_post(id: int) -> flask.Response:
 
     .. :quickref: ForumPost; Delete a forum post.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       DELETE /forums/posts/2 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "ForumPost 1 has been deleted."
        }
 
-    :>json list response: The newly deleted forum post
+    :>json str response: The deletion message
 
     :statuscode 200: Deletion successful
     :statuscode 400: Deletion unsuccessful

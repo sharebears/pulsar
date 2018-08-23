@@ -27,28 +27,15 @@ def view_categories(include_dead: bool = False) -> flask.Response:
 
     .. :quickref: ForumCategory; View forum categories.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /forums/categories HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
          "response": [
-           {
-           }
+           "<ForumCategory>",
+           "<ForumCategory>"
          ]
        }
 
@@ -86,9 +73,6 @@ def add_category(name: str,
     .. parsed-literal::
 
        POST /forums/categories HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "name": "Support",
@@ -100,17 +84,12 @@ def add_category(name: str,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<ForumCategory>"
        }
 
-    :>json list response: The newly created forum category
+    :>json dict response: The newly created forum category
 
     :statuscode 200: Creation successful
     :statuscode 400: Creation unsuccessful
@@ -148,9 +127,6 @@ def edit_category(id: int,
     .. parsed-literal::
 
        PUT /forums/categories/6 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "name": "Support",
@@ -163,17 +139,12 @@ def edit_category(id: int,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<ForumCategory>"
        }
 
-    :>json list response: The edited forum category
+    :>json dict response: The edited forum category
 
     :statuscode 200: Editing successful
     :statuscode 400: Editing unsuccessful
@@ -200,30 +171,16 @@ def delete_category(id: int) -> flask.Response:
 
     .. :quickref: ForumCategory; Delete a forum category.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       DELETE /forums/categories/2 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "ForumCategory 1 (Site) has been deleted."
        }
 
-    :>json list response: The newly deleted forum category
+    :>json str response: The deleted forum category message
 
     :statuscode 200: Deletion successful
     :statuscode 400: Deletion unsuccessful

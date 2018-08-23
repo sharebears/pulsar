@@ -18,21 +18,9 @@ def alter_thread_subscription(thread_id: int) -> flask.Response:
 
     .. :quickref: ForumThread; Subscribe to a forum thread.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       PUT /forums/threads/2/subscribe HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
     .. parsed-literal::
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
 
        {
          "status": "success",
@@ -74,21 +62,9 @@ def alter_forum_subscription(forum_id: int) -> flask.Response:
 
     .. :quickref: Forum; Subscribe to a forum.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       PUT /forums/2/subscribe HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-
     **Example response**:
 
     .. parsed-literal::
-
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
 
        {
          "status": "success",
@@ -123,6 +99,34 @@ def alter_forum_subscription(forum_id: int) -> flask.Response:
 @bp.route('/forums/subscriptions', methods=['GET'])
 @require_permission('view_forums')
 def view_forum_subscriptions() -> flask.Response:
+    """
+    This is the endpoint to view forum and thread subscriptions. The ``view_forums``
+    permission is required to access this endpoint.
+
+    .. :quickref: ForumSubscription; View forum subscriptions.
+
+    **Example response**:
+
+    .. parsed-literal::
+
+       {
+         "status": "success",
+         "response": {
+            "forum_subscriptions": [
+              "<Forum>",
+              "<Forum>"
+            ],
+            "thread_subscriptions": [
+              "<ForumThread>",
+              "<ForumThread>"
+            ]
+          }
+        }
+
+    :>json dict response: The forum and thread subscriptions
+
+    :statuscode 200: The forum subscriptions
+    """
     return flask.jsonify({  # type: ignore
         'forum_subscriptions': Forum.from_subscribed_user(flask.g.user.id),
         'thread_subscriptions': ForumThread.from_subscribed_user(flask.g.user.id),

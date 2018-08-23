@@ -33,28 +33,15 @@ def view_forum(id: int,
 
     .. :quickref: Forum; View a forum.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       GET /forums/1 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
          "response": [
-           {
-           }
+           "<Forum>",
+           "<Forum>"
          ]
        }
 
@@ -101,9 +88,6 @@ def create_forum(name: str,
     .. parsed-literal::
 
        POST /forums HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "name": "Support",
@@ -115,17 +99,12 @@ def create_forum(name: str,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<Forum>"
        }
 
-    :>json list response: The newly created forum
+    :>json dict response: The newly created forum
 
     :statuscode 200: Creation successful
     :statuscode 400: Creation unsuccessful
@@ -166,9 +145,6 @@ def modify_forum(id: int,
     .. parsed-literal::
 
        PUT /forums/6 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
 
        {
          "name": "Support",
@@ -181,14 +157,9 @@ def modify_forum(id: int,
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "<Forum>"
        }
 
     :>json dict response: The edited forum
@@ -221,30 +192,16 @@ def delete_forum(id: int) -> flask.Response:
 
     .. :quickref: Forum; Delete a forum.
 
-    **Example request**:
-
-    .. parsed-literal::
-
-       DELETE /forums/2 HTTP/1.1
-       Host: pul.sar
-       Accept: application/json
-       Content-Type: application/json
-
     **Example response**:
 
     .. parsed-literal::
 
-       HTTP/1.1 200 OK
-       Vary: Accept
-       Content-Type: application/json
-
        {
          "status": "success",
-         "response": {
-         }
+         "response": "Forum 1 (Pulsar) has been deleted."
        }
 
-    :>json dict response: The newly deleted forum
+    :>json str response: The deleted forum message
 
     :statuscode 200: Deletion successful
     :statuscode 400: Deletion unsuccessful
