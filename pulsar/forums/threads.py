@@ -276,6 +276,32 @@ def add_thread_note(id: int,
     """
     Endpoint for forum thread note creation. Limited to those with ``modify_forum_threads``
     permission.
+
+    .. :quickref: ForumThreadNote; Add a forum thread note.
+
+    **Example request**:
+
+    .. parsed-literal::
+
+       POST /forums/threads/1/notes HTTP/1.1
+
+       {
+         "note": "A note."
+       }
+
+    **Example response**:
+
+    .. parsed-literal::
+
+       {
+         "status": "success",
+         "response": "<ForumThreadNote>"
+       }
+
+    :>json dict response: The forum note
+
+    :statuscode 200: Deletion successful
+    :statuscode 400: Invalid forum thread
     """
     return flask.jsonify(ForumThreadNote.new(
         thread_id=id,

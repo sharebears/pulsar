@@ -16,7 +16,7 @@ def alter_thread_subscription(thread_id: int) -> flask.Response:
     permission is required to access this endpoint. A POST request creates a subscription,
     whereas a DELETE request removes a subscription.
 
-    .. :quickref: ForumThread; Subscribe to a forum thread.
+    .. :quickref: ForumThreadSubscription; Subscribe to a forum thread.
 
     **Example response**:
 
@@ -60,7 +60,7 @@ def alter_forum_subscription(forum_id: int) -> flask.Response:
     permission is required to access this endpoint. A POST request creates a subscription,
     whereas a DELETE request removes a subscription.
 
-    .. :quickref: Forum; Subscribe to a forum.
+    .. :quickref: ForumSubscription; Subscribe to a forum.
 
     **Example response**:
 
