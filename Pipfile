@@ -7,6 +7,8 @@ name = "pypi"
 pulsar-core = {editable = true, path = "./plugins/pulsar-core"}
 
 [dev-packages]
+pytest = "*"
+mock = "*"
 
 [requires]
 python_version = "3.7"
