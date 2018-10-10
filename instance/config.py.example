@@ -1,0 +1,42 @@
+# General Flask settings
+DEBUG = False
+PRESERVE_CONTEXT_ON_EXCEPTION = False
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost/pulsar'
+SECRET_KEY = b"generate a secure secret key with lots of entropy"
+
+# Redis connection parameters
+REDIS_PARAMS = {
+    'host': 'localhost',
+    'port': 6379,
+    'password': None,
+    'db': None,
+    'key_prefix': None,
+    'default_timeout': 3600 * 24 * 7,  # 1 week
+    }
+#
+# If True, potential users will need an invite code from a member to join.
+# If False, anyone can register.
+REQUIRE_INVITE_CODE = False
+
+# Permissions for locked accounts. They typically are only be allowed to
+# use the Staff PM functionality, although you can expand their permissions
+# if desired.
+LOCKED_ACCOUNT_PERMISSIONS = {
+    'view_staff_pm',
+    'send_staff_pm',
+    'resolve_staff_pm',
+    }
+
+# The time in seconds it takes for an invite to expire.
+INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days
+
+# The rate limit, in (requests, seconds). The auth-specific rate limit
+# applies to each individual API key or session, whereas the per-user 
+# rate limit applies to all requests made by a user. In order to prevent
+# a user from impropertly running a script and blocking all normal
+# requests via rate limit abuse, the per-user limit should be higher
+# than the auth-specific limit.
+RATE_LIMIT_AUTH_SPECIFIC = (50, 80)
+RATE_LIMIT_PER_USER = (80, 80)
