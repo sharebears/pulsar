@@ -4,8 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pulsar-core = {editable = true, path = "./plugins/pulsar-core"}
-pulsar-forums = {editable = true, path = "./plugins/pulsar-forums"}
+core = {editable = true, path = "./plugins/core"}
+forums = {editable = true, path = "./plugins/forums"}
+wiki = {editable = true, path = "./plugins/wiki"}
+pulsar-core = {editable = true, path = "./plugins/core"}
+pulsar-forums = {editable = true, path = "./plugins/forums"}
+pulsar-wiki = {editable = true, path = "./plugins/wiki"}
 
 [dev-packages]
 pytest = "*"

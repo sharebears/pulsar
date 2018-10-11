@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "ba49688289a2a280dc6be594f55d8aa80be51be43698ea8e055eeb33821aa20e"
+            "sha256": "22811a94c942b613ba92eb8139e1038cf8ec3e35bdd9f6f380a74d755a8eb63f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -36,6 +36,10 @@
             ],
             "version": "==7.0"
         },
+        "core": {
+            "editable": true,
+            "path": "./plugins/core"
+        },
         "flask": {
             "hashes": [
                 "sha256:2271c0070dbcb5275fad4a82e29f23ab92682dc45f9dfbc22c02ba9b9322ce48",
@@ -63,6 +67,10 @@
                 "sha256:5971b9852b5888655f11db634e87725a9031e170f37c0ce7851cf83497f56e53"
             ],
             "version": "==2.3.2"
+        },
+        "forums": {
+            "editable": true,
+            "path": "./plugins/forums"
         },
         "itsdangerous": {
             "hashes": [
@@ -126,11 +134,15 @@
         },
         "pulsar-core": {
             "editable": true,
-            "path": "./plugins/pulsar-core"
+            "path": "./plugins/core"
         },
         "pulsar-forums": {
             "editable": true,
-            "path": "./plugins/pulsar-forums"
+            "path": "./plugins/forums"
+        },
+        "pulsar-wiki": {
+            "editable": true,
+            "path": "./plugins/wiki"
         },
         "python-dateutil": {
             "hashes": [
@@ -185,6 +197,10 @@
                 "sha256:d5da73735293558eb1651ee2fddc4d0dedcfa06538b8813a2e20011583c9e49b"
             ],
             "version": "==0.14.1"
+        },
+        "wiki": {
+            "editable": true,
+            "path": "./plugins/wiki"
         }
     },
     "develop": {
