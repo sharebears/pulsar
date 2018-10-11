@@ -10,6 +10,7 @@ pulsar-forums = {editable = true, path = "./plugins/pulsar-forums"}
 [dev-packages]
 pytest = "*"
 mock = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.7"
