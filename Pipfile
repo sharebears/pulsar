@@ -4,9 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-core = {editable = true, path = "./plugins/core"}
-forums = {editable = true, path = "./plugins/forums"}
-wiki = {editable = true, path = "./plugins/wiki"}
 pulsar-core = {editable = true, path = "./plugins/core"}
 pulsar-forums = {editable = true, path = "./plugins/forums"}
 pulsar-wiki = {editable = true, path = "./plugins/wiki"}
