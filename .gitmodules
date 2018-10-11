@@ -1,0 +1,9 @@
+[submodule "plugins/wiki"]
+	path = plugins/wiki
+	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-wiki.git
+[submodule "plugins/forums"]
+	path = plugins/forums
+	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-forums.git
+[submodule "plugins/core"]
+	path = plugins/core
+	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-core.git
