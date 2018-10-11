@@ -1,66 +1,63 @@
 # pulsar
 
-A BitTorrent Indexer written in python using the Flask micro-framework for the backend,
-meant to succeed Gazelle.
+A BitTorrent Indexer backend written using the Flask micro-framework.
 
-## Config
-An explanation of configuration options is available in `config.py.example`. All
-configurations should be placed in `instance/`. A secret key for the application can be 
-generated with `os.urandom`. 
+This repository is merely the glue repository which ties the project together. pulsar has
+been built using a multi-repo project structure, meaning you can select the modules which
+you want to load and exclude the ones you do not want to load. Modules are tracked as git
+submodules in the `plugins/` directory. They are installed as editable python packages in
+pulsar's pipenv.
 
-Configuration files are located in `instance/`. Copy `instance/config.py.example` to
-`instance/config.py`. Replace the example configuration values with ones that
-you want, primarily the Redis and Postgres connection details. The configuration
-values are documented in the example configuration file. Leave `instance/test_config.py`
-alone, as it's meant to be used with the test suite.  
+You should fork or branch this repository for your own needs. It is meant to serve as a
+basic repository for controlling plugins, handling database migrations, and running the
+site. Configuration options for all plugins are also handled in this repository. All
+configuration files can be found in `instance/`. An explanation of `core` configuration
+options is present in `config.py.example`. Configuration options for each plugin can be
+found in their documentation. To create your own config file, copy
+`instance/config.py.example` to `instance/config.py` and replace the configuration values
+with your own values. This must be done for the connection details to various services.
 
-## Environment
-Pipenv is used for dependency and environment management. You can install it with
-`pip install pipenv`. You will also need python 3.7 installed for this project.
-Running `pipenv install` will set up a virtualenv and install the dependencies
-listed in the `Pipfile`.
+Setting up the environment is fairly simple. You will need python 3.7 installed on your
+system. It does not need to be the default python version or installed for the
+system--using a version installed with `pyenv` works fine. `Pipenv` is used to manage
+dependencies and virtualenv. You will need `pipenv` installed on your computer and
+somewhere in your \$PATH. Run `pipenv install` in the top-level directory of the
+repository to create the virtualenv and install all dependencies. If you intend to
+develop the codebase, run `pipenv install --dev`, which will install the tools necessary
+to run the tests. Note: If you have pyenv installed and pipenv does not detect python
+3.7, it will install python 3.7 via pyenv and use it.
 
-Postgres and Redis are required services for this project. Install them from
-your system's package manager or from source, it really doesn't matter as long
-as they can pass the test suite. Create a database in Postgres, permission it,
-and protect it. Do the same with Redis.  
+`postgresql` and `redis` are used to store and cache data. They must be installed and
+accessible--the connection details must be specified in the config file. It is up to you
+to configure the databases, but note that a database named `pulsar-testing` must exist to
+run the test suite.
 
-## Database
-Some default values will need to be set before running this project. We'll have an
-installation script create these by default eventually. All new users will have a
-User Class ID of 1. Therefore it is necessary that the lowest-tier User Class
-also have that ID.
+pulsar assumes that the lowest-tier `UserClass` has an ID of 1. Therefore, you must
+assign the lowest-tier `UserClass` the ID 1.
 
-pulsar utilizes Alembic for its DB migrations. Alembic is built to work with SQLAlchemy
-and has the ability to auto-generate migration (revision) files. If you are utilizing
-Alembic's auto-generation function, please read
+Database migrations are handled via `Flask-Migrate`, a wrapper around `Alembic`. To
+accommodate the multi-repo, each plugin has its own branch in alembic, which allows
+collinear migrations to be made with references and dependencies on each other. Alembic
+is built to work with SQLAlchemy and has the ability to auto-generate migration
+(revision) files. If you are utilizing Alembic's auto-generation function, please read
 [Alembic's documentation](<http://alembic.zzzcomputing.com/en/latest/autogenerate.html>).
+When creating revisions, you will need to specify which branch to add the migration to.
 
-Do not auto-migrate changes in table or column names. You will lose data; write those
-migrations by hand.
+TODO: db create all command to get the database up to date.
 
-# Development
-pulsar runs on the Flask micro-framework. Flask has great documentation, which can answer
-most or all of your questions about the underlying framework objects used by core.
+**Warning:** Do not auto-migrate changes in table or column names. You will lose data;
+write those migrations by hand.
 
-Code documentation, including the style guide, is available here:
-https://sharebears.github.io/pulsar-docs/html/code/index.html.
+### Contributions
+
+Contributed code must follow the style guide (included in the documentation), contain a
+test suite, and be properly documented.
 
 A script to generate dummy data is located in `scripts/dummy_test_data.py`. It will
 drop all tables and recreate them per the current model schema, using the
 `instance/config.py` configuration. If there are more than 10 users in the database,
-the script will error out, as a protection against accidental usage in production.  
+the script will error out, as a protection against accidental usage in production.
 
-Several development tools are used to maintain code quality.
-
-- Our code linter is `flake8`.
-- We also use `isort` to lint and auto-sort import statements.
-- `pytest` is used for testing.
-- `mypy` is used for static type analysis, although it's not very useful right now.
-
-Development commands and database migrations can be accessed through flask's
-click cli interface.
-
-- `flask run` runs the development server.In order to run in debug mode,
-  run `FLASK_DEBUG=True flask run`.
-- `flask db` runs the `flask-migrate` database management script.
+You can access many commands via flask's CLI interface. `flask run` will run the site;
+`FLASK_DEBUG=True flask run` runs the site in debug mode. `flask db` reveals the database
+migration interface.
