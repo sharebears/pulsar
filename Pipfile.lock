@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "357b72aca8ddfc186474275dab35a7b5c48f98d1468270d3ee6a905a5fdb6501"
+            "sha256": "f5d0903c8d3547f149a523e775c9de95a7191edae21af84c088fc6e87e794067"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -127,6 +127,10 @@
         "pulsar-core": {
             "editable": true,
             "path": "./plugins/pulsar-core"
+        },
+        "pulsar-forums": {
+            "editable": true,
+            "path": "./plugins/pulsar-forums"
         },
         "python-dateutil": {
             "hashes": [
