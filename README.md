@@ -141,7 +141,7 @@ from core.conftest import PLUGINS, UNPOPULATE_FUNCTIONS
 import forums
 
 @pytest.fixture(autouse=True)
-def populate_db(client):  # This is a fixture from the core which opens up a DB connection.
+def populate_db(client):  # `client` is a fixture from the core which opens up a DB connection.
    pass
 
 

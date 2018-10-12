@@ -1,8 +1,9 @@
 import flask
-import core
-import forums
 from flask_cors import CORS
 from flask_migrate import Migrate
+
+import core
+import forums
 from core import db
 
 migrate = Migrate()
