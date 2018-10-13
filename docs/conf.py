@@ -168,6 +168,14 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+
+# autodoc
+
+autodoc_default_options = {
+    'special-members': '__init__',
+    'exclude-members': '__weakref__'
+}
+
 # -- Extension configuration -------------------------------------------------
 
 

@@ -1,5 +1,5 @@
-API Documentation
-=================
+API
+===
 pulsar has a JSON API written in Python, using Flask. Endpoints are protected
 by permissions, which can be assigned to users and user classes by site admins.
 Authentication is also required for many endpoints. pulsar only supports token-based

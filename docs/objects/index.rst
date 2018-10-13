@@ -1,5 +1,5 @@
-JSON Object Documentation
-=========================
+JSON Objects
+============
 Here are the JSON serializations of public-facing models. They are found
 in various API responses and listed once here instead of multiple times
 elsewhere. Attributes/keys of objects are permissioned and restricted based on

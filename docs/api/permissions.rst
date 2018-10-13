@@ -1,7 +1,7 @@
 Permissions
 ===========
 
-.. qrefflask:: pulsar:create_app('config.py')
+.. qrefflask:: app:create_app('config.py')
    :undoc-static:
    :blueprints: permissions
    :order: path
@@ -9,7 +9,7 @@ Permissions
 Permissions
 -----------
 
-.. autoflask:: pulsar:create_app('config.py')
+.. autoflask:: app:create_app('config.py')
    :undoc-static:
    :modules: core.permissions.user_edit
    :groupby: view
@@ -18,7 +18,7 @@ Permissions
 User Classes
 ------------
 
-.. autoflask:: pulsar:create_app('config.py')
+.. autoflask:: app:create_app('config.py')
    :undoc-static:
    :modules: core.permissions.user_classes
    :groupby: view

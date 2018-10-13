@@ -1,7 +1,10 @@
 Style Guide
 ===========
 
-* PEP8, with a max line length of ~90 (hard max at 100) (4 space indents)
+The style guide matches PEP8, except it has a max line length of 100. The following 
+contents dictate good python practices should be followed to enhance the legibility of 
+the code.
+
 * Split multiple kwargs or lists with multiple elements onto new lines, unless they
   fit compactly into one line. Hang the closing brackets or leave them on the same
   line as the last line in the statement.
@@ -65,8 +68,9 @@ Style Guide
          :param arg1:      Blah blah blah!
          :param argument2: Blah blah blah!
          :return:          Blah blah blah!
+         """
 
-* Annotate code with python 3 style typing
+* Use Python3 type annotations where possible.
 
    .. code::
 

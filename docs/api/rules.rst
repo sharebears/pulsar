@@ -1,7 +1,7 @@
 Rules
 =====
 
-.. autoflask:: pulsar:create_app('config.py')
+.. autoflask:: app:create_app('config.py')
    :undoc-static:
    :modules: core.rules
    :groupby: view

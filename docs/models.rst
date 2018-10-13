@@ -8,11 +8,12 @@ compared to classic SQLAlchemy models, pulsar's may be larger and require more m
 code. In order to take advantage of caching at a model level, we do not define 
 ``relationship``'s, instead opting to create properties which return other models with 
 their methods which support caching. Caching is handled by the mixins subclassed by 
-models. I recommend viewing the mixins page to view vital methods which belong to 
-subclassing models.
+models.
 
 ``@property``'s are used to add attributes to models which are not part of their SQL 
-schema.
+schema. ``@cached_property`` is an alternative ``@property`` which caches the value in a 
+private variable and should be used for any properties that do not change during the 
+lifetime of a request.
 
 Users
 -----
@@ -31,6 +32,6 @@ Permissions
 Forums
 ------
 
-.. automodule:: core.forums.models
+.. automodule:: forums.models
     :members:
     :show-inheritance:
