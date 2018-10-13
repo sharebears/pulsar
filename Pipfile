@@ -13,6 +13,9 @@ pytest = "*"
 mock = "*"
 mypy = "*"
 pytest-cov = "*"
+sphinxcontrib-httpdomain = "*"
+sphinx-autodoc-typehints = "*"
+sphinx-rtd-theme = "*"
 
 [requires]
 python_version = "3.7"

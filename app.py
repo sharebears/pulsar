@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import flask
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -19,3 +21,9 @@ def create_app(config: str) -> flask.Flask:
     migrate.init_app(app, db)
 
     return app
+
+
+app = create_app('config.py')
+
+if __name__ == '__main__':
+    app.run()
