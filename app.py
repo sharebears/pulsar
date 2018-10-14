@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 
 import core
 import forums
+import rules
 from core import db
 
 migrate = Migrate()
@@ -13,12 +14,14 @@ migrate = Migrate()
 
 def create_app(config: str) -> flask.Flask:
     app = flask.Flask(__name__, instance_relative_config=True)
-    CORS(app)
     app.config.from_pyfile(config)
+
+    migrate.init_app(app, db)
+    CORS(app)
 
     core.init_app(app)
     forums.init_app(app)
-    migrate.init_app(app, db)
+    rules.init_app(app)
 
     return app
 

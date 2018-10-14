@@ -7,6 +7,7 @@ name = "pypi"
 pulsar-core = {editable = true, path = "./plugins/core"}
 pulsar-forums = {editable = true, path = "./plugins/forums"}
 pulsar-wiki = {editable = true, path = "./plugins/wiki"}
+pulsar-rules = {editable = true, path = "./plugins/rules"}
 
 [dev-packages]
 pytest = "*"

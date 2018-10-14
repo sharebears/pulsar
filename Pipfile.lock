@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1ddcc3ae07b1429486f025c3444ab868ac64545702f8bfcdffafa30809d1472f"
+            "sha256": "1b59f328a6ef76d60afdc784c2da14a0170889607134ef340d588a8c6ab3ebdc"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -131,6 +131,10 @@
         "pulsar-forums": {
             "editable": true,
             "path": "./plugins/forums"
+        },
+        "pulsar-rules": {
+            "editable": true,
+            "path": "./plugins/rules"
         },
         "pulsar-wiki": {
             "editable": true,
