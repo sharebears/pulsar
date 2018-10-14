@@ -32,6 +32,9 @@ LOCKED_ACCOUNT_PERMISSIONS = {
 # The time in seconds it takes for an invite to expire.
 INVITE_LIFETIME = 60 * 60 * 24 * 3  # 3 days
 
+# The time in seconds an impermanent API Key should last.
+IMPERMANENT_API_KEY_LIFETIME = 60 * 30  # 30 minutes
+
 # The rate limit, in (requests, seconds). The auth-specific rate limit
 # applies to each individual API key or session, whereas the per-user 
 # rate limit applies to all requests made by a user. In order to prevent
