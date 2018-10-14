@@ -7,3 +7,6 @@
 [submodule "plugins/core"]
 	path = plugins/core
 	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-core.git
+[submodule "plugins/docs"]
+	path = plugins/docs
+	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-docs.git

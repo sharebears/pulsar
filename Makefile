@@ -4,6 +4,6 @@ _tests:
 	./scripts/permissions_checker.py
 _docs:
 	find docs/ -type f -name "*.rst" -exec touch "{}" \;
-	sphinx-build -M html docs ../pulsar-docs
+	sphinx-build -M html plugins/docs ../pulsar-docs-compiled
 tests: _tests
 docs: _docs
