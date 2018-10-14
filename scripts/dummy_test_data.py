@@ -9,7 +9,7 @@ from sqlalchemy.exc import ProgrammingError
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa
 
 from core import db
-from pulsar import create_app
+from app import create_app
 from core.users.models import User
 
 ####################################
@@ -69,7 +69,7 @@ db.create_all()
 db.session.execute(
     """INSERT INTO user_classes (name, permissions) VALUES
     ('User', '{"view_users", "list_permissions",
-    "view_invites", "view_cache_keys", "send_invites"}'),
+    "view_invites", "view_cache_keys", "send_invites", "view_forums"}'),
     ('user_v2', '{"modify_permissions", "list_permissions"}')""")
 db.session.execute(
     """INSERT INTO secondary_classes (name, permissions) VALUES
