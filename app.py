@@ -11,17 +11,29 @@ from core import db
 
 migrate = Migrate()
 
+PLUGINS = [
+    core,
+    forums,
+    rules,
+    ]
+
+
+class Config(*(plug.Config for plug in PLUGINS if hasattr(plug, 'Config'))):
+    pass
+
 
 def create_app(config: str) -> flask.Flask:
     app = flask.Flask(__name__, instance_relative_config=True)
+    app.config.from_object(Config)
+    print(app.config['INVITE_LIFETIME'])
     app.config.from_pyfile(config)
+    print(app.config['INVITE_LIFETIME'])
 
     migrate.init_app(app, db)
     CORS(app)
 
-    core.init_app(app)
-    forums.init_app(app)
-    rules.init_app(app)
+    for plug in PLUGINS:
+        plug.init_app(app)
 
     return app
 
