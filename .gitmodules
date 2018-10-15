@@ -13,3 +13,6 @@
 [submodule "plugins/rules"]
 	path = plugins/rules
 	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-rules.git
+[submodule "plugins/messages"]
+	path = plugins/messages
+	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-messages.git
