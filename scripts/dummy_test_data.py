@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # 
 from core import db
 from app import create_app
 from core.users.models import User
+from werkzeug.security import generate_password_hash
 
 ####################################
 ############ CONSTANTS ######## noqa
@@ -86,12 +87,16 @@ db.session.execute(
     (1, 'user_three@puls.ar', '{CODE_2}', NOW(), 't', 2),
     (1, 'bright@quas.ar', '{CODE_3}', '2018-03-25 01:09:35.260808+00', 'f', NULL)
     """)
+
+# abcdefghij1234567890abcdef
+# 0987654321abcdefghij098765
+# 1234567890abcdefghij123456
 db.session.execute(
     f"""INSERT INTO api_keys (user_id, hash, keyhashsalt, revoked, permissions) VALUES
-    (1, 'abcdefghij', '{HASHED_CODE_1}', 'f',
+    (1, 'abcdefghij', '{generate_password_hash('1234567890abcdef')}', 'f',
         '{{"sample_permission", "sample_2_permission", "view_rules", "sample_3_permission"}}'),
-    (1, '0987654321', '{HASHED_CODE_3}','f', '{{}}'),
-    (2, '1234567890', '{HASHED_CODE_2}', 't', '{{}}')
+    (1, '0987654321', '{generate_password_hash('abcdefghij098765')}','f', '{{}}'),
+    (2, '1234567890', '{generate_password_hash('abcdefghij123456')}', 't', '{{}}')
     """)
 db.session.execute(
     """INSERT INTO users_permissions (user_id, permission) VALUES
