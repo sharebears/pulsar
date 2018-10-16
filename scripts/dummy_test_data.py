@@ -69,12 +69,12 @@ db.create_all()
 
 db.session.execute(
     """INSERT INTO user_classes (name, permissions) VALUES
-    ('User', '{"view_users", "list_permissions",
-    "view_invites", "view_cache_keys", "send_invites", "view_forums"}'),
-    ('user_v2', '{"modify_permissions", "list_permissions"}')""")
+    ('User', '{"users_view", "list_permissions",
+    "invites_view", "site_manage_cache_keys", "invites_send", "view_forums"}'),
+    ('user_v2', '{"permissions_modify", "list_permissions"}')""")
 db.session.execute(
     """INSERT INTO secondary_classes (name, permissions) VALUES
-    ('FLS', '{"send_invites"}'),
+    ('FLS', '{"invites_send"}'),
     ('user_v2', '{"list_permissions"}')""")
 db.session.execute(
     f"""INSERT INTO users (username, passhash, email, invites, inviter_id) VALUES
@@ -101,11 +101,11 @@ db.session.execute(
 db.session.execute(
     """INSERT INTO users_permissions (user_id, permission) VALUES
     (1, 'view_rules'),
-    (1, 'view_api_keys'),
-    (1, 'revoke_api_keys'),
-    (1, 'modify_permissions'),
+    (1, 'api_keys_view'),
+    (1, 'api_keys_revoke'),
+    (1, 'permissions_modify'),
     (1, 'list_permissions'),
-    (1, 'change_password'),
+    (1, 'users_change_password'),
     (1, 'sample_perm_one'),
     (1, 'sample_perm_two'),
     (1, 'sample_perm_three'),

@@ -17,7 +17,7 @@ import click
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from core.utils.permissions import get_all_permissions  # noqa
+from core.permissions.models import UserPermission  # noqa: F402
 
 try:
     project_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), sys.argv[1])
@@ -25,7 +25,7 @@ except IndexError:
     click.secho(f'You must specify a dir to check.', fg='red')
     exit()
 
-all_permissions = get_all_permissions()
+all_permissions = UserPermission.get_all_permissions()
 used_permissions = []
 
 
