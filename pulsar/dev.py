@@ -52,7 +52,13 @@ def createdata():
                         'is a testing database? Please clear it yourself and re-try.',
                         fg='red', bold=True)
             raise click.Abort
+        cache.clear()
+        db.session.commit()
+    with app.app_context():
+        db.drop_all()
         db.create_all()
+    with app.test_request_context():
         for p in POPULATORS:
             p.populate()
         cache.clear()
+    click.secho(f'Updated and inserted development data into the database!')
