@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import os
+import shlex
+import subprocess
 from collections import defaultdict
 
 import click
@@ -64,3 +67,11 @@ def createdata():
         CorePopulator.add_permissions(SitePermissions.GOD_MODE)
         cache.clear()
     click.secho(f'Updated and inserted development data into the database!')
+
+
+@dev.command()
+def tests():
+    """Run pytest on all the plugin directories."""
+    for pd in sorted(os.listdir('./plugins')):
+        if os.path.isdir(os.path.join('plugins', pd, 'tests')):
+            subprocess.call(['pytest', os.path.join('plugins', shlex.quote(pd))])
