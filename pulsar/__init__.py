@@ -9,6 +9,7 @@ import forums
 import rules
 import messages
 from core import db
+from pulsar.dev import dev
 
 migrate = Migrate()
 
@@ -28,6 +29,7 @@ def create_app(config: str) -> flask.Flask:
     app = flask.Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
     app.config.from_pyfile(config)
+    app.cli.add_command(dev)
 
     migrate.init_app(app, db)
     CORS(app)
