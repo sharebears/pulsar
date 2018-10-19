@@ -11,6 +11,7 @@ from core.test_data import CorePopulator
 from core.users.models import User
 from forums.test_data import ForumsPopulator
 from messages.test_data import MessagesPopulator
+from core.users.permissions import SitePermissions
 
 app = flask.current_app
 
@@ -60,5 +61,6 @@ def createdata():
     with app.test_request_context():
         for p in POPULATORS:
             p.populate()
+        CorePopulator.add_permissions(SitePermissions.GOD_MODE)
         cache.clear()
     click.secho(f'Updated and inserted development data into the database!')
