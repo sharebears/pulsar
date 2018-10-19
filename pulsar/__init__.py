@@ -6,8 +6,8 @@ from flask_migrate import Migrate
 
 import core
 import forums
-import rules
 import messages
+import rules
 from core import db
 from pulsar.dev import dev
 

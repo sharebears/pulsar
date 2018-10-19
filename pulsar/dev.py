@@ -3,12 +3,12 @@ from collections import defaultdict
 
 import click
 import flask
+import sqlalchemy
 from flask.cli import with_appcontext
 
-import sqlalchemy
 from core import cache, db
-from core.users.models import User
 from core.test_data import CorePopulator
+from core.users.models import User
 from forums.test_data import ForumsPopulator
 from messages.test_data import MessagesPopulator
 
