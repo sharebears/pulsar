@@ -75,3 +75,11 @@ def tests():
     for pd in sorted(os.listdir('./plugins')):
         if os.path.isdir(os.path.join('plugins', pd, 'tests')):
             subprocess.call(['pytest', os.path.join('plugins', shlex.quote(pd))])
+
+
+@dev.command()
+def update():
+    """Run git pull on all plugins."""
+    for pd in sorted(os.listdir('./plugins')):
+        click.secho(f'Updating {pd}...', fg='cyan')
+        subprocess.call(['git', 'pull'], cwd=os.path.join('plugins', shlex.quote(pd)))
