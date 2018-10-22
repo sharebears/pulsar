@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shlex
+
 import subprocess
 from collections import defaultdict
 
@@ -11,6 +12,7 @@ from flask.cli import with_appcontext
 
 from core import cache, db
 from core.test_data import CorePopulator
+from core.permissions import Permissions
 from core.users.models import User
 from forums.test_data import ForumsPopulator
 from messages.test_data import MessagesPopulator
@@ -83,3 +85,11 @@ def update():
     for pd in sorted(os.listdir('./plugins')):
         click.secho(f'Updating {pd}...', fg='cyan')
         subprocess.call(['git', 'pull'], cwd=os.path.join('plugins', shlex.quote(pd)))
+
+
+@dev.command()
+@with_appcontext
+def listperms():
+    """List all active permissions."""
+    for p in list(sorted(Permissions.get_all_permissions())):
+        click.echo(p)
