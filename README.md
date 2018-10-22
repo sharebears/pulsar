@@ -14,6 +14,15 @@ A BitTorrent Indexer backend written using the Flask micro-framework.
 
 ### Building the project
 
+* Clone and init submodules
+
+```bash
+git clone --recurse-submodules -j8 ssh://git@git.scratch-network.net:20982/sharebears/pulsar.git
+
+# If you have already cloned the repository but did not init the submodules, run:
+git submodule update --recursive --init
+```
+
 - Install python dependencies:
 
 ```bash
