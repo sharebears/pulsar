@@ -86,8 +86,6 @@ is built to work with SQLAlchemy and has the ability to auto-generate migration
 [Alembic's documentation](<http://alembic.zzzcomputing.com/en/latest/autogenerate.html>).
 When creating revisions, you will need to specify which branch to add the migration to.
 
-TODO: db create all command to get the database up to date.
-
 **Warning:** Do not auto-migrate changes in table or column names. You will lose data;
 write those migrations by hand.
 
