@@ -23,7 +23,7 @@ pipenv install --dev
 - Rename config.py.example to config.py
 
 ```bash
-mv /instance/config.py.example /instance/config.py
+cp /instance/config.py.example /instance/config.py
 ```
 
 - Make sure Postgres and Redis are installed and running, and modify the configs in config.py to match them.
