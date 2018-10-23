@@ -42,7 +42,7 @@ def createdb():
 
 @dev.command()
 @with_appcontext
-def createdata():
+def insertdata():
     """Recreate and repopulate an existing testing database."""
     with app.test_request_context():
         flask.g.cache_keys = defaultdict(set)
