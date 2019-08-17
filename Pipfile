@@ -11,6 +11,8 @@ pulsar-rules = {editable = true, path = "./plugins/rules"}
 pulsar-messages = {editable = true, path = "./plugins/messages"}
 
 [dev-packages]
+black = "==19.3b0"
+isort = "*"
 pytest = "*"
 mock = "*"
 mypy = "*"

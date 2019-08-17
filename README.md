@@ -54,7 +54,8 @@ flask run
 ```
 
 ## API Documentation
-https://sharebears.github.io/pulsar-docs/html/index.html
+
+https://sharebears.github.io/pulsar
 
 ## About Pulsar
 

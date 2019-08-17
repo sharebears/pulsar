@@ -8,17 +8,13 @@ import core
 import forums
 import messages
 import rules
+import wiki
 from core import db
 from pulsar.dev import dev
 
 migrate = Migrate()
 
-PLUGINS = [
-    core,
-    forums,
-    rules,
-    messages,
-    ]
+PLUGINS = [core, forums, rules, messages, wiki]
 
 
 class Config(*(plug.Config for plug in PLUGINS if hasattr(plug, 'Config'))):
