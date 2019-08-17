@@ -14,4 +14,4 @@ REDIS_PARAMS = {
     'db': None,
     'key_prefix': None,
     'default_timeout': 3600 * 24 * 7,  # 1 week
-    }
+}

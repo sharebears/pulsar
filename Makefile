@@ -1,9 +1,11 @@
 lint:
 	isort -rc .
-_tests:
+
+tests:
 	./scripts/permissions_checker.py
-_docs:
+
+docs:
 	find plugins/docs/ -type f -name "*.rst" -exec touch "{}" \;
 	sphinx-build -M html plugins/docs ../pulsar-docs-compiled
-tests: _tests
-docs: _docs
+
+.PHONY: lint tests docs

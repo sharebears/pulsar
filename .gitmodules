@@ -1,18 +1,18 @@
 [submodule "plugins/wiki"]
 	path = plugins/wiki
-	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-wiki.git
+	url = git@github.com:sharebears/pulsar-wiki.git
 [submodule "plugins/forums"]
 	path = plugins/forums
-	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-forums.git
+	url = git@github.com:sharebears/pulsar-forums.git
 [submodule "plugins/core"]
 	path = plugins/core
-	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-core.git
+	url = git@github.com:sharebears/pulsar-core.git
 [submodule "plugins/docs"]
 	path = plugins/docs
-	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-docs.git
+	url = git@github.com:sharebears/pulsar-docs.git
 [submodule "plugins/rules"]
 	path = plugins/rules
-	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-rules.git
+	url = git@github.com:sharebears/pulsar-rules.git
 [submodule "plugins/messages"]
 	path = plugins/messages
-	url = ssh://git@git.scratch-network.net:20982/sharebears/pulsar-messages.git
+	url = git@github.com:sharebears/pulsar-messages.git
