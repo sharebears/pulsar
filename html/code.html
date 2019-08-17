@@ -1,0 +1,1503 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Code &mdash; pulsar 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="JSON Objects" href="objects/index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pulsar
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="objects/index.html">JSON Objects</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-glue-repository">The Glue Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-core-package">The Core Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#server-side-caching">Server-Side Caching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plugin-creation">Plugin Creation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mixins-in-sqlalchemy-models">Mixins in SQLAlchemy Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generic-mixins">Generic Mixins</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specialized-mixins">Specialized Mixins</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#json-serialization">JSON Serialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#request-hooks">Request Hooks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#before">Before</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#after">After</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#validator-functions">Validator Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.validators.users">Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.validators.permissions">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.validators.posts">Posts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#utility-functions">Utility Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Permissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.utils.validation">Validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-core.utils.memoization">Memoization</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pulsar</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Code</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="code">
+<h1>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h1>
+<p>Given the size of this project, it may be daunting to jump in and start developing. In
+order to make it easier to get started and understand the codebase, the following
+documentation will go over design choices, the reasoning behind them, how they work, and
+effectively leveraging existing code.</p>
+<p>pulsar runs with a multi-repo structure. The core functionality, abstractions, and base
+classes has been placed into a core package, and everything else is made available as a
+plugin. This has been done to allow trackers deriving from pulsar to select which plugins
+they want to include. If one tracker doesn’t want bonus points, for example, they need
+not load the plugin. The core package is treated itself as another plugin, although it’s
+inclusion in a working install of pulsar is mandatory. pulsar provides a basic “glue”
+repository, which is where the various plugins are installed and coordinated. That
+repository contains the code that spawns the Flask app, as well as documentation and a
+system to handle database migrations for all installed plugins. Handling plugins will be
+covered later on in the documentation.</p>
+<p>Since pulsar is the backend API, it is very database-oriented. Most of the code goes
+towards managing data which goes to the database or fetching data from the database.
+Managing data is handled by SQLAlchemy model classes, which have attributes that match
+with columns in a database table. One model class is defined for each table, except for
+many-to-many relationship tables. Each model class contains methods which allow for easy
+access of data and related data or input of data. The model classes are used in the
+routes, which are the API endpoints that handle requests for data. Adding new features to
+the codebase will usually require creating models and views. The boilerplate which
+augments models and views with simple abstractions, caching, and permissions is
+contained in the core.</p>
+<div class="section" id="the-glue-repository">
+<h2>The Glue Repository<a class="headerlink" href="#the-glue-repository" title="Permalink to this headline">¶</a></h2>
+<p>The glue repository contains very little code, but most of the project management tools
+and files. There are 4 top-level directories in the glue repository: <code class="docutils literal notranslate"><span class="pre">instance</span></code>,
+<code class="docutils literal notranslate"><span class="pre">migrations</span></code>, <code class="docutils literal notranslate"><span class="pre">plugins</span></code>, and <code class="docutils literal notranslate"><span class="pre">scripts</span></code>.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">instance</span></code> contains the configuration files–that’s where an instance of the codebase
+is configured.</li>
+<li><code class="docutils literal notranslate"><span class="pre">migrations</span></code> doesn’t actually house any of the database migrations, but rather the
+configuration files for alembic, which manages the database migrations. Database
+migrations are stored in each plugin, and since the glue repository has almost no code
+it has no migrations of its own.</li>
+<li><code class="docutils literal notranslate"><span class="pre">plugins</span></code> contains all the installed plugins.</li>
+<li><code class="docutils literal notranslate"><span class="pre">scripts</span></code> contains some development tools.</li>
+</ul>
+</div>
+<div class="section" id="the-core-package">
+<h2>The Core Package<a class="headerlink" href="#the-core-package" title="Permalink to this headline">¶</a></h2>
+<p>The core package contains everything essential for the codebase, as well as base classes
+shared across multiple major plugins. Along with the boilerplate and response handling
+code, the users, authentication, and permissions systems are included in it. Much of the
+code is localized to the core–rarely will an external plugin need to modify the pre- and
+post- response hooks, the caching system, or the object serialization system.</p>
+</div>
+<div class="section" id="server-side-caching">
+<h2>Server-Side Caching<a class="headerlink" href="#server-side-caching" title="Permalink to this headline">¶</a></h2>
+<p>Even with all of Gazelle’s faults, it still made a good choice in caching data. Trackers
+store a lot of data and users make many requests to the site, leading to heavy data
+fetching and rendering. Site load is no joke, and to keep the tracker running smoothly
+Redis is utilized to store recently-accessed data in RAM. Instead of fetching the same
+data from the database over and over again, we can make use of RAM and only fetch new
+data from the database when something changes. In pulsar, caching is heavily
+abstracted–the majority of cache work is done behind the scenes in the model mixins and
+cache module. It is due to this caching system that pulsar does not load data from
+relationship objects in its SQLAlchemy models. At the cost of a few more lines of code,
+objects related to each model can be loaded from the cache, due to the caching code
+present inside the mixins loaded into almost every model.</p>
+<p>Caching can sometimes result in out of date data, but steps are taken against that
+happening in core. Whenever a model is modified and flushed to the database, a listener
+(<code class="docutils literal notranslate"><span class="pre">clear_cache_dirty</span></code>, found in <code class="docutils literal notranslate"><span class="pre">core.cache</span></code>) will automatically expire its cache key.
+The only keys which need to be explicitly expired in a view or model are the cache keys
+for lists of models, which are typically lists of their primary keys. Cache keys are
+defined based on attributes of the model and their primary keys, so they can also be
+expired manually.</p>
+</div>
+<div class="section" id="plugin-creation">
+<h2>Plugin Creation<a class="headerlink" href="#plugin-creation" title="Permalink to this headline">¶</a></h2>
+<p>Package creation is fairly straightforward. Each package will have a very similar
+structure to the others, and can use many of the same abstractions and base classes
+present in the core. Existing packages can be used as a reference in case you are
+confused. Here is an example directory structure (a lobotomized version of the forum
+plugin).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>. (pulsar-forums/)
+├── forums
+│   ├── __init__.py
+│   ├── models.py
+│   ├── modifications.py
+│   ├── routes
+│   │   ├── __init__.py
+│   │   └── threads.py
+│   └── serializers.py
+├── .gitignore
+├── LICENSE
+├── Makefile
+├── README.md
+├── setup.cfg
+├── setup.py
+├── tests
+│   ├── conftest.py
+│   ├── __init__.py
+│   ├── test_model_thread.py
+│   └── test_view_threads.py
+└── versions
+    └── 29040202cb0d_init.py
+</pre></div>
+</div>
+<p>To avoid terminology confusion, <code class="docutils literal notranslate"><span class="pre">plugin</span> <span class="pre">directory</span> <span class="pre">==</span> <span class="pre">pulsar-forums/</span></code> and <code class="docutils literal notranslate"><span class="pre">package</span>
+<span class="pre">directory</span> <span class="pre">==</span> <span class="pre">pulsar-forums/forums</span></code>. <code class="docutils literal notranslate"><span class="pre">Installed</span></code> means installed with <code class="docutils literal notranslate"><span class="pre">pip</span></code> (these
+packages can be installed with, for example, <code class="docutils literal notranslate"><span class="pre">pip(env)?</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">pulsar-forums</span></code>.</p>
+<p>Each plugin must be prefixed with <code class="docutils literal notranslate"><span class="pre">pulsar-</span></code>. The forum plugin above is called
+<code class="docutils literal notranslate"><span class="pre">pulsar-forums</span></code>. Inside each plugin there are some project files and three directories.
+The project files will be consistent between plugin repositories, but the Makefile has to
+be edited to point towards the package directory. The <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> file is especially
+important, but it does not need to be changed much plugin to plugin. The data must be
+updated to reflect the new project name, and if there are any dependencies specific to
+the plugin which aren’t a part of the core, those must be added to <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> file.
+Having this file allows us to install the package to our systems or virtualenvs with
+<code class="docutils literal notranslate"><span class="pre">pip</span></code>, which lets us import them into the glue repository or any dependent repositories.</p>
+<p>Plugins can depend on other plugins, although no formal enforcement exists besides
+<code class="docutils literal notranslate"><span class="pre">ImportError</span></code>’s. Please mention which other plugins your plugins are dependent on in the
+README.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tests</span></code> directory contains all the unit tests for the plugin. The tests all require
+the <code class="docutils literal notranslate"><span class="pre">pulsar-core</span></code> module to be installed. A single base conftest (a file that lets pytest
+share code) is present in the core–it can be imported from <code class="docutils literal notranslate"><span class="pre">core.conftest</span></code>. In order to
+have that run in your tests, several lines of code must be present in your conftest. A
+template for your plugin’s conftest is included below. The UNPOPULATE_DATABASE global
+exists because while database population can be written as an <code class="docutils literal notranslate"><span class="pre">autouse=True</span></code> pytest
+fixture in the plugin conftest, unpopulation after each test has to be performed inside a
+specific fixture in <code class="docutils literal notranslate"><span class="pre">core.conftest</span></code>. For this reason you must define an
+<code class="docutils literal notranslate"><span class="pre">unpopulate_database</span></code> function which deletes all the data you’ve put into the database
+but doesn’t drop the tables, and append that function to the <code class="docutils literal notranslate"><span class="pre">UNPOPULATE_FUNCTIONS</span></code>
+global variable.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">core.conftest</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># noqa: F401, F403</span>
+<span class="kn">from</span> <span class="nn">core.conftest</span> <span class="kn">import</span> <span class="n">PLUGINS</span><span class="p">,</span> <span class="n">UNPOPULATE_FUNCTIONS</span>
+
+<span class="kn">import</span> <span class="nn">forums</span>
+
+<span class="nd">@pytest.fixture</span><span class="p">(</span><span class="n">autouse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">populate_db</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>  <span class="c1"># ``client`` is a fixture from the core which opens up a DB</span>
+<span class="n">connection</span><span class="o">.</span>
+   <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">unpopulate_database</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+   <span class="k">pass</span>
+
+
+<span class="n">PLUGINS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">forums</span><span class="p">)</span>
+<span class="n">UNPOPULATE_FUNCTIONS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unpopulate_database</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Database migrations for each plugin are present in <code class="docutils literal notranslate"><span class="pre">versions/</span></code>. These are designed to
+work with the <code class="docutils literal notranslate"><span class="pre">alembic</span></code> database migration tool, which hooks up with SQLAlchemy. Alembic
+tracks revisions similar to how git tracks files–each revision has a parent (unless it
+is a base revision). Each plugin is given its own revision branch too, from which all of
+its future revisions can build off of. This allows us to maintain separate migration
+histories for each individual plugin and manage them all from the glue repository.</p>
+<p>Example usage of the migrations system to come. tl;dr there is a special command to set
+up the migration branch, and all revisions which follow must specify the “head” revision
+of the branch they belong to.</p>
+<p>As stated before, each plugin package has a very similar structure. They should be named
+succinctly, although if they clash with an existing or well-known python package you can
+modify it’s name to evade that. For example, the <code class="docutils literal notranslate"><span class="pre">pulsar-forums</span></code> plugin has the package
+name <code class="docutils literal notranslate"><span class="pre">forums</span></code>. What goes inside each package will depend upon what you intend the package
+to do.</p>
+<p>If you want to add tables to the database, you should have a <code class="docutils literal notranslate"><span class="pre">models.py</span></code>. This file
+contains all the database tables for the package, although they are defined as SQLAlchemy
+objects which can be used in the codebase as an abstraction for the database data.</p>
+<p>If you want any of those models to be returned via the API, you should have a
+<code class="docutils literal notranslate"><span class="pre">serializers.py</span></code> file which defines serialization rules for models.</p>
+<p>If you want to add properties/attributes to another dependent module, you should have a
+<code class="docutils literal notranslate"><span class="pre">modifications.py</span></code> file, whose functions should in turn be imported into the package’s
+<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> and ran in the global scope.</p>
+<p>If you want to add API endpoints, you should create a <code class="docutils literal notranslate"><span class="pre">routes/</span></code> directory and put your
+routes inside it. The <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> file of the route must define a <code class="docutils literal notranslate"><span class="pre">bp</span></code> variable with a
+<code class="docutils literal notranslate"><span class="pre">flask.Blueprint</span></code> value. That <code class="docutils literal notranslate"><span class="pre">bp</span></code> variable must also be imported from the <code class="docutils literal notranslate"><span class="pre">routes/</span></code>
+package into the top-level package <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> in order for it to be registered by the
+flask app.</p>
+</div>
+<div class="section" id="mixins-in-sqlalchemy-models">
+<h2>Mixins in SQLAlchemy Models<a class="headerlink" href="#mixins-in-sqlalchemy-models" title="Permalink to this headline">¶</a></h2>
+<p>The mixins used by pulsar’s SQLAlchemy models provide methods which abstract a lot of
+the code required to query for an object. On top of that, it implements code that
+automatically caches every fetched model, and whenever a model is requested, it’s first
+checked against the cache before being queried from the database. If a model is found in
+the cache, it will be loaded from there instead of from the database, saving a call.</p>
+<div class="section" id="generic-mixins">
+<h3>Generic Mixins<a class="headerlink" href="#generic-mixins" title="Permalink to this headline">¶</a></h3>
+<p>There are two generic mixins: <code class="docutils literal notranslate"><span class="pre">SinglePKMixin</span></code> and <code class="docutils literal notranslate"><span class="pre">MultiPKMixin</span></code>. Their uses can be
+inferred from their names: <code class="docutils literal notranslate"><span class="pre">SinglePKMixin</span></code> is for objects which have a single unique
+attribute, such as users, and <code class="docutils literal notranslate"><span class="pre">MultiPKMixin</span></code> is geared towards objects which do not,
+such as a permission (uniquely identified by user and permission). The above two mixins
+are documented below:</p>
+<span class="target" id="module-core.mixins.single_pk"></span><dl class="class">
+<dt id="core.mixins.single_pk.SinglePKMixin">
+<em class="property">class </em><code class="descname">SinglePKMixin</code><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">core.mixins.base.PKBase</span></code></p>
+<p>This is the primary mixin for most of pulsar’s model classes. This adds caching and JSON
+serialization functionality to the base SQLAlchemy model. Methods belonging to the mixin
+automatically cache fetched results and attempt to access cached results before querying the
+database when fetching a model. If caching is desired, methods belonging to this mixin should
+be used.</p>
+<p>Subclasses are expected to assign a serializer to the model by setting the <code class="docutils literal notranslate"><span class="pre">__serializer__</span></code>
+attribute to a <code class="docutils literal notranslate"><span class="pre">Serializer</span></code> class. When a model is serialized in an API response, the
+serializer object will be used to turn the model into JSON.</p>
+<dl class="method">
+<dt id="core.mixins.single_pk.SinglePKMixin.belongs_to_user">
+<code class="descname">belongs_to_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.belongs_to_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to determine whether or not the model “belongs” to a user by comparing
+against flask.g.user This is meant to be overridden by subclasses, although, by default,
+if the model has a <code class="docutils literal notranslate"><span class="pre">user_id</span></code> column, it compares <code class="docutils literal notranslate"><span class="pre">flask.g.user</span></code> with that column.
+If that column does not exist, <code class="docutils literal notranslate"><span class="pre">False</span></code> will be returned by default.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether or not the object “belongs” to the user</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.mixins.single_pk.SinglePKMixin.can_access">
+<code class="descname">can_access</code><span class="sig-paren">(</span><em>permission=None</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.can_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines whether or not the requesting user can access the following resource.
+If no permission is specified, any user can access the resource. If a permission is
+specified, then access is restricted to users with that permission or “ownership”
+of this object. Ownership is determined with the <code class="docutils literal notranslate"><span class="pre">belongs_to_user</span></code> method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>permission</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code>, <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Permission to restrict access to</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Whether or not the requesting user can access the resource</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.single_pk.SinglePKMixin.create_cache_key">
+<em class="property">classmethod </em><code class="descname">create_cache_key</code><span class="sig-paren">(</span><em>pk</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.create_cache_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate the <code class="docutils literal notranslate"><span class="pre">__cache_key__</span></code> class attribute with the kwargs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> – The keywords that will be fed into the <code class="docutils literal notranslate"><span class="pre">str.format</span></code> function</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The cache key</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>NameError</strong> – If the cache key is undefined or improperly defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.single_pk.SinglePKMixin.from_pk">
+<em class="property">classmethod </em><code class="descname">from_pk</code><span class="sig-paren">(</span><em>pk</em>, <em>*</em>, <em>include_dead=False</em>, <em>_404=False</em>, <em>error=False</em>, <em>asrt=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.from_pk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default classmethod constructor to get an object by its PK ID.
+If the object has a deleted/revoked/expired column, it will compare a
+<code class="docutils literal notranslate"><span class="pre">include_dead</span></code> kwarg against it. This function first attempts to load
+an object from the cache by formatting its <code class="docutils literal notranslate"><span class="pre">__cache_key__</span></code> with the
+ID parameter, and executes a query if the object isn’t cached.
+Can optionally raise a <code class="docutils literal notranslate"><span class="pre">_404Exception</span></code> if the object is not queried.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>id</strong> – The primary key ID of the object to query for</li>
+<li><strong>include_dead</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to return deleted/revoked/expired objects</li>
+<li><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to raise a _403Exception when the user cannot
+access the object</li>
+<li><strong>_404</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to raise a _404Exception with the value of
+_404 and the class name as the resource name if an object
+is not found</li>
+<li><strong>asrt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code>, <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – Whether or not to check for ownership of the model or a permission.
+Can be a boolean to purely check for ownership, or a permission
+string which can override ownership and access the model anyways.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~SPK]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The object corresponding to the given ID, if it exists</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#core.exceptions._404Exception" title="core.exceptions._404Exception"><strong>_404Exception</strong></a> – If <code class="docutils literal notranslate"><span class="pre">_404</span></code> is passed and an object is not found nor accessible</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.single_pk.SinglePKMixin.from_query">
+<em class="property">classmethod </em><code class="descname">from_query</code><span class="sig-paren">(</span><em>*</em>, <em>key=None</em>, <em>filter=None</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.from_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to get a single object from the database (via <code class="docutils literal notranslate"><span class="pre">limit(1)</span></code>, <code class="docutils literal notranslate"><span class="pre">query.first()</span></code>).
+Getting the object via the provided cache key will be attempted first; if
+it does not exist, then a query will be constructed with the other
+parameters. The resultant object (if exists) will be cached and returned.</p>
+<p><strong>The queried model must have a primary key column named ``id`` and a
+``from_pk`` classmethod constructor.</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – The cache key belonging to the object</li>
+<li><strong>filter</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy expression to filter the query with</li>
+<li><strong>order</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – A SQLAlchemy expression to order the query by</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~SPK]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The queried model, if it exists</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.single_pk.SinglePKMixin.get_primary_key">
+<em class="property">classmethod </em><code class="descname">get_primary_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.get_primary_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the primary key attribute of the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The primary key</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.single_pk.SinglePKMixin.is_valid">
+<em class="property">classmethod </em><code class="descname">is_valid</code><span class="sig-paren">(</span><em>pk</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.is_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether or not the object exists and isn’t deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>id</strong> – The object ID to validate</li>
+<li><strong>error</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to raise an APIException on validation fail</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Validity of the object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><strong>APIException</strong></a> – If error param is passed and ID is not valid</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="core.mixins.single_pk.SinglePKMixin.primary_key">
+<code class="descname">primary_key</code><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.primary_key" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value associated with the primary key of the model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.single_pk.SinglePKMixin.update_many">
+<em class="property">classmethod </em><code class="descname">update_many</code><span class="sig-paren">(</span><em>*</em>, <em>pks</em>, <em>update</em>, <em>sychronize_session=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.single_pk.SinglePKMixin.update_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and execute a query affecting all objects with PKs in the
+list of PKs passed to this function. This is only meant to be used for
+models with an PK primary key and cache key formatted by PK.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pks</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – The list of primary key PKs to update</li>
+<li><strong>update</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – The dictionary of column values to update</li>
+<li><strong>synchronize_session</strong> – Whether or not to update the session after
+the query; should be True if the objects are
+going to be used after updating</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-core.mixins.multi_pk"></span><dl class="class">
+<dt id="core.mixins.multi_pk.MultiPKMixin">
+<em class="property">class </em><code class="descname">MultiPKMixin</code><a class="headerlink" href="#core.mixins.multi_pk.MultiPKMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">core.mixins.base.PKBase</span></code></p>
+<p>A model mixin for models with multiple primary keys, typically representative
+of many-to-many relational tables.</p>
+<dl class="method">
+<dt id="core.mixins.multi_pk.MultiPKMixin.belongs_to_user">
+<code class="descname">belongs_to_user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.multi_pk.MultiPKMixin.belongs_to_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Because multi-pk things aren’t usually permissioned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.mixins.multi_pk.MultiPKMixin.can_access">
+<code class="descname">can_access</code><span class="sig-paren">(</span><em>permission=None</em>, <em>error=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.multi_pk.MultiPKMixin.can_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Because multi-pk things aren’t usually permissioned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.multi_pk.MultiPKMixin.from_attrs">
+<em class="property">classmethod </em><code class="descname">from_attrs</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.multi_pk.MultiPKMixin.from_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an instance of the model from its attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kwargs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – The attributes to query by</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~MPK]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An object matching the attributes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.multi_pk.MultiPKMixin.get_col_from_many">
+<em class="property">classmethod </em><code class="descname">get_col_from_many</code><span class="sig-paren">(</span><em>*</em>, <em>column</em>, <em>key=None</em>, <em>filter=None</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.multi_pk.MultiPKMixin.get_col_from_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the values of a specific column from every row in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>column</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">InstrumentedAttribute</span></code>) – The desired column</li>
+<li><strong>key</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – A cache key to save the resultant list in</li>
+<li><strong>filter</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – Filters to apply to the database query</li>
+<li><strong>order</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryExpression</span></code>]) – How to order the values from the database query</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of values from the column</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.multi_pk.MultiPKMixin.get_primary_key">
+<em class="property">classmethod </em><code class="descname">get_primary_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.multi_pk.MultiPKMixin.get_primary_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the name of the primary key attribute of the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The primary key</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="specialized-mixins">
+<h3>Specialized Mixins<a class="headerlink" href="#specialized-mixins" title="Permalink to this headline">¶</a></h3>
+<p>In pulsar, there are many similar yet slightly different models, such as <code class="docutils literal notranslate"><span class="pre">UserClass</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SecondaryUserClass</span></code>. Since code reuse is great and copy/paste not so much, there are
+a few mixins in the core package which provide the attributes and functions ubiquitous to
+all models of a certain nature.</p>
+<span class="target" id="module-core.mixins.class_"></span><dl class="class">
+<dt id="core.mixins.class_.ClassMixin">
+<em class="property">class </em><code class="descname">ClassMixin</code><a class="headerlink" href="#core.mixins.class_.ClassMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.mixins.single_pk.SinglePKMixin" title="core.mixins.single_pk.SinglePKMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.mixins.single_pk.SinglePKMixin</span></code></a></p>
+<dl class="classmethod">
+<dt id="core.mixins.class_.ClassMixin.from_name">
+<em class="property">classmethod </em><code class="descname">from_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.class_.ClassMixin.from_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a userclass object from its name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The name of the userclass</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[~UC]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The userclass</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.class_.ClassMixin.get_all">
+<em class="property">classmethod </em><code class="descname">get_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.class_.ClassMixin.get_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all userclass objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[~UC]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of all userclasses of this class type</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.class_.ClassMixin.new">
+<em class="property">classmethod </em><code class="descname">new</code><span class="sig-paren">(</span><em>name</em>, <em>permissions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.class_.ClassMixin.new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new userclass.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – The name of the userclass</li>
+<li><strong>permissions</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – The permissions to be attributed to the userclass</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">~UC</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The newly created userclass</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.mixins.class_.ClassSerializer">
+<em class="property">class </em><code class="descname">ClassSerializer</code><a class="headerlink" href="#core.mixins.class_.ClassSerializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.mixins.serializer.Serializer" title="core.mixins.serializer.Serializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.mixins.serializer.Serializer</span></code></a></p>
+<p>The serializer object for a <code class="docutils literal notranslate"><span class="pre">ClassMixin</span></code>. This can be ignored unless you
+add an attribute to the userclass not present in the <code class="docutils literal notranslate"><span class="pre">ClassMixin</span></code>, in which
+case a new serializer should be assigned to the userclass model.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="json-serialization">
+<h2>JSON Serialization<a class="headerlink" href="#json-serialization" title="Permalink to this headline">¶</a></h2>
+<p>pulsar allows for model objects to be passed into <code class="docutils literal notranslate"><span class="pre">flask.jsonify</span></code>, for the purposes of
+convenience (no need to serialize every object in a nested structure before passing it
+into <code class="docutils literal notranslate"><span class="pre">flask.jsonify</span></code>). It does this by modifying Flask’s <code class="docutils literal notranslate"><span class="pre">JSONEncoder</span></code> attribute and
+accessing the <code class="docutils literal notranslate"><span class="pre">Serializer</span></code> object assigned to a model’s <code class="docutils literal notranslate"><span class="pre">__serializer__</span></code> attribute.</p>
+<p>Each model which can be returned in the API must have a serializer. Serializer classes
+subclass the <code class="docutils literal notranslate"><span class="pre">Serializer</span></code> mixin (documented below), and contain attributes of the
+<code class="docutils literal notranslate"><span class="pre">Attribute</span></code> type. The code which handles the serialization of models and other types is
+found in <code class="docutils literal notranslate"><span class="pre">core.serializer</span></code>.</p>
+<span class="target" id="module-core.mixins.serializer"></span><dl class="class">
+<dt id="core.mixins.serializer.Attribute">
+<em class="property">class </em><code class="descname">Attribute</code><span class="sig-paren">(</span><em>permission=None</em>, <em>self_access=True</em>, <em>default=True</em>, <em>nested=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.serializer.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A serializable attribute for a model. This is where the attribute filtering
+and permissioning happens.</p>
+<dl class="method">
+<dt id="core.mixins.serializer.Attribute.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>permission=None</em>, <em>self_access=True</em>, <em>default=True</em>, <em>nested=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.serializer.Attribute.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>permission</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code>, <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – The permission needed to serialize this attribute
+(<code class="docutils literal notranslate"><span class="pre">None</span></code> means no permission necessary)</li>
+<li><strong>self_access</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not a user who “owns” the object can access it
+(will bypass permission check)</li>
+<li><strong>default</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to serialize this permission by default</li>
+<li><strong>nested</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>]) – Whether or not to serialize this permission when the nested
+kwarg filter is passed. This is separated from filters for
+convenience.</li>
+<li><strong>filter</strong> – A filter kwarg that can be included in the Serializer’s
+serialize command to forcibly include or exclude this attribute,
+provided all other criteria are met. The value of the kwarg
+will be inspected; <code class="docutils literal notranslate"><span class="pre">True</span></code> means include, <code class="docutils literal notranslate"><span class="pre">False</span></code> means exclude.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.mixins.serializer.Attribute.can_serialize">
+<code class="descname">can_serialize</code><span class="sig-paren">(</span><em>name</em>, <em>obj</em>, <em>nested</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.serializer.Attribute.can_serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines whether or not the attribute can be serialized. Checks if the
+either the permission or ownership requirement specified in the attribute
+initialization are valid, and whether or not the attribute meets nested
+requirements.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.mixins.serializer.Attribute.get_value">
+<code class="descname">get_value</code><span class="sig-paren">(</span><em>name</em>, <em>obj</em>, <em>nested</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.serializer.Attribute.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the attribute of a object, or a null value if the serialization kwargs
+and/or requesting user don’t meet the necessary requirements.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.mixins.serializer.Serializer">
+<em class="property">class </em><code class="descname">Serializer</code><a class="headerlink" href="#core.mixins.serializer.Serializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">core.mixins.base.BaseFunctionalityMixin</span></code></p>
+<p>Intended to be passed into model arguments as a __serializer__ attr.
+TODO: More documentation.</p>
+<dl class="classmethod">
+<dt id="core.mixins.serializer.Serializer.attributes">
+<em class="property">classmethod </em><code class="descname">attributes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.serializer.Serializer.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all non-method attributes of the object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="#core.mixins.serializer.Attribute" title="core.mixins.serializer.Attribute"><code class="xref py py-class docutils literal notranslate"><span class="pre">Attribute</span></code></a>]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="core.mixins.serializer.Serializer.serialize">
+<em class="property">classmethod </em><code class="descname">serialize</code><span class="sig-paren">(</span><em>obj</em>, <em>nested=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.mixins.serializer.Serializer.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes the attributes in the serializer and adds them to
+the serialized dictionary, if they match the passed kwarg criteria and
+user permissions.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<p>These are python exceptions that mirror HTTP errors. When raised they will trigger the
+matching HTTP error and a JSON response.</p>
+<span class="target" id="module-core.exceptions"></span><dl class="exception">
+<dt id="core.exceptions.APIException">
+<em class="property">exception </em><code class="descname">APIException</code><span class="sig-paren">(</span><em>message</em>, <em>status_code=400</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions.APIException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>General exception thrown by an API view, contains a message for the JSON response.</p>
+<dl class="method">
+<dt id="core.exceptions.APIException.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>message</em>, <em>status_code=400</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions.APIException.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.exceptions._312Exception">
+<em class="property">exception </em><code class="descname">_312Exception</code><span class="sig-paren">(</span><em>lock=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._312Exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.exceptions.APIException</span></code></a></p>
+<p>Alastor please stay away from this codebase, thanks!</p>
+<dl class="method">
+<dt id="core.exceptions._312Exception.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>lock=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._312Exception.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.exceptions._401Exception">
+<em class="property">exception </em><code class="descname">_401Exception</code><span class="sig-paren">(</span><em>message=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._401Exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.exceptions.APIException</span></code></a></p>
+<dl class="method">
+<dt id="core.exceptions._401Exception.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>message=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._401Exception.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.exceptions._403Exception">
+<em class="property">exception </em><code class="descname">_403Exception</code><span class="sig-paren">(</span><em>message=None</em>, <em>masquerade=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._403Exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.exceptions.APIException</span></code></a></p>
+<p>Occurrences of this exception are (to be) logged. This exception is also
+capable of throwing a 404 to masquerade hidden endpoints. To do so, set
+the masquerade param to True.</p>
+<dl class="method">
+<dt id="core.exceptions._403Exception.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>message=None</em>, <em>masquerade=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._403Exception.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.exceptions._404Exception">
+<em class="property">exception </em><code class="descname">_404Exception</code><span class="sig-paren">(</span><em>resource='Resource'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._404Exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.exceptions.APIException</span></code></a></p>
+<dl class="method">
+<dt id="core.exceptions._404Exception.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>resource='Resource'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._404Exception.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.exceptions._405Exception">
+<em class="property">exception </em><code class="descname">_405Exception</code><a class="headerlink" href="#core.exceptions._405Exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.exceptions.APIException</span></code></a></p>
+<dl class="method">
+<dt id="core.exceptions._405Exception.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._405Exception.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="core.exceptions._500Exception">
+<em class="property">exception </em><code class="descname">_500Exception</code><a class="headerlink" href="#core.exceptions._500Exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.exceptions.APIException</span></code></a></p>
+<dl class="method">
+<dt id="core.exceptions._500Exception.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.exceptions._500Exception.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="request-hooks">
+<h2>Request Hooks<a class="headerlink" href="#request-hooks" title="Permalink to this headline">¶</a></h2>
+<p>These hooks run before and after each request gets sent to a controller, taking care of
+various checks and overrides that apply to every view.</p>
+<div class="section" id="before">
+<h3>Before<a class="headerlink" href="#before" title="Permalink to this headline">¶</a></h3>
+<p>Before relaying the request to its proper controller, check the authentication of the
+requester, via API key. If the requester has the <code class="docutils literal notranslate"><span class="pre">site_no_ip_history</span></code> permission, set their
+IP to <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code>.</p>
+<span class="target" id="module-core.hooks.before"></span><dl class="function">
+<dt id="core.hooks.before.check_api_key">
+<code class="descname">check_api_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.hooks.before.check_api_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the request header for an authorization key and, if the key matches
+an active API key, sets the flask.g.user and flask.g.api_key context globals.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.hooks.before.check_rate_limit">
+<code class="descname">check_rate_limit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.hooks.before.check_rate_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether or not a user has exceeded the rate limits specified in the
+config. Rate limits per API key or session and per user are recorded.
+The redis database is used to keep track of caching, by incrementing
+“rate limit” cache keys on each request and setting a timeout on them.
+The rate limit can be adjusted in the configuration file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><strong>APIException</strong></a> – If the rate limit has been exceeded</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.hooks.before.check_rate_limit_unauthenticated">
+<code class="descname">check_rate_limit_unauthenticated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.hooks.before.check_rate_limit_unauthenticated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a harsher 30 req / minute to unauthenticated users.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.hooks.before.parse_key">
+<code class="descname">parse_key</code><span class="sig-paren">(</span><em>headers</em><span class="sig-paren">)</span><a class="headerlink" href="#core.hooks.before.parse_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the header for an API key, and returns it if found.
+The authorization header must be in the following format: <code class="docutils literal notranslate"><span class="pre">Token</span> <span class="pre">&lt;api</span> <span class="pre">key&gt;</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>headers</strong> – A dictionary of request headers</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">If present, the key parsed from header</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.hooks.before.update_api_key">
+<code class="descname">update_api_key</code><span class="sig-paren">(</span><em>api_key</em><span class="sig-paren">)</span><a class="headerlink" href="#core.hooks.before.update_api_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the provided session or api key’s last seen times,
+user agent, and IP fields.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session_key</strong> – The session or API key to update</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="after">
+<h3>After<a class="headerlink" href="#after" title="Permalink to this headline">¶</a></h3>
+<p>After receiving a response from the controller, wrap it in a homogenized response
+dictionary and serialize it to JSON. The response dictionary will have a <code class="docutils literal notranslate"><span class="pre">status</span></code> key
+and, if the request came with session based authentication, a CRSF token.</p>
+<span class="target" id="module-core.hooks.after"></span><dl class="function">
+<dt id="core.hooks.after.wrap_response">
+<code class="descname">wrap_response</code><span class="sig-paren">(</span><em>response</em><span class="sig-paren">)</span><a class="headerlink" href="#core.hooks.after.wrap_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap response with the homogenized response dictionary, containing
+a <code class="docutils literal notranslate"><span class="pre">status</span></code> key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>response</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Response</span></code>) – The flask response en route to user</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="validator-functions">
+<h2>Validator Functions<a class="headerlink" href="#validator-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-core.validators.users">
+<span id="users"></span><h3>Users<a class="headerlink" href="#module-core.validators.users" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="core.validators.users.ValInviteCode">
+<code class="descname">ValInviteCode</code><span class="sig-paren">(</span><em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.users.ValInviteCode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check an invite code against existing invite codes;
+Raises an APIException if the code isn’t valid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>code</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – Invite code to check and verify</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An invite code or, if site is open registration, <code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><strong>APIException</strong></a> – The invite code cannot be used</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.validators.users.ValUsername">
+<code class="descname">ValUsername</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.users.ValUsername" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensures that a username is not taken by comparing it with existing DB results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>username</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Username to check and verify</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">An unused username, same as input</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>Invalid</strong> – If the username does not meet length requirements or is
+already used by another user</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.validators.permissions">
+<span id="permissions"></span><h3>Permissions<a class="headerlink" href="#module-core.validators.permissions" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="core.validators.permissions.PermissionsDict">
+<em class="property">class </em><code class="descname">PermissionsDict</code><span class="sig-paren">(</span><em>restrict=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.permissions.PermissionsDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Validates that a dictionary contains valid permission name keys
+and has boolean values. The available permissions can be restricted
+to the BASIC_PERMISSIONS if a permission is passed. If the requesting
+user does not have that permission, they will be restricted to the
+BASIC_PERMISSIONS.</p>
+<dl class="method">
+<dt id="core.validators.permissions.PermissionsDict.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>restrict=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.permissions.PermissionsDict.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.validators.permissions.PermissionsList">
+<code class="descname">PermissionsList</code><span class="sig-paren">(</span><em>perm_list</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.permissions.PermissionsList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates that every permission in the list is a valid permission.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>perm_list</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – A list of permissions encoded as <code class="docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The inputted perm_list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>Invalid</strong> – If a permission in the list isn’t valid or input isn’t a list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.validators.permissions.PermissionsListOfUser">
+<code class="descname">PermissionsListOfUser</code><span class="sig-paren">(</span><em>perm_list</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.permissions.PermissionsListOfUser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of items and asserts that all of them are in the permissions list of
+a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>perm_list</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – A list of permissions encoded as <code class="docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The input perm_list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>Invalid</strong> – If the user does not have a permission in the list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.validators.permissions.check_permissions">
+<code class="descname">check_permissions</code><span class="sig-paren">(</span><em>user</em>, <em>permissions</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.permissions.check_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>The abstracted meat of the permission checkers. Takes the input and
+some model-specific information and returns permission information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user</strong> (<a class="reference internal" href="models.html#core.users.models.User" title="core.users.models.User"><code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code></a>) – The recipient of the permission changes</li>
+<li><strong>permissions</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>]) – A dictionary of permission changes, with permission name
+and boolean (True = Add, False = Remove) key value pairs</li>
+<li><strong>perm_model</strong> – The permission model to be checked</li>
+<li><strong>perm_attr</strong> – The attribute of the user classes which represents the permissions</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.validators.posts">
+<span id="posts"></span><h3>Posts<a class="headerlink" href="#module-core.validators.posts" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="core.validators.posts.PostLength">
+<em class="property">class </em><code class="descname">PostLength</code><span class="sig-paren">(</span><em>min=None</em>, <em>max=None</em>, <em>msg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.validators.posts.PostLength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">voluptuous.validators.Length</span></code></p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="utility-functions">
+<h2>Utility Functions<a class="headerlink" href="#utility-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Permissions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-core.utils.permissions"></span><dl class="function">
+<dt id="core.utils.permissions.access_other_user">
+<code class="descname">access_other_user</code><span class="sig-paren">(</span><em>permission</em><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.permissions.access_other_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a permission. The user_id is taken from the query string. If the user_id
+is specified, the user with that user id is fetched and then returned if the
+requesting user has the given permission.  Otherwise, the requester’s user is
+returned. This decorator needs to be below a <code class="docutils literal notranslate"><span class="pre">&#64;require_permission</span></code> decorated view.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>permission</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code>]) – The permission needed to get the other user’s user object.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The chosen user</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#core.exceptions._403Exception" title="core.exceptions._403Exception"><strong>_403Exception</strong></a> – The requesting user does not have the specified permission</li>
+<li><a class="reference internal" href="#core.exceptions._404Exception" title="core.exceptions._404Exception"><strong>_404Exception</strong></a> – The requested user does not exist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.utils.permissions.assert_permission">
+<code class="descname">assert_permission</code><span class="sig-paren">(</span><em>permission</em>, <em>masquerade=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.permissions.assert_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that the requesting user has a permission, raise a 403 if they do not.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">None</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.utils.permissions.assert_user">
+<code class="descname">assert_user</code><span class="sig-paren">(</span><em>user_id</em>, <em>permission=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.permissions.assert_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assert that a user_id belongs to the requesting user, or that
+the requesting user has a given permission.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.utils.permissions.require_permission">
+<code class="descname">require_permission</code><span class="sig-paren">(</span><em>permission</em>, <em>masquerade=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.permissions.require_permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requires a user to have the specified permission to access the view function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>permission</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code>]) – The permission required to access the API endpoint</li>
+<li><strong>masquerade</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – Whether or not to disguise the failed view attempt as a 404</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><a class="reference internal" href="#core.exceptions._403Exception" title="core.exceptions._403Exception"><strong>_403Exception</strong></a> – If the user does not exist or does not have enough
+permission to view the resource. Locked accounts are
+given a different message. This can be masqueraded as a 404</li>
+<li><a class="reference internal" href="#core.exceptions._403Exception" title="core.exceptions._403Exception"><strong>_403Exception</strong></a> – If an API Key is used and does not have enough permissions to
+access the resource</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.utils.validation">
+<span id="validation"></span><h3>Validation<a class="headerlink" href="#module-core.utils.validation" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="core.utils.validation.get_request_data">
+<code class="descname">get_request_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.validation.get_request_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn the incoming json data into a dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The unserialized dict sent by the requester.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#core.exceptions.APIException" title="core.exceptions.APIException"><strong>APIException</strong></a> – If the sent data cannot be decoded from JSON.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.utils.validation.validate_data">
+<code class="descname">validate_data</code><span class="sig-paren">(</span><em>schema</em><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.validation.validate_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare a request’s form data to a provided Voluptuous schema. If the
+request data is invalid, an APIException is raised.  If an endpoint is
+decorated with this function and you wish to call it directly, it can be
+bypassed with by passing a <code class="docutils literal notranslate"><span class="pre">skip_validation</span></code> kwarg that evaluates to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>schema</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Schema</span></code>) – A voluptuous Schema object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.utils.memoization">
+<span id="memoization"></span><h3>Memoization<a class="headerlink" href="#module-core.utils.memoization" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="core.utils.memoization.cached_property">
+<code class="descname">cached_property</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#core.utils.memoization.cached_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>A  decorator that caches the result for the duration of
+the lifetime of the object in a private object property.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">property</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="models.html" class="btn btn-neutral float-right" title="Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="objects/index.html" class="btn btn-neutral" title="JSON Objects" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, sharebears
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
